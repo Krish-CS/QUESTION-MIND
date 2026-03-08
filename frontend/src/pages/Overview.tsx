@@ -421,9 +421,9 @@ export default function Overview() {
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Assigned Subjects:</p>
                     <div className="flex flex-col gap-1.5">
                       {assignedSubjects.map((s, i) => (
-                        <div key={i} className="flex items-center justify-between text-xs px-2 py-1.5 bg-purple-50 text-purple-700 dark:bg-slate-800 dark:text-purple-300 rounded border border-purple-100 dark:border-slate-700">
-                          <span className="font-bold">{s.subjectCode}</span>
-                          <span className="text-purple-700 dark:text-purple-200 truncate ml-2 max-w-[120px] font-bold" title={s.subjectName}>{s.subjectName}</span>
+                        <div key={i} className="flex flex-col items-center gap-1 text-xs px-2 py-2 bg-purple-50 dark:bg-slate-800 rounded border border-purple-100 dark:border-slate-700 text-center">
+                          <span className="font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300 tracking-wide">{s.subjectCode}</span>
+                          <span className="text-purple-700 dark:text-purple-200 font-semibold leading-tight break-words w-full text-center">{s.subjectName}</span>
                         </div>
                       ))}
                     </div>
@@ -572,6 +572,11 @@ export default function Overview() {
                                 <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-xs font-medium">
                                   <Clock className="w-3 h-3" />
                                   Pending
+                                </span>
+                              ) : bank.status === 'DRAFT' ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium">
+                                  <FileQuestion className="w-3 h-3" />
+                                  Draft
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-medium">

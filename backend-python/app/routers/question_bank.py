@@ -391,7 +391,8 @@ async def generate_questions(
         has_cdap=cdap is not None  # Flag to enable CDAP Part column
     )
     
-    # Save question bank
+    # Save question bank — HOD's own banks are auto-approved; staff banks start as DRAFT
+    initial_status = QuestionBankStatus.APPROVED if user.role == UserRole.HOD else QuestionBankStatus.DRAFT
     qb = QuestionBank(
         id=str(uuid.uuid4()),
         subject_id=subject.id,
@@ -399,7 +400,7 @@ async def generate_questions(
         pattern_id=pattern.id if pattern else None,
         title=f"{subject.code} Question Bank",
         questions={"parts": questions},
-        status=QuestionBankStatus.DRAFT,
+        status=initial_status,
         generated_by=user.id,
         excel_path=excel_path
     )

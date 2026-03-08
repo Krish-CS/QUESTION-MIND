@@ -205,12 +205,19 @@ export default function SyllabusPage(): JSX.Element {
               delete copy[subjectId];
               return copy;
             });
+            // Close the details viewer if it's showing the deleted syllabus
+            setViewingDetails(prev => (prev?.syllabus?.subject_id === subjectId ? null : prev));
           } else {
             await cdapApi.delete(subjectId);
             setCdaps((prev) => {
               const copy = { ...prev };
               delete copy[subjectId];
               return copy;
+            });
+            // Remove CDAP from the details viewer; close it if no syllabus remains
+            setViewingDetails(prev => {
+              if (!prev || prev.cdap?.subject_id !== subjectId) return prev;
+              return prev.syllabus ? { ...prev, cdap: undefined, showTabs: false } : null;
             });
           }
         } catch (err) {

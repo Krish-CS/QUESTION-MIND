@@ -229,6 +229,10 @@ export default function Dashboard() {
           subjectName={getSubjectName(viewingBank.subject_id)}
           onClose={() => setViewingBank(null)}
           onDownload={() => handleDownload(viewingBank)}
+          onUpdate={(updatedBank) => {
+            setViewingBank(updatedBank);
+            setRecentBanks(prev => prev.map(b => b.id === updatedBank.id ? updatedBank : b));
+          }}
         />
       )}
     </div>

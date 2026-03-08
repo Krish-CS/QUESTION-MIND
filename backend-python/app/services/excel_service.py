@@ -4,6 +4,7 @@ from openpyxl.cell.text import InlineFont
 from openpyxl.cell.rich_text import TextBlock, CellRichText
 from openpyxl.utils import get_column_letter
 from openpyxl.drawing.image import Image as XLImage
+from openpyxl.drawing.spreadsheet_drawing import AnchorMarker, TwoCellAnchor
 from typing import Dict, List, Any, Optional
 import os
 import io
@@ -128,7 +129,11 @@ class ExcelService:
         
         if not academic_year:
             year = datetime.now().year
-            academic_year = f"{year}-{year + 1}"
+            academic_year = f"{year} - {year + 1}"
+        else:
+            # Normalise "2026-2027" → "2026 - 2027"
+            import re as _re
+            academic_year = _re.sub(r'(\d)\s*-\s*(\d)', r'\1 - \2', academic_year)
         
         wb = Workbook()
         
@@ -167,7 +172,7 @@ class ExcelService:
         
         # Row 2: Info labels - Start from Column B (Column A is empty)
         # B=Course Code-Course Name, C=Department, D=Semester, E=Academic Year
-        ws_qb['B2'] = "Course Code-Course Name"
+        ws_qb['B2'] = "Course Code - Course Name"
         ws_qb['C2'] = "Department"
         ws_qb['D2'] = "Semester"
         ws_qb['E2'] = "Academic Year"
@@ -178,7 +183,7 @@ class ExcelService:
             ws_qb.cell(row=2, column=col).alignment = Alignment(horizontal='center', vertical='center')
         
         # Row 3: Info values - Start from Column B (Column A is empty)
-        ws_qb['B3'] = f"{subject_code}- {subject_name}"
+        ws_qb['B3'] = f"{subject_code} - {subject_name}"
         ws_qb['C3'] = department
         ws_qb['D3'] = self._roman_numeral(semester)
         ws_qb['E3'] = academic_year
@@ -223,78 +228,96 @@ class ExcelService:
             
             for q in sorted_questions:
                 question_text = self._format_question_text(q.get('question', ''))
+                mcq_options_text = ''
 
-                # For MCQ, add options on new lines
                 if q.get('isMCQ') and q.get('options'):
                     opts = q['options']
-                    question_text += f"\nA) {opts.get('A', '')}"
-                    question_text += f"\nB) {opts.get('B', '')}"
-                    question_text += f"\nC) {opts.get('C', '')}"
-                    question_text += f"\nD) {opts.get('D', '')}"
+                    mcq_options_text = (
+                        f"A) {opts.get('A', '')}\n"
+                        f"B) {opts.get('B', '')}\n"
+                        f"C) {opts.get('C', '')}\n"
+                        f"D) {opts.get('D', '')}"
+                    )
+
+                # Question text and MCQ options always together in one cell
+                cell_text = question_text + ('\n' + mcq_options_text if mcq_options_text else '')
 
                 unit_num = q.get('unit', 1)
                 cdap_part = q.get('cdap_part', 1) if has_cdap else None
                 cdap_part_display = f"Part {cdap_part}" if cdap_part else ""
-                
-                # Build row data based on whether CDAP is present
+
+                # --- Load image ---
+                image_data = q.get('imageData')
+                img_buf = None
+                if image_data:
+                    try:
+                        if image_data.startswith('/api/question-bank/images/'):
+                            filename = image_data.split('/')[-1]
+                            if '/' not in filename and '\\' not in filename and '..' not in filename:
+                                images_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'uploads', 'question-images')
+                                img_path = os.path.normpath(os.path.join(images_dir, filename))
+                                with open(img_path, 'rb') as f:
+                                    img_buf = io.BytesIO(f.read())
+                        else:
+                            raw_b64 = image_data.split(',', 1)[1] if ',' in image_data else image_data
+                            img_buf = io.BytesIO(base64.b64decode(raw_b64))
+                    except Exception:
+                        img_buf = None
+
+                # Trailing newline adds a small gap between text and image below
+                display_text = (cell_text + '\n') if img_buf else cell_text
+
                 if has_cdap:
-                    row_data = [
-                        q_number,
-                        question_text,
-                        q.get('btl', 'BTL2'),
-                        cdap_part_display,  # CDAP Part column
-                        unit_num,
-                        q.get('marks', marks_per_q),
-                        part_name
-                    ]
+                    row_data = [q_number, display_text, q.get('btl', 'BTL2'), cdap_part_display, unit_num, q.get('marks', marks_per_q), part_name]
                 else:
-                    row_data = [
-                        q_number,
-                        question_text,
-                        q.get('btl', 'BTL2'),
-                        unit_num,
-                        q.get('marks', marks_per_q),
-                        part_name
-                    ]
-                
+                    row_data = [q_number, display_text, q.get('btl', 'BTL2'), unit_num, q.get('marks', marks_per_q), part_name]
+
                 for col, value in enumerate(row_data, 1):
                     cell = ws_qb.cell(row=current_row, column=col, value=value)
                     cell.border = thin_border
                     cell.font = normal_font
-                    
-                    # Q&A Columns: Justified, Vertical Center
                     if col == 2:
-                        cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='justify', indent=1)
+                        v_align = 'top' if img_buf else 'center'
+                        cell.alignment = Alignment(wrap_text=True, vertical=v_align, horizontal='justify', indent=1)
                     else:
-                        # Others: Centered
                         cell.alignment = Alignment(wrap_text=True, vertical='center', horizontal='center')
-                
-                # Calculate and set row height based on question text
-                row_height = self._calculate_row_height(question_text, col_widths_qb['B'])
 
-                # Embed image if present
-                image_data = q.get('imageData')
-                if image_data:
+                # Height of text block (with padding newlines included so image offset is correct)
+                text_height_pts = self._calculate_row_height(display_text, col_widths_qb['B'])
+
+                if img_buf:
                     try:
-                        raw_b64 = image_data.split(',', 1)[1] if ',' in image_data else image_data
-                        img_bytes = base64.b64decode(raw_b64)
-                        img_buf = io.BytesIO(img_bytes)
                         xl_img = XLImage(img_buf)
-                        # Scale down to fit column B (max 200×120 px)
-                        max_w, max_h = 200, 120
+                        max_w = int(col_widths_qb['B'] * 7)  # column B width in pixels
+                        max_h = 200
                         if xl_img.width and xl_img.height:
                             scale = min(max_w / xl_img.width, max_h / xl_img.height, 1.0)
-                            xl_img.width = int(xl_img.width * scale)
+                            xl_img.width  = int(xl_img.width  * scale)
                             xl_img.height = int(xl_img.height * scale)
-                        xl_img.anchor = f'B{current_row}'
-                        ws_qb.add_image(xl_img)
-                        # Ensure row is tall enough (points ≈ pixels × 0.75)
-                        row_height = max(row_height, xl_img.height * 0.75 + 6)
-                    except Exception:
-                        pass  # Best-effort: skip image if decode fails
 
-                ws_qb.row_dimensions[current_row].height = row_height
-                
+                        # Total row height = text block height + image height (pts) + bottom gap
+                        img_height_pts = xl_img.height * 0.75  # pixels → points
+                        total_height = text_height_pts + img_height_pts + 12
+                        ws_qb.row_dimensions[current_row].height = total_height
+
+                        # TwoCellAnchor: rowOff pushes image below text block
+                        # colOff centres image within column B
+                        # 1 pt = 12700 EMU  |  1 px = 9525 EMU
+                        text_emu  = int(text_height_pts * 12700)
+                        img_h_emu = int(xl_img.height * 9525)
+                        img_w_emu = int(xl_img.width  * 9525)
+                        col_b_emu = int(col_widths_qb['B'] * 7 * 9525)  # col B width in EMU
+                        center_off = max(0, (col_b_emu - img_w_emu) // 2)
+                        row0 = current_row - 1  # 0-based row index
+                        from_m = AnchorMarker(col=1, colOff=center_off,               row=row0, rowOff=text_emu)
+                        to_m   = AnchorMarker(col=1, colOff=center_off + img_w_emu,   row=row0, rowOff=text_emu + img_h_emu)
+                        xl_img.anchor = TwoCellAnchor(editAs='oneCell', _from=from_m, to=to_m)
+                        ws_qb.add_image(xl_img)
+                    except Exception:
+                        ws_qb.row_dimensions[current_row].height = text_height_pts
+                else:
+                    ws_qb.row_dimensions[current_row].height = text_height_pts
+
                 current_row += 1
                 q_number += 1
         

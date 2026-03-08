@@ -38,6 +38,7 @@ export default function QuestionBanks() {
   const [selectedUnitIds, setSelectedUnitIds] = useState<number[]>([]);
   const [error, setError] = useState('');
   const [viewingBank, setViewingBank] = useState<QuestionBank | null>(null);
+  const [editingBankId, setEditingBankId] = useState<string | null>(null);
   const [selectedSubjectPattern, setSelectedSubjectPattern] = useState<any>(null);
   const [qbMode, setQbMode] = useState<'combined' | 'individual'>('combined');
   // Inline-editable copies of pattern data
@@ -49,7 +50,7 @@ export default function QuestionBanks() {
   const [isEditingPattern, setIsEditingPattern] = useState(false);
   const [btlCustomization, setBtlCustomization] = useState(false);
   const [btlWarning, setBtlWarning] = useState('');
-  const [latestBankId, setLatestBankId] = useState<number | null>(null);
+  const [latestBankId, setLatestBankId] = useState<string | null>(null);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successBank, setSuccessBank] = useState<QuestionBank | null>(null);
 
@@ -450,9 +451,7 @@ export default function QuestionBanks() {
   const handleSubmitForApproval = async (bank: QuestionBank) => {
     try {
       await questionBankApi.updateStatus(bank.id, { status: 'PENDING_APPROVAL' });
-      setQuestionBanks(
-        questionBanks.map(b => b.id === bank.id ? { ...b, status: 'PENDING_APPROVAL' } : b)
-      );
+      setQuestionBanks(prev => prev.map(b => b.id === bank.id ? { ...b, status: 'PENDING_APPROVAL' } : b));
     } catch (err) {
       setError('Failed to submit for approval');
     }
@@ -783,7 +782,7 @@ export default function QuestionBanks() {
                             <button
                               type="button"
                               onClick={() => setIsEditingPattern(true)}
-                              className="flex items-center gap-1.5 text-xs font-semibold text-pink-600 dark:text-pink-300 bg-white dark:bg-slate-800 border border-pink-300 dark:border-pink-700 rounded-lg px-3 py-1.5 hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors"
+                              className="btn btn-secondary text-xs px-3 py-1.5 gap-1.5"
                             >
                               <Pencil className="w-3.5 h-3.5" /> Edit Pattern
                             </button>
@@ -1343,6 +1342,9 @@ export default function QuestionBanks() {
                   <button onClick={() => setViewingBank(bank)} className="btn btn-secondary p-2" title="View">
                     <Eye className="w-4 h-4" />
                   </button>
+                  <button onClick={() => { setEditingBankId(bank.id); setViewingBank(bank); }} className="btn btn-secondary p-2" title="Edit Questions">
+                    <Pencil className="w-4 h-4" />
+                  </button>
                   <button onClick={() => handleDownload(bank)} className="btn btn-secondary p-2" title="Download Excel">
                     <Download className="w-4 h-4" />
                   </button>
@@ -1366,9 +1368,11 @@ export default function QuestionBanks() {
       {/* View Modal */}
       {viewingBank && (
         <QuestionBankViewModal
+          key={`${viewingBank.id}-${editingBankId === viewingBank.id ? 'edit' : 'view'}`}
           bank={viewingBank}
           subjectName={getSubjectName(viewingBank.subject_id)}
-          onClose={() => setViewingBank(null)}
+          initialEditMode={editingBankId === viewingBank.id}
+          onClose={() => { setViewingBank(null); setEditingBankId(null); }}
           onDownload={() => handleDownload(viewingBank)}
           onUpdate={(updatedBank) => {
             setViewingBank(updatedBank);

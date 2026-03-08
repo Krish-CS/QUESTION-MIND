@@ -54,7 +54,11 @@ export default function Approvals() {
   const handleApprove = async (id: string) => {
     try {
       await questionBankApi.updateStatus(id, { status: 'APPROVED' });
-      setPendingBanks(pendingBanks.filter((b) => b.id !== id));
+      const approved = pendingBanks.find((b) => b.id === id);
+      setPendingBanks(prev => prev.filter((b) => b.id !== id));
+      if (approved) {
+        setApprovedBanks(prev => [{ ...approved, status: 'APPROVED' }, ...prev]);
+      }
     } catch (err) {
       setError('Failed to approve');
     }
@@ -68,7 +72,7 @@ export default function Approvals() {
         status: 'REJECTED',
         rejection_reason: rejectReason,
       });
-      setPendingBanks(pendingBanks.filter((b) => b.id !== rejectingId));
+      setPendingBanks(prev => prev.filter((b) => b.id !== rejectingId));
       setRejectingId(null);
       setRejectReason('');
     } catch (err) {
@@ -284,7 +288,6 @@ export default function Approvals() {
         </div>
       )}
 
-      {/* View Modal */}
       {/* View Modal */}
       {viewingBank && (
         <QuestionBankViewModal

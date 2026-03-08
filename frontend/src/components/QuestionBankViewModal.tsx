@@ -1,10 +1,11 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { questionBankApi } from '../lib/api';
 import { createPortal } from 'react-dom';
 import { useAuthStore } from '../lib/store';
 import {
     Loader2,
     CheckCircle,
+    CheckCircle2,
     XCircle,
     Send,
     X,
@@ -24,6 +25,7 @@ interface QuestionBankViewModalProps {
     onClose: () => void;
     onDownload: () => void;
     onUpdate?: (updatedBank: QuestionBank) => void;
+    initialEditMode?: boolean;
 }
 
 function makeBlankQuestion(unit: number): Question {
@@ -36,6 +38,7 @@ export default function QuestionBankViewModal({
     onClose,
     onDownload,
     onUpdate,
+    initialEditMode = false,
 }: QuestionBankViewModalProps) {
     const { user } = useAuthStore();
     const [isApproving, setIsApproving] = useState(false);
@@ -43,11 +46,28 @@ export default function QuestionBankViewModal({
     const [showRejectionForm, setShowRejectionForm] = useState(false);
     const [activeTab, setActiveTab] = useState<'questions' | 'answers'>('questions');
 
+    // Part + Unit tab navigation (view & edit)
+    const parts = bank.questions?.parts || {};
+    const partNames = Object.keys(parts);
+    const [activePart, setActivePart] = useState<string>(partNames[0] || '');
+
+    // Unit sub-tabs — computed per part from current questions
+    const getUnitNumbers = (qs: Question[]) => {
+        const units = Array.from(new Set(qs.map(q => q.unit || 1))).sort((a, b) => a - b);
+        return units.length > 0 ? units : [1];
+    };
+
     // Edit mode state
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedParts, setEditedParts] = useState<Record<string, Question[]>>({});
+    const [isEditing, setIsEditing] = useState(initialEditMode);
+    const [editedParts, setEditedParts] = useState<Record<string, Question[]>>(() => {
+        if (!initialEditMode) return {};
+        const src: Record<string, any> = bank.questions?.parts || bank.questions || {};
+        return JSON.parse(JSON.stringify(src));
+    });
+    const [activeUnitByPart, setActiveUnitByPart] = useState<Record<string, number>>({});
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState('');
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
     const canApprove = user?.role === 'HOD' ||
         (bank.status === 'PENDING_APPROVAL' && user?.id !== bank.generated_by);
@@ -55,11 +75,8 @@ export default function QuestionBankViewModal({
     const canEdit = (user?.id === bank.generated_by || user?.role === 'HOD') &&
         (bank.status === 'DRAFT' || bank.status === 'REJECTED');
 
-    const parts = bank.questions?.parts || {};
-
     // ---- Edit mode helpers ----
     const enterEdit = () => {
-        // Deep clone questions for editing
         const clone: Record<string, Question[]> = {};
         for (const [p, qs] of Object.entries(parts)) {
             clone[p] = (qs as Question[]).map(q => ({ ...q, options: q.options ? { ...q.options } : undefined }));
@@ -79,6 +96,7 @@ export default function QuestionBankViewModal({
         setEditedParts(prev => {
             const updated = [...(prev[partName] || [])];
             updated[idx] = { ...updated[idx], [field]: value };
+            // If unit changed, keep question in the same part array — unit sub-tab will update automatically
             return { ...prev, [partName]: updated };
         });
     };
@@ -110,27 +128,20 @@ export default function QuestionBankViewModal({
         });
     };
 
-    const addQuestion = (partName: string) => {
-        const existing = editedParts[partName] || [];
-        const lastUnit = existing.length > 0 ? existing[existing.length - 1].unit : 1;
+    const addQuestion = (partName: string, unit: number) => {
         setEditedParts(prev => ({
             ...prev,
-            [partName]: [...(prev[partName] || []), makeBlankQuestion(lastUnit)],
+            [partName]: [...(prev[partName] || []), makeBlankQuestion(unit)],
         }));
     };
 
-    // Image upload per question — uploads to server, stores URL reference
+    // Image upload per question
     const handleImageUpload = useCallback((partName: string, idx: number, file: File) => {
         questionBankApi.uploadImage(file)
-            .then(res => {
-                updateQuestion(partName, idx, 'imageData', res.data.url);
-            })
+            .then(res => { updateQuestion(partName, idx, 'imageData', res.data.url); })
             .catch(() => {
-                // Fallback: store as base64 if upload fails
                 const reader = new FileReader();
-                reader.onload = () => {
-                    updateQuestion(partName, idx, 'imageData', reader.result as string);
-                };
+                reader.onload = () => { updateQuestion(partName, idx, 'imageData', reader.result as string); };
                 reader.readAsDataURL(file);
             });
     }, []);
@@ -147,6 +158,7 @@ export default function QuestionBankViewModal({
             setIsEditing(false);
             setEditedParts({});
             if (onUpdate) onUpdate(updatedBank);
+            setShowSuccessPopup(true);
         } catch (err: any) {
             setSaveError(err?.response?.data?.detail || 'Failed to save changes. Please try again.');
         } finally {
@@ -163,35 +175,41 @@ export default function QuestionBankViewModal({
             setIsApproving(false);
             onClose();
             window.location.reload();
-        } catch (err) {
+        } catch {
             setIsApproving(false);
             alert('Failed to approve');
         }
     };
 
     const handleReject = async () => {
-        if (!rejectionReason.trim()) {
-            alert('Please provide a rejection reason');
-            return;
-        }
+        if (!rejectionReason.trim()) { alert('Please provide a rejection reason'); return; }
         setIsApproving(true);
         try {
-            await questionBankApi.updateStatus(bank.id, {
-                status: 'REJECTED',
-                rejection_reason: rejectionReason
-            });
+            await questionBankApi.updateStatus(bank.id, { status: 'REJECTED', rejection_reason: rejectionReason });
             setIsApproving(false);
             onClose();
             window.location.reload();
-        } catch (err) {
+        } catch {
             setIsApproving(false);
             alert('Failed to reject');
         }
     };
 
-    const displayParts = isEditing ? editedParts : parts;
+    const displayParts: Record<string, Question[]> = isEditing ? editedParts : parts;
+    const currentPartQuestions: Question[] = displayParts[activePart] || [];
+    const unitNumbers = useMemo(() => getUnitNumbers(currentPartQuestions), [currentPartQuestions]);
+    const activeUnit = activeUnitByPart[activePart] ?? unitNumbers[0] ?? 1;
+    // Ensure activeUnit is always valid for the current part
+    const safeActiveUnit = unitNumbers.includes(activeUnit) ? activeUnit : (unitNumbers[0] ?? 1);
+    const visibleQuestions = currentPartQuestions.filter(q => (q.unit || 1) === safeActiveUnit);
+    // Global indices in the part array for visible questions (needed for edits)
+    const visibleIndices = currentPartQuestions
+        .map((q, i) => ({ q, i }))
+        .filter(({ q }) => (q.unit || 1) === safeActiveUnit)
+        .map(({ i }) => i);
 
     return createPortal(
+        <>
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-4xl max-h-[85vh] lg:max-h-[90vh] flex flex-col shadow-2xl border border-pink-200 dark:border-pink-700 transform transition-all scale-100 opacity-100">
 
@@ -202,145 +220,144 @@ export default function QuestionBankViewModal({
                         <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{subjectName}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        {/* Tabs — hide in edit mode */}
+                        {/* Questions/Answers tab toggle — view mode only */}
                         {!isEditing && (
                             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
                                 <button
                                     onClick={() => setActiveTab('questions')}
                                     className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'questions'
                                         ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                                        }`}
-                                >
-                                    Questions
-                                </button>
+                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                                >Questions</button>
                                 <button
                                     onClick={() => setActiveTab('answers')}
                                     className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'answers'
                                         ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                                        }`}
-                                >
-                                    With Answers
-                                </button>
+                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                                >With Answers</button>
                             </div>
                         )}
-
-                        {/* Edit button */}
                         {canEdit && !isEditing && (
-                            <button
-                                onClick={enterEdit}
-                                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:hover:bg-purple-900/40 dark:text-purple-300 dark:border-purple-800 transition-colors"
-                            >
-                                <Pencil className="w-4 h-4" />
-                                Edit
+                            <button onClick={enterEdit} className="btn btn-secondary px-3 py-2 gap-1.5 text-sm">
+                                <Pencil className="w-4 h-4" />Edit
                             </button>
                         )}
-
                         <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-all">
                             <X className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
 
+                {/* Part tabs */}
+                {partNames.length > 1 && (
+                    <div className="flex-none flex gap-1 px-6 pt-4 pb-0 bg-white dark:bg-slate-900 border-b border-pink-100 dark:border-pink-900 overflow-x-auto">
+                        {partNames.map(p => (
+                            <button
+                                key={p}
+                                onClick={() => setActivePart(p)}
+                                className={`px-5 py-2 text-sm font-semibold rounded-t-lg border-b-2 transition-all whitespace-nowrap ${activePart === p
+                                    ? 'border-pink-500 text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20'
+                                    : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                            >{p}</button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Unit sub-tabs */}
+                {unitNumbers.length > 0 && (
+                    <div className="flex-none flex gap-1 px-6 pt-3 pb-0 bg-white dark:bg-slate-900 overflow-x-auto">
+                        {unitNumbers.map(u => (
+                            <button
+                                key={u}
+                                onClick={() => setActiveUnitByPart(prev => ({ ...prev, [activePart]: u }))}
+                                className={`px-4 py-1.5 text-xs font-semibold rounded-full transition-all whitespace-nowrap ${safeActiveUnit === u
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-sm'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-purple-100 dark:hover:bg-purple-900/30'}`}
+                            >Unit {u}</button>
+                        ))}
+                    </div>
+                )}
+
                 {/* Scrollable Body */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50/50 dark:bg-slate-950/30">
-                    {Object.entries(displayParts).map(([partName, questions]) => (
-                        <div key={partName} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="text-2xl">{isEditing ? '✏️' : activeTab === 'questions' ? '📖' : '📝'}</span>
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b-2 border-pink-200 dark:border-pink-800 pb-1 pr-4">{partName}</h3>
-                            </div>
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/30">
+                    {/* Part heading */}
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">{isEditing ? '✏️' : activeTab === 'questions' ? '📖' : '📝'}</span>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white border-b-2 border-pink-200 dark:border-pink-800 pb-1 pr-4">
+                            {activePart} — Unit {safeActiveUnit}
+                        </h3>
+                    </div>
 
-                            <div className="space-y-4">
-                                {(questions as Question[]).map((q, idx) => (
-                                    isEditing
-                                        ? <EditableQuestionCard
-                                            key={idx}
-                                            q={q}
-                                            idx={idx}
-                                            partName={partName}
-                                            onUpdate={(field, val) => updateQuestion(partName, idx, field, val)}
-                                            onOptionUpdate={(opt, val) => updateOption(partName, idx, opt, val)}
-                                            onToggleMCQ={(isMCQ) => toggleMCQ(partName, idx, isMCQ)}
-                                            onDelete={() => deleteQuestion(partName, idx)}
-                                            onImageUpload={(file) => handleImageUpload(partName, idx, file)}
-                                          />
-                                        : <ReadonlyQuestionCard
-                                            key={idx}
-                                            q={q}
-                                            idx={idx}
-                                            activeTab={activeTab}
-                                          />
-                                ))}
-                            </div>
+                    {visibleQuestions.length === 0 && (
+                        <p className="text-slate-400 dark:text-slate-500 text-sm italic py-8 text-center">No questions in this unit yet.</p>
+                    )}
 
-                            {isEditing && (
-                                <button
-                                    onClick={() => addQuestion(partName)}
-                                    className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-sm font-medium"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    Add Question to {partName}
-                                </button>
-                            )}
-                        </div>
-                    ))}
+                    {visibleQuestions.map((q, localIdx) => {
+                        const globalIdx = visibleIndices[localIdx];
+                        return isEditing
+                            ? <EditableQuestionCard
+                                key={globalIdx}
+                                q={q}
+                                idx={localIdx}
+                                partName={activePart}
+                                allUnits={unitNumbers}
+                                onUpdate={(field, val) => {
+                                    updateQuestion(activePart, globalIdx, field, val);
+                                    // If unit changed, switch the active unit sub-tab to follow the question
+                                    if (field === 'unit') {
+                                        setActiveUnitByPart(prev => ({ ...prev, [activePart]: val as number }));
+                                    }
+                                }}
+                                onOptionUpdate={(opt, val) => updateOption(activePart, globalIdx, opt, val)}
+                                onToggleMCQ={(isMCQ) => toggleMCQ(activePart, globalIdx, isMCQ)}
+                                onDelete={() => deleteQuestion(activePart, globalIdx)}
+                                onImageUpload={(file) => handleImageUpload(activePart, globalIdx, file)}
+                              />
+                            : <ReadonlyQuestionCard
+                                key={globalIdx}
+                                q={q}
+                                idx={localIdx}
+                                activeTab={activeTab}
+                              />;
+                    })}
+
+                    {isEditing && (
+                        <button
+                            onClick={() => addQuestion(activePart, safeActiveUnit)}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-sm font-medium mt-2"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Add Question to {activePart} — Unit {safeActiveUnit}
+                        </button>
+                    )}
 
                     {/* Approval Section */}
                     {bank.status === 'PENDING_APPROVAL' && canApprove && !isEditing && (
                         <div className="border-t-2 border-dashed border-slate-200 dark:border-slate-800 pt-6 mt-8">
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Review & Decision</h3>
-
                             {!showRejectionForm ? (
                                 <div className="flex gap-4">
-                                    <button
-                                        onClick={handleApprove}
-                                        disabled={isApproving}
-                                        className="btn flex-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20"
-                                    >
+                                    <button onClick={handleApprove} disabled={isApproving}
+                                        className="btn flex-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20">
                                         {isApproving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
                                         Approve Request
                                     </button>
-
-                                    <button
-                                        onClick={() => setShowRejectionForm(true)}
-                                        disabled={isApproving}
-                                        className="btn flex-1 bg-white border-2 border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 dark:bg-slate-900 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-900/20"
-                                    >
-                                        <XCircle className="w-5 h-5" />
-                                        Reject & Request Changes
+                                    <button onClick={() => setShowRejectionForm(true)} disabled={isApproving}
+                                        className="btn flex-1 bg-white border-2 border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 dark:bg-slate-900 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-900/20">
+                                        <XCircle className="w-5 h-5" />Reject & Request Changes
                                     </button>
                                 </div>
                             ) : (
                                 <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 space-y-4 dark:bg-rose-950/30 dark:border-rose-900">
-                                    <label className="block text-rose-900 dark:text-rose-100 font-semibold mb-1">
-                                        Feedback for Rejection
-                                    </label>
-                                    <textarea
-                                        value={rejectionReason}
-                                        onChange={(e) => setRejectionReason(e.target.value)}
+                                    <label className="block text-rose-900 dark:text-rose-100 font-semibold mb-1">Feedback for Rejection</label>
+                                    <textarea value={rejectionReason} onChange={e => setRejectionReason(e.target.value)}
                                         placeholder="Please explain what changes are needed..."
-                                        className="input w-full min-h-[100px] border-rose-200 focus:border-rose-400 focus:ring-rose-500/20"
-                                    />
-
+                                        className="input w-full min-h-[100px] border-rose-200 focus:border-rose-400 focus:ring-rose-500/20" />
                                     <div className="flex gap-3 justify-end">
-                                        <button
-                                            onClick={() => {
-                                                setShowRejectionForm(false);
-                                                setRejectionReason('');
-                                            }}
-                                            disabled={isApproving}
-                                            className="px-4 py-2 rounded-lg text-slate-600 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
-                                        >
-                                            Cancel
-                                        </button>
-
-                                        <button
-                                            onClick={handleReject}
-                                            disabled={isApproving || !rejectionReason.trim()}
-                                            className="btn bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/20"
-                                        >
+                                        <button onClick={() => { setShowRejectionForm(false); setRejectionReason(''); }} disabled={isApproving}
+                                            className="px-4 py-2 rounded-lg text-slate-600 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+                                        <button onClick={handleReject} disabled={isApproving || !rejectionReason.trim()}
+                                            className="btn bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/20">
                                             {isApproving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
                                             Confirm Rejection
                                         </button>
@@ -356,23 +373,13 @@ export default function QuestionBankViewModal({
                     {isEditing ? (
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex-1">
-                                {saveError && (
-                                    <p className="text-sm text-rose-600 dark:text-rose-400">{saveError}</p>
-                                )}
+                                {saveError && <p className="text-sm text-rose-600 dark:text-rose-400">{saveError}</p>}
                             </div>
                             <div className="flex gap-3">
-                                <button
-                                    onClick={cancelEdit}
-                                    disabled={saving}
-                                    className="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-medium"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSave}
-                                    disabled={saving}
-                                    className="btn bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95 transition-all"
-                                >
+                                <button onClick={cancelEdit} disabled={saving}
+                                    className="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-sm font-medium">Cancel</button>
+                                <button onClick={handleSave} disabled={saving}
+                                    className="btn bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95 transition-all">
                                     {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                                     {saving ? 'Saving...' : 'Save Changes'}
                                 </button>
@@ -380,18 +387,34 @@ export default function QuestionBankViewModal({
                         </div>
                     ) : (
                         <div className="flex justify-end">
-                            <button
-                                onClick={onDownload}
-                                className="btn bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 text-white shadow-lg shadow-pink-500/30 hover:scale-105 active:scale-95 transition-all"
-                            >
-                                <Download className="w-5 h-5" />
-                                Download Excel
+                            <button onClick={onDownload}
+                                className="btn bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 text-white shadow-lg shadow-pink-500/30 hover:scale-105 active:scale-95 transition-all">
+                                <Download className="w-5 h-5" />Download Excel
                             </button>
                         </div>
                     )}
                 </div>
             </div>
-        </div>,
+        </div>
+
+        {/* Success popup */}
+        {showSuccessPopup && createPortal(
+            <div className="fixed inset-0 z-[2147483647] flex items-center justify-center p-4 bg-black/60">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-2 border-emerald-100 dark:border-emerald-900 transform scale-100 transition-all">
+                    <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Saved Successfully!</h3>
+                    <p className="text-slate-600 dark:text-slate-300 mb-8">Your question bank has been updated.</p>
+                    <button
+                        onClick={() => { setShowSuccessPopup(false); onClose(); }}
+                        className="btn btn-primary w-full justify-center py-3 text-lg"
+                    >Okay, Got it</button>
+                </div>
+            </div>,
+            document.body
+        )}
+        </>,
         document.body
     );
 }
@@ -468,6 +491,7 @@ interface EditableCardProps {
     q: Question;
     idx: number;
     partName: string;
+    allUnits: number[];
     onUpdate: (field: keyof Question, value: any) => void;
     onOptionUpdate: (opt: 'A' | 'B' | 'C' | 'D', value: string) => void;
     onToggleMCQ: (isMCQ: boolean) => void;
@@ -475,7 +499,7 @@ interface EditableCardProps {
     onImageUpload: (file: File) => void;
 }
 
-function EditableQuestionCard({ q, idx, onUpdate, onOptionUpdate, onToggleMCQ, onDelete, onImageUpload }: EditableCardProps) {
+function EditableQuestionCard({ q, idx, allUnits, onUpdate, onOptionUpdate, onToggleMCQ, onDelete, onImageUpload }: EditableCardProps) {
     const fileRef = useRef<HTMLInputElement>(null);
 
     return (
@@ -498,13 +522,17 @@ function EditableQuestionCard({ q, idx, onUpdate, onOptionUpdate, onToggleMCQ, o
             <div className="flex flex-wrap gap-3 mb-4">
                 <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
                     Unit
-                    <input
-                        type="number"
-                        min={1}
-                        value={q.unit}
+                    <select
+                        value={q.unit || 1}
                         onChange={e => onUpdate('unit', parseInt(e.target.value) || 1)}
-                        className="w-14 px-2 py-1 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                    />
+                        className="px-2 py-1 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    >
+                        {allUnits.map(u => <option key={u} value={u}>Unit {u}</option>)}
+                        {/* Allow moving to a new unit number too */}
+                        {!allUnits.includes((q.unit || 1)) && (
+                            <option value={q.unit || 1}>Unit {q.unit || 1}</option>
+                        )}
+                    </select>
                 </label>
                 <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
                     BTL
@@ -568,7 +596,7 @@ function EditableQuestionCard({ q, idx, onUpdate, onOptionUpdate, onToggleMCQ, o
                 ) : (
                     <button
                         onClick={() => fileRef.current?.click()}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-purple-400 hover:text-purple-600 dark:hover:border-purple-600 dark:hover:text-purple-400 transition-colors text-xs font-medium"
+                        className="btn btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg"
                     >
                         <ImagePlus className="w-3.5 h-3.5" />
                         Attach Image
