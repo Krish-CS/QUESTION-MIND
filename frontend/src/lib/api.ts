@@ -109,6 +109,9 @@ export const questionBankApi = {
   download: (id: string) =>
     api.get(`/question-bank/${id}/download`, { responseType: 'blob' }),
   delete: (id: string) => api.delete(`/question-bank/${id}`),
+  /** Share a question bank with parallel staff via email (+ optional Drive link) */
+  share: (id: string, data: { recipient_emails: string[] }) =>
+    api.post(`/question-bank/${id}/share`, data),
 };
 
 // Staff API
@@ -120,6 +123,19 @@ export const staffApi = {
   updatePermissions: (assignmentId: string, data: any) =>
     api.put(`/staff/assignment/${assignmentId}`, data),
   remove: (assignmentId: string) => api.delete(`/staff/assignment/${assignmentId}`),
+  /** HOD: list all registered staff members with their subject assignments */
+  getAll: () => api.get('/staff/all'),
+  /** HOD: deactivate a staff member account */
+  deleteStaff: (staffId: string) => api.delete(`/staff/${staffId}`),
+  /** HOD: bulk-import staff from an Excel file */
+  importExcel: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/staff/import-excel', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 export default api;
+

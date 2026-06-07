@@ -16,6 +16,9 @@ from ..schemas import (
 from ..services.auth import get_current_user
 from ..services.ai_service import ai_service, AIServiceError
 from ..services.excel_service import excel_service
+from ..services.email_service import send_share_notification
+from ..services.drive_service import upload_to_drive
+
 
 router = APIRouter(prefix="/question-bank", tags=["Question Bank"])
 
@@ -596,7 +599,75 @@ async def download_excel(
         filename=os.path.basename(qb.excel_path)
     )
 
+@router.post("/{qb_id}/share")
+async def share_question_bank(
+    qb_id: str,
+    data: dict,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """
+    Share a question bank with one or more staff members.
+
+    Body: { "recipient_emails": ["a@x.com", "b@x.com"] }
+
+    Steps:
+      1. Verify the caller is the creator or HOD
+      2. Upload Excel to Google Drive (if configured) to get a shareable link
+      3. Send a styled email to each recipient with Drive link + Excel attached
+      4. Return { shared_with, drive_link, email_result }
+    """
+    qb = db.query(QuestionBank).filter(QuestionBank.id == qb_id).first()
+    if not qb:
+        raise HTTPException(status_code=404, detail="Question bank not found")
+
+    # Only creator or HOD can share
+    if qb.generated_by != user.id and user.role != UserRole.HOD:
+        raise HTTPException(status_code=403, detail="Only the creator or HOD can share this question bank")
+
+    recipient_emails: list = data.get("recipient_emails", [])
+    if not recipient_emails:
+        raise HTTPException(status_code=400, detail="No recipient emails provided")
+
+    # Get subject info
+    subject = db.query(Subject).filter(Subject.id == qb.subject_id).first()
+    subject_name = subject.name if subject else "Unknown Subject"
+    subject_code = subject.code if subject else "SUBJ"
+
+    # Get sender name
+    sender = db.query(User).filter(User.id == user.id).first()
+    sender_name = sender.name if sender else "A colleague"
+
+    # ── Step 1: Upload to Drive (optional) ────────────────────────────────────
+    drive_link = None
+    if qb.excel_path and os.path.exists(qb.excel_path):
+        filename = f"{subject_code}_{qb.title.replace(' ', '_')}.xlsx"
+        drive_link = upload_to_drive(qb.excel_path, filename)
+
+    # ── Step 2: Send email notifications ─────────────────────────────────────
+    email_result = send_share_notification(
+        recipients=recipient_emails,
+        bank_title=qb.title,
+        subject_name=subject_name,
+        subject_code=subject_code,
+        sender_name=sender_name,
+        drive_link=drive_link,
+        excel_path=qb.excel_path if qb.excel_path and os.path.exists(qb.excel_path) else None,
+    )
+
+    return {
+        "message": "Question bank shared successfully",
+        "shared_with": email_result.get("sent", []),
+        "failed": email_result.get("failed", []),
+        "skipped_email": email_result.get("skipped", False),
+        "drive_link": drive_link,
+        "bank_title": qb.title,
+        "subject": f"{subject_code} — {subject_name}",
+    }
+
+
 @router.delete("/{qb_id}")
+
 async def delete_question_bank(
     qb_id: str,
     db: Session = Depends(get_db),

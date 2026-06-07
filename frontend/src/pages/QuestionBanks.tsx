@@ -17,6 +17,10 @@ import {
   Check,
   Pencil,
   X,
+  Share2,
+  Users,
+  Link,
+  Mail,
 } from 'lucide-react';
 import { Subject, Syllabus, QuestionBank, MySubjectAssignment, PartConfiguration, BloomLevel, ALL_BTL_LEVELS } from '../types';
 import QuestionBankViewModal from '../components/QuestionBankViewModal';
@@ -53,6 +57,12 @@ export default function QuestionBanks() {
   const [latestBankId, setLatestBankId] = useState<string | null>(null);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successBank, setSuccessBank] = useState<QuestionBank | null>(null);
+
+  // Share state
+  const [shareBankId, setShareBankId] = useState<string | null>(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareResult, setShareResult] = useState<{ shared_with: string[]; failed: string[]; drive_link?: string } | null>(null);
+
 
   useEffect(() => {
     loadData();
@@ -467,6 +477,21 @@ export default function QuestionBanks() {
     }
   };
 
+  const handleShare = async (bankId: string, recipientEmails: string[]) => {
+    setShareLoading(true);
+    setShareResult(null);
+    try {
+      const res = await questionBankApi.share(bankId, { recipient_emails: recipientEmails });
+      setShareResult(res.data);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to share question bank');
+      setShareBankId(null);
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+
   const getSubjectName = (subjectId: string) =>
     subjects.find(s => s.id === subjectId)?.name || 'Unknown';
 
@@ -734,8 +759,8 @@ export default function QuestionBanks() {
                   {/* Detailed per-unit × per-part breakdown table */}
                   {hasConfig ? (
                     <div className="bg-white dark:bg-slate-900 rounded-lg border-2 border-pink-200 dark:border-pink-700 overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-3 bg-pink-50 dark:bg-pink-900/20 border-b border-pink-100 dark:border-pink-900">
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between px-4 py-3 bg-pink-50 dark:bg-pink-900/20 border-b border-pink-100 dark:border-pink-900 gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                           <h3 className="text-sm font-semibold text-slate-900 dark:text-white">📊 Questions to be Generated</h3>
                           {/* BTL Customization toggle */}
                           <button
@@ -751,7 +776,7 @@ export default function QuestionBanks() {
                             BTL Customization&nbsp;<span className={`px-1.5 py-0.5 rounded-md text-xs font-extrabold ${btlCustomization ? 'bg-white/20' : 'bg-slate-300/60 dark:bg-slate-600/60'}`}>{btlCustomization ? 'ON' : 'OFF'}</span>
                           </button>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           {patternSaved && (
                             <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                               <Check className="w-3.5 h-3.5" /> Saved
@@ -811,11 +836,13 @@ export default function QuestionBanks() {
                               const unitParts: PartConfiguration[] = localUnitCfg[uStr] || [];
                               return (
                                 <tr key={unit.unitNumber} className={`border-b border-slate-100 dark:border-slate-800 ${idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/20'}`}>
-                                  <td className="px-4 py-2.5">
-                                    <span className="inline-flex items-center justify-center px-2 py-0.5 rounded bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 text-xs font-bold whitespace-nowrap">
-                                      CO{unit.unitNumber}
-                                    </span>
-                                    <span className="ml-2 text-slate-700 dark:text-slate-300 text-xs font-medium">{unit.title}</span>
+                                  <td className="px-2 py-2.5 align-top">
+                                    <div className="flex flex-col gap-0.5 min-w-[60px] max-w-[90px]">
+                                      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 text-xs font-bold whitespace-nowrap">
+                                        CO{unit.unitNumber}
+                                      </span>
+                                      <span className="text-slate-700 dark:text-slate-300 text-[10px] font-medium leading-tight line-clamp-2">{unit.title}</span>
+                                    </div>
                                   </td>
                                   {parts.map((_p: any, pIdx: number) => {
                                     const pc: PartConfiguration = unitParts[pIdx] || { partName: '', questionCount: 0, marksPerQuestion: 0, totalMarks: 0, allowedBTLLevels: [] };
@@ -1345,9 +1372,17 @@ export default function QuestionBanks() {
                   <button onClick={() => { setEditingBankId(bank.id); setViewingBank(bank); }} className="btn btn-secondary p-2" title="Edit Questions">
                     <Pencil className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDownload(bank)} className="btn btn-secondary p-2" title="Download Excel">
+                   <button onClick={() => handleDownload(bank)} className="btn btn-secondary p-2" title="Download Excel">
                     <Download className="w-4 h-4" />
                   </button>
+                  <button
+                    onClick={() => { setShareBankId(bank.id); setShareResult(null); }}
+                    className="btn btn-secondary p-2"
+                    title="Share with Parallel Staff"
+                  >
+                    <Share2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  </button>
+
                   {bank.status === 'DRAFT' && (
                     <button onClick={() => handleSubmitForApproval(bank)} className="btn btn-primary p-2" title="Submit for Approval">
                       <Send className="w-4 h-4" />
@@ -1413,6 +1448,18 @@ export default function QuestionBanks() {
           </div>
         </div>
       )}
+
+      {/* Share Modal */}
+      {shareBankId && (
+        <ShareModal
+          bank={questionBanks.find(b => b.id === shareBankId)!}
+          subjects={subjects}
+          onClose={() => { setShareBankId(null); setShareResult(null); }}
+          onShare={handleShare}
+          sharing={shareLoading}
+          shareResult={shareResult}
+        />
+      )}
     </div>
   );
 }
@@ -1429,5 +1476,208 @@ function StatusBadge({ status }: { status: string }) {
     <span className={`px-3 py-1 rounded-lg text-xs font-medium ${styles[status] || styles.DRAFT}`}>
       {status.replace('_', ' ')}
     </span>
+  );
+}
+
+// ── Share Modal ──────────────────────────────────────────────────────────────
+function ShareModal({
+  bank,
+  subjects,
+  onClose,
+  onShare,
+  sharing,
+  shareResult,
+}: {
+  bank: QuestionBank;
+  subjects: any[];
+  onClose: () => void;
+  onShare: (bankId: string, emails: string[]) => void;
+  sharing: boolean;
+  shareResult: { shared_with: string[]; failed: string[]; drive_link?: string } | null;
+}) {
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [loadingStaff, setLoadingStaff] = useState(true);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [customEmail, setCustomEmail] = useState('');
+
+  useEffect(() => {
+    if (!bank) return;
+    const load = async () => {
+      try {
+        const res = await staffApi.getSubjectStaff(bank.subject_id);
+        setStaffList(res.data);
+      } catch {
+        setStaffList([]);
+      } finally {
+        setLoadingStaff(false);
+      }
+    };
+    load();
+  }, [bank?.subject_id]);
+
+  const toggle = (email: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(email) ? next.delete(email) : next.add(email);
+      return next;
+    });
+  };
+
+  const addCustom = () => {
+    const e = customEmail.trim();
+    if (e && e.includes('@')) {
+      setSelected(prev => new Set([...prev, e]));
+      setCustomEmail('');
+    }
+  };
+
+  if (!bank) return null;
+  const subjectName = subjects.find(s => s.id === bank.subject_id)?.name || 'Unknown';
+
+  return (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl border border-purple-200 dark:border-purple-700 overflow-hidden" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-purple-100 dark:border-purple-800 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <Share2 className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-white">Share Question Bank</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subjectName}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
+          {/* Result state */}
+          {shareResult && (
+            <div className="space-y-3">
+              {shareResult.shared_with.length > 0 && (
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                  <p className="font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    Shared with {shareResult.shared_with.length} recipient(s)
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    {shareResult.shared_with.map(e => (
+                      <li key={e} className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                        <Mail className="w-3.5 h-3.5" /> {e}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {shareResult.failed.length > 0 && (
+                <div className="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl">
+                  <p className="font-semibold text-rose-700 dark:text-rose-300">Failed to deliver to:</p>
+                  {shareResult.failed.map(e => <p key={e} className="text-sm text-rose-600 dark:text-rose-400">{e}</p>)}
+                </div>
+              )}
+              {shareResult.drive_link && (
+                <a
+                  href={shareResult.drive_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                >
+                  <Link className="w-4 h-4" /> Open in Google Drive
+                </a>
+              )}
+              <button onClick={onClose} className="btn btn-primary w-full">Done</button>
+            </div>
+          )}
+
+          {!shareResult && (
+            <>
+              <div>
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-500" />
+                  Parallel Staff Assigned to This Subject
+                </p>
+                {loadingStaff ? (
+                  <div className="flex items-center gap-2 text-slate-400 p-4">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Loading staff...
+                  </div>
+                ) : staffList.length === 0 ? (
+                  <p className="text-sm text-slate-400 dark:text-slate-500 italic p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    No other staff assigned to this subject. Use the email field below to share manually.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {staffList.map((s: any) => (
+                      <label
+                        key={s.staff_email}
+                        className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                          selected.has(s.staff_email)
+                            ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-600'
+                            : 'border-slate-200 dark:border-slate-700 hover:border-purple-200 dark:hover:border-purple-800'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selected.has(s.staff_email)}
+                          onChange={() => toggle(s.staff_email)}
+                          className="w-4 h-4 accent-purple-600"
+                        />
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                          {(s.staff_name || s.staff_email).charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900 dark:text-white text-sm truncate">{s.staff_name || '—'}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{s.staff_email}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Add other recipient</p>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={customEmail}
+                    onChange={e => setCustomEmail(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addCustom()}
+                    placeholder="Enter email address..."
+                    className="input flex-1 text-sm"
+                  />
+                  <button onClick={addCustom} className="btn btn-secondary px-3 py-2 text-sm">Add</button>
+                </div>
+                {selected.size > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {[...selected].map(e => (
+                      <span key={e} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded-full border border-purple-200 dark:border-purple-700">
+                        {e}
+                        <button onClick={() => toggle(e)} className="hover:text-rose-600 transition-colors ml-0.5">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button onClick={onClose} className="btn btn-secondary flex-1">Cancel</button>
+                <button
+                  onClick={() => onShare(bank.id, [...selected])}
+                  disabled={selected.size === 0 || sharing}
+                  className="btn btn-primary flex-1 bg-gradient-to-r from-purple-600 to-pink-600 border-0 disabled:opacity-50"
+                >
+                  {sharing ? <><Loader2 className="w-4 h-4 animate-spin" /> Sharing...</> : <><Share2 className="w-4 h-4" /> Share ({selected.size})</>}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

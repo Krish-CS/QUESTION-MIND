@@ -5,7 +5,7 @@ from .question_bank import (UpdateQuestionsRequest,
     GenerateQuestionsRequest, UpdatePatternRequest, UpdateStatusRequest,
     QuestionPatternResponse, QuestionBankResponse, QuestionBankStatus
 )
-from .staff import AssignStaffRequest, UpdatePermissionsRequest, StaffAssignmentResponse, MySubjectAssignment, FacultyListResponse
+from .staff import AssignStaffRequest, UpdatePermissionsRequest, StaffAssignmentResponse, MySubjectAssignment, FacultyListResponse, StaffImportResult, AllStaffResponse
 
 __all__ = [
     "UserCreate", "UserLogin", "UserResponse", "TokenResponse", "UserRole",
@@ -13,5 +13,6 @@ __all__ = [
     "SyllabusCreate", "SyllabusUpdate", "SyllabusResponse", "SyllabusUnit",
     "GenerateQuestionsRequest", "UpdatePatternRequest", "UpdateStatusRequest", "UpdateQuestionsRequest",
     "QuestionPatternResponse", "QuestionBankResponse", "QuestionBankStatus",
-    "AssignStaffRequest", "UpdatePermissionsRequest", "StaffAssignmentResponse", "MySubjectAssignment", "FacultyListResponse"
+    "AssignStaffRequest", "UpdatePermissionsRequest", "StaffAssignmentResponse", "MySubjectAssignment", "FacultyListResponse",
+    "StaffImportResult", "AllStaffResponse"
 ]

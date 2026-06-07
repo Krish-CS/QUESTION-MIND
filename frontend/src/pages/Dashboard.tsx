@@ -182,7 +182,7 @@ export default function Dashboard() {
       )}
 
       {/* Recent Question Banks */}
-      <div className="card dark:!bg-slate-900 p-6 dark:!bg-slate-900">
+      <div className="card dark:!bg-slate-900 p-6">
         <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">🔥</span> Recent Question Banks
         </h2>

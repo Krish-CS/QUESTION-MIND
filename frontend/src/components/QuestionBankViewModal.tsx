@@ -581,7 +581,7 @@ function EditableQuestionCard({ q, idx, allUnits, onUpdate, onOptionUpdate, onTo
                 {q.imageData ? (
                     <div className="relative inline-block">
                         <img
-                            src={q.imageData.startsWith('/api/') ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${q.imageData}` : q.imageData}
+                            src={q.imageData}
                             alt="Question diagram"
                             className="max-h-40 rounded-lg border border-slate-200 dark:border-slate-700 object-contain"
                         />

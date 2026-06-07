@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 
 class StaffPermissions(BaseModel):
@@ -45,3 +45,32 @@ class FacultyListResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+# ── HOD Excel Staff Import ────────────────────────────────────────────────────
+
+class StaffImportRow(BaseModel):
+    """Represents one row parsed from the HOD's Excel upload."""
+    name: str
+    email: str
+    subjects: Optional[List[str]] = None   # Subject codes (optional column)
+
+class StaffImportResult(BaseModel):
+    """Summary returned after an Excel staff import."""
+    created: int = 0          # New user records created
+    updated: int = 0          # Existing users whose assignments were updated
+    assignments_added: int = 0
+    errors: List[str] = []    # Row-level error messages
+
+# ── All Staff (HOD dashboard) ─────────────────────────────────────────────────
+
+class AllStaffResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    department: Optional[str] = None
+    is_active: bool = True
+    assigned_subjects: List[str] = []   # Subject codes
+
+    class Config:
+        from_attributes = True
+

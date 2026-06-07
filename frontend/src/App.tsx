@@ -11,6 +11,7 @@ import Syllabus from './pages/Syllabus';
 import Patterns from './pages/Patterns';
 import QuestionBanks from './pages/QuestionBanks';
 import Approvals from './pages/Approvals';
+import Settings from './pages/Settings';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loadFromStorage } = useAuthStore();
@@ -51,6 +52,7 @@ export default function App() {
                   <Route path="/patterns" element={<Patterns />} />
                   <Route path="/question-banks" element={<QuestionBanks />} />
                   <Route path="/approvals" element={<Approvals />} />
+                  <Route path="/settings" element={<Settings />} />
                 </Routes>
               </Layout>
             </ProtectedRoute>
