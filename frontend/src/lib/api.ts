@@ -9,14 +9,8 @@ import axios from 'axios';
 // 
 // If you prefer manual configuration, you can comment/uncomment the lines below:
 
-// 1. Local Development URL (Uncomment this for local testing)
-const API_URL = 'http://127.0.0.1:8000/api';
-
-// 2. Production Render URL (Uncomment this for Render deployment)
-// const API_URL = 'https://question-mind-backend.onrender.com/api';
-
-// 3. Environment Variable Option (Optional)
-// const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
+// 1. Dynamic API URL (loads VITE_API_URL from environment or falls back to local dev URL)
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 const api = axios.create({
   baseURL: API_URL,
