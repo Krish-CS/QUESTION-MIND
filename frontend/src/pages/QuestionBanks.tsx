@@ -215,37 +215,70 @@ export default function QuestionBanks() {
     }
   };
 
+  const sanitizePartConfig = (p: PartConfiguration): any => {
+    const qCount = p.questionCount === '' ? 0 : Number(p.questionCount || 0);
+    const marks = p.marksPerQuestion === '' ? 0 : Number(p.marksPerQuestion || 0);
+    const mcq = p.mcqCount === '' ? 0 : Number(p.mcqCount || 0);
+    const dist = p.btlDistribution
+      ? Object.fromEntries(
+          Object.entries(p.btlDistribution).map(([lvl, val]) => [
+            lvl,
+            val === '' ? 0 : Number(val || 0),
+          ])
+        )
+      : undefined;
+    return {
+      ...p,
+      questionCount: qCount,
+      marksPerQuestion: marks,
+      totalMarks: qCount * marks,
+      mcqCount: mcq,
+      btlDistribution: dist,
+    };
+  };
+
   const saveLocalPattern = async () => {
     if (!selectedSubjectId || patternSaving) return;
     setPatternSaving(true);
     try {
       const hasUnitCfgs = Object.keys(localUnitCfg).length > 0;
-      // In combined mode, propagate global localParts changes (questionCount, marks, BTL levels)
-      // into every unit's config while preserving per-unit MCQ/BTL overrides.
-      let unitCfgsToSave: Record<string, any> | null = hasUnitCfgs ? localUnitCfg : null;
-      if (qbMode === 'combined' && hasUnitCfgs) {
-        const syllabusUnits: any[] = syllabi[selectedSubjectId]?.units || [];
-        unitCfgsToSave = Object.fromEntries(
-          syllabusUnits.map((unit: any) => {
-            const key = String(unit.unitNumber);
-            const existingParts = localUnitCfg[key] || [];
-            return [key, localParts.map((p, i) => {
-              const prev = existingParts[i];
-              const mcq = Math.min(prev?.mcqCount ?? 0, p.questionCount);
-              const dist = prev?.btlDistribution
-                ? Object.fromEntries(
-                    Object.entries(prev.btlDistribution).filter(([lvl]) =>
-                      (p.allowedBTLLevels ?? []).includes(lvl as any)
+      const sanitizedParts = localParts.map(sanitizePartConfig);
+      
+      let unitCfgsToSave: Record<string, any> | null = null;
+      if (hasUnitCfgs) {
+        if (qbMode === 'combined') {
+          const syllabusUnits: any[] = syllabi[selectedSubjectId]?.units || [];
+          unitCfgsToSave = Object.fromEntries(
+            syllabusUnits.map((unit: any) => {
+              const key = String(unit.unitNumber);
+              const existingParts = localUnitCfg[key] || [];
+              return [key, localParts.map((p, i) => {
+                const prev = existingParts[i];
+                const pQCount = p.questionCount === '' ? 0 : Number(p.questionCount);
+                const prevMcq = prev?.mcqCount === '' ? 0 : Number(prev?.mcqCount ?? 0);
+                const mcq = Math.min(prevMcq, pQCount);
+                const dist = prev?.btlDistribution
+                  ? Object.fromEntries(
+                      Object.entries(prev.btlDistribution).filter(([lvl]) =>
+                        (p.allowedBTLLevels ?? []).includes(lvl as any)
+                      )
                     )
-                  )
-                : {};
-              return { ...p, mcqCount: mcq, btlDistribution: dist };
-            })];
-          })
-        );
+                  : {};
+                return sanitizePartConfig({ ...p, mcqCount: mcq, btlDistribution: dist });
+              })];
+            })
+          );
+        } else {
+          unitCfgsToSave = Object.fromEntries(
+            Object.entries(localUnitCfg).map(([unitNum, parts]) => [
+              unitNum,
+              parts.map(sanitizePartConfig)
+            ])
+          );
+        }
       }
       await questionBankApi.updatePattern(selectedSubjectId, {
-        parts: localParts,
+        parts: sanitizedParts,
         is_active: true,
         unit_configs: unitCfgsToSave,
         unit_question_counts: null,
@@ -271,7 +304,9 @@ export default function QuestionBanks() {
       const next = [...prev];
       next[idx] = { ...next[idx], [field]: value };
       if (field === 'questionCount' || field === 'marksPerQuestion') {
-        next[idx].totalMarks = next[idx].questionCount * next[idx].marksPerQuestion;
+        const qVal = next[idx].questionCount === '' ? 0 : Number(next[idx].questionCount || 0);
+        const mVal = next[idx].marksPerQuestion === '' ? 0 : Number(next[idx].marksPerQuestion || 0);
+        next[idx].totalMarks = qVal * mVal;
       }
       return next;
     });
@@ -294,19 +329,23 @@ export default function QuestionBanks() {
     setLocalUnitCfg(prev => {
       const parts = [...(prev[unitNum] || [])];
       if (field === 'mcqCount') {
-        const total = parts[partIdx]?.questionCount ?? 0;
-        if (Number(value) > total) return prev;
+        const total = parts[partIdx]?.questionCount === '' ? 0 : Number(parts[partIdx]?.questionCount ?? 0);
+        const valNum = value === '' ? 0 : Number(value);
+        if (valNum > total) return prev;
       }
       parts[partIdx] = { ...parts[partIdx], [field]: value };
       // Auto-clamp mcqCount when questionCount is reduced below it
       if (field === 'questionCount') {
-        const mcq = parts[partIdx].mcqCount ?? 0;
-        if (mcq > Number(value)) {
-          parts[partIdx] = { ...parts[partIdx], mcqCount: Number(value) };
+        const mcq = parts[partIdx].mcqCount === '' ? 0 : Number(parts[partIdx].mcqCount ?? 0);
+        const valNum = value === '' ? 0 : Number(value);
+        if (mcq > valNum) {
+          parts[partIdx] = { ...parts[partIdx], mcqCount: value }; // Keep empty if it was empty, or clamp
         }
       }
       if (field === 'questionCount' || field === 'marksPerQuestion') {
-        parts[partIdx].totalMarks = parts[partIdx].questionCount * parts[partIdx].marksPerQuestion;
+        const qVal = parts[partIdx].questionCount === '' ? 0 : Number(parts[partIdx].questionCount || 0);
+        const mVal = parts[partIdx].marksPerQuestion === '' ? 0 : Number(parts[partIdx].marksPerQuestion || 0);
+        parts[partIdx].totalMarks = qVal * mVal;
       }
       return { ...prev, [unitNum]: parts };
     });
@@ -314,16 +353,21 @@ export default function QuestionBanks() {
     setPatternSaved(false);
   };
 
-  const updateLocalUnitBTLDist = (unitNum: string, partIdx: number, level: BloomLevel, count: number) => {
+  const updateLocalUnitBTLDist = (unitNum: string, partIdx: number, level: BloomLevel, count: any) => {
     setLocalUnitCfg(prev => {
       const parts = [...(prev[unitNum] || [])];
       const pc = parts[partIdx];
       const existing = pc.btlDistribution || {};
       const levels = pc.allowedBTLLevels || [];
+      const qCount = pc.questionCount === '' ? 0 : Number(pc.questionCount || 0);
+      const newCount = count === '' ? 0 : Number(count);
       // Calculate sum with the new value replacing the old one for this level
-      const newSum = levels.reduce((s, btl) => s + (btl === level ? count : (existing[btl] || 0)), 0);
-      if (newSum > pc.questionCount) {
-        setBtlWarning(`Cannot exceed ${pc.questionCount} questions. Adjust other values first.`);
+      const newSum = levels.reduce((s, btl) => {
+        const val = btl === level ? newCount : (existing[btl] === '' ? 0 : Number(existing[btl] || 0));
+        return s + val;
+      }, 0);
+      if (newSum > qCount) {
+        setBtlWarning(`Cannot exceed ${qCount} questions. Adjust other values first.`);
         setTimeout(() => setBtlWarning(''), 4000);
         return prev;
       }
@@ -386,10 +430,13 @@ export default function QuestionBanks() {
     const hasUnitCfg = qbMode === 'individual' && localUnitCfg
       && Object.keys(localUnitCfg).length > 0;
 
+    const sanitizedParts = localParts.map(sanitizePartConfig);
+
     const unitCfg = qbMode === 'combined' ? undefined : (hasUnitCfg
       ? Object.fromEntries(
           Object.entries(localUnitCfg)
             .filter(([unitNum]) => selectedUnitIds.includes(Number(unitNum)))
+            .map(([unitNum, parts]) => [unitNum, parts.map(sanitizePartConfig)])
         )
       : undefined);
 
@@ -823,8 +870,10 @@ export default function QuestionBanks() {
                                   </td>
                                   {parts.map((_p: any, pIdx: number) => {
                                     const pc: PartConfiguration = unitParts[pIdx] || { partName: '', questionCount: 0, marksPerQuestion: 0, totalMarks: 0, allowedBTLLevels: [] };
-                                    const mcq = pc.mcqCount ?? 0;
-                                    const desc = pc.questionCount - mcq;
+                                    const qCount = pc.questionCount === '' ? 0 : Number(pc.questionCount);
+                                    const mcqVal = pc.mcqCount === '' ? 0 : Number(pc.mcqCount);
+                                    const mcq = pc.mcqCount === '' ? '' : (pc.mcqCount ?? 0);
+                                    const desc = Math.max(0, qCount - mcqVal);
                                     const levels = pc.allowedBTLLevels || [];
                                     const dist: Record<string, number> = (pc.btlDistribution as any) || {};
                                     return (
@@ -847,8 +896,8 @@ export default function QuestionBanks() {
                                                       {isEditingPattern ? (
                                                         <input
                                                           type="number" min={0}
-                                                          value={pc.questionCount || ''}
-                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'questionCount', e.target.value === '' ? 0 : Number(e.target.value))}
+                                                          value={pc.questionCount}
+                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'questionCount', e.target.value === '' ? '' : Number(e.target.value))}
                                                           className="w-12 text-center text-sm font-bold text-slate-800 dark:text-white border border-pink-200 dark:border-pink-800 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
                                                         />
                                                       ) : pc.questionCount === 0 ? (
@@ -860,13 +909,13 @@ export default function QuestionBanks() {
                                                     <td className="px-1.5 py-1.5 text-center">
                                                       {isEditingPattern ? (
                                                         <input
-                                                          type="number" min={0} max={pc.questionCount}
-                                                          value={mcq || ''}
-                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'mcqCount', e.target.value === '' ? 0 : Number(e.target.value))}
+                                                          type="number" min={0} max={pc.questionCount === '' ? undefined : Number(pc.questionCount)}
+                                                          value={mcq}
+                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'mcqCount', e.target.value === '' ? '' : Number(e.target.value))}
                                                           className="w-12 text-center text-xs font-semibold border border-pink-200 dark:border-pink-800 rounded-md bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
                                                         />
                                                       ) : (
-                                                        <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{mcq > 0 ? mcq : '—'}</span>
+                                                        <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{Number(mcq) > 0 ? mcq : '—'}</span>
                                                       )}
                                                     </td>
                                                     <td className="px-1.5 py-1.5 text-center">
@@ -898,9 +947,9 @@ export default function QuestionBanks() {
                                                       {isEditingPattern && active ? (
                                                         <input
                                                           type="number" min={0}
-                                                          value={val || ''}
+                                                          value={val}
                                                           onClick={e => e.stopPropagation()}
-                                                          onChange={e => updateLocalUnitBTLDist(uStr, pIdx, btl, e.target.value === '' ? 0 : Number(e.target.value))}
+                                                          onChange={e => updateLocalUnitBTLDist(uStr, pIdx, btl, e.target.value === '' ? '' : Number(e.target.value))}
                                                           className="w-12 text-center text-sm font-bold border border-purple-300 dark:border-purple-700 rounded bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400 py-0.5"
                                                           placeholder="0"
                                                         />
@@ -917,17 +966,17 @@ export default function QuestionBanks() {
                                               </div>
                                               {/* Sum validation — no warning triangles; just show count */}
                                               {(() => {
-                                                const sum = levels.reduce((s, btl) => s + (dist[btl] || 0), 0);
+                                                const sum = levels.reduce((s, btl) => s + (dist[btl] === '' ? 0 : Number(dist[btl] || 0)), 0);
                                                 if (sum === 0) return null;
-                                                const ok = pc.questionCount > 0 && sum === pc.questionCount;
+                                                const ok = qCount > 0 && sum === qCount;
                                                 if (ok) return (
                                                   <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-1">
-                                                    {sum}/{pc.questionCount} ✓
+                                                    {sum}/{qCount} ✓
                                                   </div>
                                                 );
                                                 return (
                                                   <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
-                                                    {sum} specified{pc.questionCount > 0 ? ` / ${pc.questionCount} total` : ''}
+                                                    {sum} specified{qCount > 0 ? ` / ${qCount} total` : ''}
                                                   </div>
                                                 );
                                               })()}
@@ -950,7 +999,7 @@ export default function QuestionBanks() {
                                                         <input
                                                           type="number" min={0}
                                                           value={pc.questionCount}
-                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'questionCount', e.target.value === '' ? 0 : Number(e.target.value))}
+                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'questionCount', e.target.value === '' ? '' : Number(e.target.value))}
                                                           className="w-12 text-center text-sm font-bold text-slate-800 dark:text-white border border-pink-200 dark:border-pink-800 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
                                                         />
                                                       ) : pc.questionCount === 0 ? (
@@ -962,13 +1011,13 @@ export default function QuestionBanks() {
                                                     <td className="px-1.5 py-1.5 text-center">
                                                       {isEditingPattern ? (
                                                         <input
-                                                          type="number" min={0} max={pc.questionCount}
+                                                          type="number" min={0} max={pc.questionCount === '' ? undefined : Number(pc.questionCount)}
                                                           value={mcq}
-                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'mcqCount', e.target.value === '' ? 0 : Number(e.target.value))}
+                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'mcqCount', e.target.value === '' ? '' : Number(e.target.value))}
                                                           className="w-12 text-center text-xs font-semibold border border-pink-200 dark:border-pink-800 rounded-md bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
                                                         />
                                                       ) : (
-                                                        <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{mcq > 0 ? mcq : '—'}</span>
+                                                        <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{Number(mcq) > 0 ? mcq : '—'}</span>
                                                       )}
                                                     </td>
                                                     <td className="px-1.5 py-1.5 text-center">
@@ -1134,8 +1183,10 @@ export default function QuestionBanks() {
                     </thead>
                     <tbody>
                       {localParts.map((part: PartConfiguration, idx: number) => {
-                        const mcq = part.mcqCount ?? 0;
-                        const desc = part.questionCount - mcq;
+                        const mcq = part.mcqCount === '' ? '' : (part.mcqCount ?? 0);
+                        const qCount = part.questionCount === '' ? 0 : Number(part.questionCount);
+                        const mcqVal = part.mcqCount === '' ? 0 : Number(part.mcqCount);
+                        const desc = Math.max(0, qCount - mcqVal);
                         const dist: Record<string, number> = (part.btlDistribution as any) || {};
                         const hasDist = Object.values(dist).some((v: any) => (v || 0) > 0);
                         const levels: BloomLevel[] = part.allowedBTLLevels || [];
@@ -1150,7 +1201,7 @@ export default function QuestionBanks() {
                                 <input
                                   type="number" min={0}
                                   value={part.marksPerQuestion}
-                                  onChange={e => updateLocalPart(idx, 'marksPerQuestion', e.target.value === '' ? 0 : Number(e.target.value))}
+                                  onChange={e => updateLocalPart(idx, 'marksPerQuestion', e.target.value === '' ? '' : Number(e.target.value))}
                                   className="w-14 text-center font-mono font-semibold text-slate-700 dark:text-white border border-pink-200 dark:border-pink-800 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5 text-sm"
                                 />
                               ) : (
@@ -1162,7 +1213,7 @@ export default function QuestionBanks() {
                                 <input
                                   type="number" min={0}
                                   value={part.questionCount}
-                                  onChange={e => updateLocalPart(idx, 'questionCount', e.target.value === '' ? 0 : Number(e.target.value))}
+                                  onChange={e => updateLocalPart(idx, 'questionCount', e.target.value === '' ? '' : Number(e.target.value))}
                                   className="w-14 text-center font-bold text-slate-800 dark:text-white border border-pink-200 dark:border-pink-800 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5 text-sm"
                                 />
                               ) : (
@@ -1172,13 +1223,13 @@ export default function QuestionBanks() {
                             <td className="px-4 py-2 text-center">
                               {isEditingPattern ? (
                                 <input
-                                  type="number" min={0} max={part.questionCount}
+                                  type="number" min={0} max={part.questionCount === '' ? undefined : Number(part.questionCount)}
                                   value={mcq}
-                                  onChange={e => updateLocalPart(idx, 'mcqCount', e.target.value === '' ? 0 : Number(e.target.value))}
+                                  onChange={e => updateLocalPart(idx, 'mcqCount', e.target.value === '' ? '' : Number(e.target.value))}
                                   className="w-14 text-center text-xs font-semibold border border-pink-200 dark:border-pink-800 rounded-md bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
                                 />
                               ) : (
-                                <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{mcq > 0 ? mcq : '—'}</span>
+                                <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{Number(mcq) > 0 ? mcq : '—'}</span>
                               )}
                             </td>
                             <td className="px-4 py-2 text-center">
