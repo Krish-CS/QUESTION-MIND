@@ -21,23 +21,44 @@ logger = logging.getLogger(__name__)
 
 
 def _smtp_configured() -> bool:
-    if settings.EMAIL_PROVIDER.lower() == "local":
+    provider = settings.EMAIL_PROVIDER.lower()
+    logger.info(
+        f"[EmailService] Checking configuration — Provider: {provider} | "
+        f"Host: {settings.SMTP_HOST} | Port: {settings.SMTP_PORT} | "
+        f"User: {settings.SMTP_USER} | FromEmail: {settings.FROM_EMAIL} | "
+        f"HasPassword: {bool(settings.SMTP_PASS)}"
+    )
+    if provider == "local":
         return True
     return bool(settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASS and settings.FROM_EMAIL)
 
 def _get_smtp_server():
     """Helper to get appropriate SMTP server based on EMAIL_PROVIDER."""
-    if settings.EMAIL_PROVIDER.lower() == "local":
-        host = settings.SMTP_HOST or "localhost"
-        port = settings.SMTP_PORT if settings.SMTP_PORT != 587 else 1025
-        return smtplib.SMTP(host, port, timeout=30)
-    else:
-        server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=30)
-        server.ehlo()
-        server.starttls()
-        if settings.SMTP_USER and settings.SMTP_PASS:
-            server.login(settings.SMTP_USER, settings.SMTP_PASS)
-        return server
+    provider = settings.EMAIL_PROVIDER.lower()
+    logger.info(f"[EmailService] Connecting to SMTP server via provider: {provider}")
+    try:
+        if provider == "local":
+            host = settings.SMTP_HOST or "localhost"
+            port = settings.SMTP_PORT if settings.SMTP_PORT != 587 else 1025
+            logger.info(f"[EmailService] SMTP Local connect: {host}:{port}")
+            return smtplib.SMTP(host, port, timeout=30)
+        else:
+            logger.info(f"[EmailService] SMTP connect: {settings.SMTP_HOST}:{settings.SMTP_PORT}")
+            server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=30)
+            logger.info("[EmailService] Sending EHLO...")
+            server.ehlo()
+            logger.info("[EmailService] Starting TLS (STARTTLS)...")
+            server.starttls()
+            if settings.SMTP_USER and settings.SMTP_PASS:
+                logger.info(f"[EmailService] Logging in as user: {settings.SMTP_USER}")
+                server.login(settings.SMTP_USER, settings.SMTP_PASS)
+                logger.info("[EmailService] SMTP Login successful!")
+            else:
+                logger.warning("[EmailService] SMTP user or pass missing, skipping login step.")
+            return server
+    except Exception as e:
+        logger.error(f"[EmailService] SMTP connection/login failed: {e}")
+        raise
 
 
 def send_share_notification(

@@ -355,6 +355,26 @@ class AIService:
         # Step 1: pre-assign questions to units (round-robin)
         unit_assignments = self._assign_questions_to_units(q_count, syllabus_units, mcq_count)
 
+        # Split any assignments that exceed the effective chunk size to avoid AI truncation
+        split_assignments = []
+        for ua in unit_assignments:
+            u_count = ua["count"]
+            u_mcq = ua["mcq"]
+            if u_count > effective_chunk:
+                # Calculate how to distribute u_count into pieces of at most effective_chunk
+                num_parts = (u_count + effective_chunk - 1) // effective_chunk
+                parts_counts = [u_count // num_parts + (1 if i < (u_count % num_parts) else 0) for i in range(num_parts)]
+                parts_mcqs = self._allocate_exact_counts(parts_counts, u_mcq)
+                for i in range(num_parts):
+                    split_assignments.append({
+                        "unit": ua["unit"],
+                        "count": parts_counts[i],
+                        "mcq": parts_mcqs[i],
+                    })
+            else:
+                split_assignments.append(ua)
+        unit_assignments = split_assignments
+
         # Step 2: group into focused chunks — each chunk owns its own units
         chunks = self._group_unit_assignments_into_chunks(unit_assignments, effective_chunk)
         num_chunks = len(chunks)
