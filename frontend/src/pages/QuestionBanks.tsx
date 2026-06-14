@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { subjectsApi, syllabusApi, questionBankApi, staffApi } from '../lib/api';
-import { useAuthStore } from '../lib/store';
+import { useAuthStore, useUiStore } from '../lib/store';
 import {
   Sparkles,
   Loader2,
@@ -27,6 +27,7 @@ import QuestionBankViewModal from '../components/QuestionBankViewModal';
 
 export default function QuestionBanks() {
   const { user } = useAuthStore();
+  const { setGlobalLoading } = useUiStore();
   const isHOD = user?.role === 'HOD';
   const navigate = useNavigate();
 
@@ -34,7 +35,6 @@ export default function QuestionBanks() {
   const [myAssignments, setMyAssignments] = useState<MySubjectAssignment[]>([]);
   const [syllabi, setSyllabi] = useState<Record<string, Syllabus>>({});
   const [questionBanks, setQuestionBanks] = useState<QuestionBank[]>([]);
-  const [pendingApprovals, setPendingApprovals] = useState<QuestionBank[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState('');
@@ -68,55 +68,44 @@ export default function QuestionBanks() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (!btlWarning) return;
+    const timeout = setTimeout(() => setBtlWarning(''), 4000);
+    return () => clearTimeout(timeout);
+  }, [btlWarning]);
+
   const loadData = async () => {
     try {
       const promises: Promise<any>[] = [
         syllabusApi.getAll(),
-        questionBankApi.getAll(),
+        questionBankApi.getAll({ own_only: false }),
+        subjectsApi.getAll(),
       ];
 
-      if (isHOD) {
-        promises.push(subjectsApi.getAll());
-        promises.push(questionBankApi.getPending());
-      } else {
-        promises.push(staffApi.getMySubjects());
-        promises.push(questionBankApi.getPending());
-      }
-
       const results = await Promise.all(promises);
+      const [syllabusRes, banksRes, subjectsRes] = results;
 
-      if (isHOD) {
-        const [syllabusRes, banksRes, subjectsRes, pendingRes] = results;
-        const syllabusMap: Record<string, Syllabus> = {};
-        syllabusRes.data.forEach((s: Syllabus) => { syllabusMap[s.subject_id] = s; });
-        setSyllabi(syllabusMap);
-        setQuestionBanks(banksRes.data);
-        setSubjects(subjectsRes.data);
-        setPendingApprovals(pendingRes.data.filter((b: QuestionBank) => b.generated_by !== user?.id));
-      } else {
-        const [syllabusRes, banksRes, subjectOrAssignmentRes, pendingRes] = results;
-        const syllabusMap: Record<string, Syllabus> = {};
-        syllabusRes.data.forEach((s: Syllabus) => { syllabusMap[s.subject_id] = s; });
-        setSyllabi(syllabusMap);
-        setQuestionBanks(banksRes.data);
-        setMyAssignments(subjectOrAssignmentRes.data);
-        const subjectsFromAssignments = subjectOrAssignmentRes.data
-          .filter((a: MySubjectAssignment) => a.canGenerateQuestions)
-          .map((a: MySubjectAssignment) => ({
-            id: a.subjectId,
-            name: a.subjectName,
-            code: a.subjectCode,
-            nature: a.subjectNature,
-            configuration: a.subjectConfiguration,
-          }));
-        setSubjects(subjectsFromAssignments);
-        const approvableSubjects = subjectOrAssignmentRes.data
-          .filter((a: MySubjectAssignment) => a.canApprove)
-          .map((a: MySubjectAssignment) => a.subjectId);
-        setPendingApprovals(pendingRes.data.filter((b: QuestionBank) => approvableSubjects.includes(b.subject_id)));
+      const syllabusMap: Record<string, Syllabus> = {};
+      syllabusRes.data.forEach((s: Syllabus) => { syllabusMap[s.subject_id] = s; });
+      setSyllabi(syllabusMap);
+      setQuestionBanks(banksRes.data);
+      setSubjects(subjectsRes.data || []);
+
+      try {
+        const assignmentsRes = await staffApi.getMySubjects();
+        setMyAssignments(assignmentsRes.data || []);
+      } catch (err) {
+        // Ignored
       }
-    } catch (err) {
-      setError('Failed to load data');
+    } catch (err: any) {
+      console.error(err);
+      if (!err.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (err.response.status === 404) {
+        setError('Data is currently empty or not found.');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Failed to load data.');
+      }
     } finally {
       setLoading(false);
     }
@@ -133,11 +122,13 @@ export default function QuestionBanks() {
   // Refetch pattern when window regains focus (e.g. user edited pattern in another tab)
   useEffect(() => {
     const handleFocus = () => {
-      if (selectedSubjectId) fetchSubjectPattern(selectedSubjectId);
+      if (selectedSubjectId && !isEditingPattern && !patternDirty) {
+        fetchSubjectPattern(selectedSubjectId);
+      }
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [selectedSubjectId]);
+  }, [selectedSubjectId, isEditingPattern, patternDirty]);
 
   /**
    * Build a localUnitCfg from a parts array applied to every syllabus unit.
@@ -215,12 +206,8 @@ export default function QuestionBanks() {
         applyPatternToLocalState(pattern, syllabusUnits);
       }
     }
-    // Auto-detect generation mode from saved pattern
-    setQbMode(
-      (pattern?.unit_configs && Object.keys(pattern.unit_configs).length > 0) ||
-      (pattern?.unit_question_counts && Object.keys(pattern.unit_question_counts).length > 0)
-        ? 'individual' : 'combined'
-    );
+    // Always stay in combined mode
+    setQbMode('combined');
     if (syllabusUnits.length > 0) {
       setSelectedUnitIds(syllabusUnits.map((u: any) => u.unitNumber));
     } else {
@@ -389,6 +376,7 @@ export default function QuestionBanks() {
     if (!syllabus) { setError('Please upload syllabus first'); return; }
     if (selectedUnitIds.length === 0) { setError('Please select at least one unit'); return; }
     setGenerating(true);
+    setGlobalLoading(true, 'Generating Question Bank');
     setError('');
 
     const allUnitIds = (syllabus.units || []).map((u: any) => u.unitNumber);
@@ -398,12 +386,12 @@ export default function QuestionBanks() {
     const hasUnitCfg = qbMode === 'individual' && localUnitCfg
       && Object.keys(localUnitCfg).length > 0;
 
-    const unitCfg = hasUnitCfg
+    const unitCfg = qbMode === 'combined' ? undefined : (hasUnitCfg
       ? Object.fromEntries(
           Object.entries(localUnitCfg)
             .filter(([unitNum]) => selectedUnitIds.includes(Number(unitNum)))
         )
-      : undefined;
+      : undefined);
 
     const uqc = !hasUnitCfg && qbMode === 'individual' && selectedSubjectPattern?.unit_question_counts
       && Object.keys(selectedSubjectPattern.unit_question_counts).length > 0
@@ -421,6 +409,7 @@ export default function QuestionBanks() {
       const response = await questionBankApi.generate({
         subject_id: selectedSubjectId,
         syllabus_id: syllabus.id,
+        custom_parts: localParts,
         selected_unit_ids: qbMode === 'combined' && !isAllSelected ? selectedUnitIds : undefined,
         unit_configs: unitCfg,
         unit_question_counts: uqc,
@@ -438,10 +427,12 @@ export default function QuestionBanks() {
       setError(err.response?.data?.detail || 'Failed to generate questions');
     } finally {
       setGenerating(false);
+      setGlobalLoading(false);
     }
   };
 
   const handleDownload = async (bank: QuestionBank) => {
+    setGlobalLoading(true, 'Downloading');
     try {
       const response = await questionBankApi.download(bank.id);
       const blob = new Blob([response.data], {
@@ -455,15 +446,8 @@ export default function QuestionBanks() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       setError('Failed to download');
-    }
-  };
-
-  const handleSubmitForApproval = async (bank: QuestionBank) => {
-    try {
-      await questionBankApi.updateStatus(bank.id, { status: 'PENDING_APPROVAL' });
-      setQuestionBanks(prev => prev.map(b => b.id === bank.id ? { ...b, status: 'PENDING_APPROVAL' } : b));
-    } catch (err) {
-      setError('Failed to submit for approval');
+    } finally {
+      setGlobalLoading(false);
     }
   };
 
@@ -524,11 +508,6 @@ export default function QuestionBanks() {
       <div>
         <h1 className="text-3xl font-bold text-pink-600 dark:text-pink-400">📋 Question Banks</h1>
         <p className="text-purple-700 dark:text-purple-300 mt-1 font-medium">Generate and manage AI-powered question banks</p>
-        {!isHOD && myAssignments.length > 0 && (
-          <p className="text-sm text-blue-700 dark:text-blue-300 mt-2">
-            You have access to {myAssignments.filter(a => a.canGenerateQuestions).length} subject(s) for question generation
-          </p>
-        )}
       </div>
 
       {error && (
@@ -538,22 +517,20 @@ export default function QuestionBanks() {
       )}
 
       {/* No subjects warning */}
-      {subjects.length === 0 && !isHOD && (
-        <div className="card dark:!bg-slate-900 p-6">
-          <div className="flex items-start gap-4 p-4 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-900 dark:border-amber-800">
-            <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-300 flex-shrink-0" />
-            <div>
-              <h3 className="text-amber-700 dark:text-amber-200 font-medium">No Subjects Assigned</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                You don't have any subjects assigned for question generation. Contact your HOD to get subjects assigned.
-              </p>
-            </div>
+      {subjects.length === 0 && (
+        <div className="card dark:!bg-slate-900 text-center py-12">
+          <div className="w-16 h-16 bg-pink-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-8 h-8 text-pink-600 dark:text-pink-400" />
           </div>
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No Subjects Found</h3>
+          <p className="text-slate-600 dark:text-slate-300 max-w-md mx-auto">
+            You haven't created any subjects yet. Head over to the Subjects page to create one before generating question banks.
+          </p>
         </div>
       )}
 
       {/* ── Generator Card ── */}
-      {(isHOD || subjects.length > 0) && (
+      {subjects.length > 0 && (
         <div className="card dark:!bg-slate-900 p-6">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Generate New Question Bank</h2>
 
@@ -625,10 +602,10 @@ export default function QuestionBanks() {
             {selectedSubjectId && syllabi[selectedSubjectId] && (
               <div>
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Generation Mode</p>
-                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full">
                   <button
                     onClick={() => setQbMode('combined')}
-                    className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
                       qbMode === 'combined'
                         ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
@@ -638,7 +615,7 @@ export default function QuestionBanks() {
                   </button>
                   <button
                     onClick={() => setQbMode('individual')}
-                    className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
                       qbMode === 'individual'
                         ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
@@ -680,7 +657,7 @@ export default function QuestionBanks() {
                         className="mt-0.5 accent-pink-600"
                       />
                       <div className="min-w-0">
-                        <p className={`text-sm font-medium truncate ${selectedUnitIds.includes(unit.unitNumber) ? 'text-pink-700 dark:text-pink-300' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <p className={`text-sm font-medium whitespace-normal break-words leading-snug ${selectedUnitIds.includes(unit.unitNumber) ? 'text-pink-700 dark:text-pink-300' : 'text-slate-700 dark:text-slate-300'}`}>
                           Unit {unit.unitNumber}: {unit.title}
                         </p>
                         {unit.topics?.length > 0 && (
@@ -742,7 +719,7 @@ export default function QuestionBanks() {
                               onChange={() => toggleUnit(unit.unitNumber)}
                               className="mt-0.5 accent-pink-600"
                             />
-                            <p className={`text-sm font-medium truncate ${
+                            <p className={`text-sm font-medium whitespace-normal break-words leading-snug ${
                               isSelected ? 'text-pink-700 dark:text-pink-300' : 'text-slate-700 dark:text-slate-300'
                             }`}>
                               CO{unit.unitNumber}: {unit.title}
@@ -837,11 +814,11 @@ export default function QuestionBanks() {
                               return (
                                 <tr key={unit.unitNumber} className={`border-b border-slate-100 dark:border-slate-800 ${idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/20'}`}>
                                   <td className="px-2 py-2.5 align-top">
-                                    <div className="flex flex-col gap-0.5 min-w-[60px] max-w-[90px]">
+                                    <div className="flex flex-col gap-0.5 min-w-[120px] max-w-[180px]">
                                       <span className="inline-flex items-center justify-center px-2 py-0.5 rounded bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 text-xs font-bold whitespace-nowrap">
                                         CO{unit.unitNumber}
                                       </span>
-                                      <span className="text-slate-700 dark:text-slate-300 text-[10px] font-medium leading-tight line-clamp-2">{unit.title}</span>
+                                      <span className="text-slate-700 dark:text-slate-300 text-[10px] font-medium leading-tight whitespace-normal break-words">{unit.title}</span>
                                     </div>
                                   </td>
                                   {parts.map((_p: any, pIdx: number) => {
@@ -1273,53 +1250,6 @@ export default function QuestionBanks() {
         </div>
       )}
 
-      {/* Pending Approvals */}
-      {pendingApprovals.length > 0 && (
-        <div className="card dark:!bg-slate-900 p-6 border-l-4 border-l-amber-500 dark:border-l-amber-600">
-          <div className="flex items-center gap-2 mb-4">
-            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-              Pending Approvals ({pendingApprovals.length})
-            </h2>
-          </div>
-          <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
-            {isHOD
-              ? 'Question banks submitted by faculty members awaiting your approval.'
-              : 'Question banks awaiting your approval from your assigned subjects.'}
-          </p>
-          <div className="space-y-3">
-            {pendingApprovals.map(bank => (
-              <div
-                key={bank.id}
-                onClick={() => setViewingBank(bank)}
-                className="p-4 bg-amber-50 border border-amber-200 rounded-lg hover:border-amber-300 transition-colors dark:bg-amber-900 dark:border-amber-800 dark:hover:border-amber-700 cursor-pointer group"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-slate-900 dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
-                      {bank.title || 'Untitled Question Bank'}
-                    </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                      {getSubjectName(bank.subject_id)} • {new Date(bank.created_at).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-300 mt-2">Submitted by: Staff Member</p>
-                  </div>
-                  <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                    <StatusBadge status={bank.status} />
-                    <button onClick={() => setViewingBank(bank)} className="btn btn-secondary p-2" title="View & Review">
-                      <Eye className="w-5 h-5" />
-                    </button>
-                    <button onClick={() => handleDownload(bank)} className="btn btn-secondary p-2" title="Download Excel">
-                      <Download className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Your Question Banks */}
       <div className="card dark:!bg-slate-900 p-6">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
@@ -1332,7 +1262,7 @@ export default function QuestionBanks() {
         )}
         {!isHOD && (
           <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
-            Your generated question banks. Submit for approval to send to HOD.
+            Your generated question banks.
           </p>
         )}
         {questionBanks.length === 0 ? (
@@ -1365,7 +1295,6 @@ export default function QuestionBanks() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                  <StatusBadge status={bank.status} />
                   <button onClick={() => setViewingBank(bank)} className="btn btn-secondary p-2" title="View">
                     <Eye className="w-4 h-4" />
                   </button>
@@ -1378,21 +1307,13 @@ export default function QuestionBanks() {
                   <button
                     onClick={() => { setShareBankId(bank.id); setShareResult(null); }}
                     className="btn btn-secondary p-2"
-                    title="Share with Parallel Staff"
+                    title="Share Question Bank"
                   >
                     <Share2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   </button>
-
-                  {bank.status === 'DRAFT' && (
-                    <button onClick={() => handleSubmitForApproval(bank)} className="btn btn-primary p-2" title="Submit for Approval">
-                      <Send className="w-4 h-4" />
-                    </button>
-                  )}
-                  {bank.status === 'DRAFT' && (
-                    <button onClick={() => handleDelete(bank.id)} className="btn btn-danger p-2" title="Delete">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  <button onClick={() => handleDelete(bank.id)} className="btn btn-danger p-2" title="Delete">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             ))}
@@ -1412,7 +1333,6 @@ export default function QuestionBanks() {
           onUpdate={(updatedBank) => {
             setViewingBank(updatedBank);
             setQuestionBanks(prev => prev.map(b => b.id === updatedBank.id ? updatedBank : b));
-            setPendingApprovals(prev => prev.map(b => b.id === updatedBank.id ? updatedBank : b));
           }}
         />
       )}
@@ -1464,20 +1384,7 @@ export default function QuestionBanks() {
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    DRAFT: 'bg-slate-100 text-slate-700 border-2 border-pink-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700',
-    PENDING_APPROVAL: 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900 dark:text-amber-200 dark:border-amber-800',
-    APPROVED: 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900 dark:text-emerald-200 dark:border-emerald-800',
-    REJECTED: 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900 dark:text-rose-200 dark:border-rose-800',
-  };
 
-  return (
-    <span className={`px-3 py-1 rounded-lg text-xs font-medium ${styles[status] || styles.DRAFT}`}>
-      {status.replace('_', ' ')}
-    </span>
-  );
-}
 
 // ── Share Modal ──────────────────────────────────────────────────────────────
 function ShareModal({
@@ -1495,25 +1402,8 @@ function ShareModal({
   sharing: boolean;
   shareResult: { shared_with: string[]; failed: string[]; drive_link?: string } | null;
 }) {
-  const [staffList, setStaffList] = useState<any[]>([]);
-  const [loadingStaff, setLoadingStaff] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [customEmail, setCustomEmail] = useState('');
-
-  useEffect(() => {
-    if (!bank) return;
-    const load = async () => {
-      try {
-        const res = await staffApi.getSubjectStaff(bank.subject_id);
-        setStaffList(res.data);
-      } catch {
-        setStaffList([]);
-      } finally {
-        setLoadingStaff(false);
-      }
-    };
-    load();
-  }, [bank?.subject_id]);
 
   const toggle = (email: string) => {
     setSelected(prev => {
@@ -1597,48 +1487,15 @@ function ShareModal({
               <div>
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
                   <Users className="w-4 h-4 text-purple-500" />
-                  Parallel Staff Assigned to This Subject
+                  Share with Recipients
                 </p>
-                {loadingStaff ? (
-                  <div className="flex items-center gap-2 text-slate-400 p-4">
-                    <Loader2 className="w-4 h-4 animate-spin" /> Loading staff...
-                  </div>
-                ) : staffList.length === 0 ? (
-                  <p className="text-sm text-slate-400 dark:text-slate-500 italic p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    No other staff assigned to this subject. Use the email field below to share manually.
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {staffList.map((s: any) => (
-                      <label
-                        key={s.staff_email}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                          selected.has(s.staff_email)
-                            ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-600'
-                            : 'border-slate-200 dark:border-slate-700 hover:border-purple-200 dark:hover:border-purple-800'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selected.has(s.staff_email)}
-                          onChange={() => toggle(s.staff_email)}
-                          className="w-4 h-4 accent-purple-600"
-                        />
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                          {(s.staff_name || s.staff_email).charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-900 dark:text-white text-sm truncate">{s.staff_name || '—'}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{s.staff_email}</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                )}
+                <p className="text-sm text-slate-500 dark:text-slate-400 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  Enter email addresses below. The question bank will be shared through email, and the same file can be forwarded manually through WhatsApp or any other app if you want.
+                </p>
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Add other recipient</p>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Add recipient</p>
                 <div className="flex gap-2">
                   <input
                     type="email"
@@ -1664,16 +1521,16 @@ function ShareModal({
                 )}
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <button onClick={onClose} className="btn btn-secondary flex-1">Cancel</button>
-                <button
-                  onClick={() => onShare(bank.id, [...selected])}
-                  disabled={selected.size === 0 || sharing}
-                  className="btn btn-primary flex-1 bg-gradient-to-r from-purple-600 to-pink-600 border-0 disabled:opacity-50"
-                >
+                <div className="flex gap-3 pt-2">
+                  <button onClick={onClose} className="btn btn-secondary flex-1">Cancel</button>
+                  <button
+                    onClick={() => onShare(bank.id, [...selected])}
+                    disabled={selected.size === 0 || sharing}
+                    className="btn btn-primary flex-1 bg-gradient-to-r from-purple-600 to-pink-600 border-0 disabled:opacity-50"
+                  >
                   {sharing ? <><Loader2 className="w-4 h-4 animate-spin" /> Sharing...</> : <><Share2 className="w-4 h-4" /> Share ({selected.size})</>}
-                </button>
-              </div>
+                  </button>
+                </div>
             </>
           )}
         </div>

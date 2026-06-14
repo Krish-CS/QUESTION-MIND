@@ -10,6 +10,7 @@ import {
   Trash2,
   CheckCircle2,
   X,
+  BookOpen,
 } from 'lucide-react';
 import {
   Subject,
@@ -62,25 +63,26 @@ export default function Patterns() {
   const loadData = async () => {
     try {
       const subjectsRes = await subjectsApi.getAll();
-      let examSubjects = subjectsRes.data.filter(
+      const examSubjects = subjectsRes.data.filter(
         (s: Subject) => s.configuration?.hasExam !== false
       );
 
-      // For non-HOD, get staff assignments and filter subjects
-      if (!isHOD) {
-        const assignmentsRes = await staffApi.getMySubjects();
-        setStaffAssignments(assignmentsRes.data);
-
-        const editableIds = assignmentsRes.data
-          .filter((a: MySubjectAssignment) => a.canEditPattern)
-          .map((a: MySubjectAssignment) => a.subjectId);
-
-        examSubjects = examSubjects.filter((s: Subject) => editableIds.includes(s.id));
-      }
-
       setSubjects(examSubjects);
-    } catch (err) {
-      setError('Failed to load subjects');
+      try {
+        const assignmentsRes = await staffApi.getMySubjects();
+        setStaffAssignments(assignmentsRes.data || []);
+      } catch (err) {
+        // Ignored
+      }
+    } catch (err: any) {
+      console.error(err);
+      if (!err.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (err.response.status === 404) {
+        setError('Data is currently empty or not found.');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Failed to load subjects.');
+      }
     } finally {
       setLoading(false);
     }
@@ -464,12 +466,12 @@ export default function Patterns() {
     );
   }
 
-  if (!hasAccess) {
+  if (subjects.length === 0) {
     return (
       <div className="card dark:!bg-slate-900 text-center py-12">
-        <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-300 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Access Restricted</h3>
-        <p className="text-slate-600 dark:text-slate-300">You don't have permission to manage question patterns</p>
+        <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No Subjects Found</h3>
+        <p className="text-slate-600 dark:text-slate-300">You haven't created any subjects yet. Head over to the Subjects page to create one.</p>
       </div>
     );
   }
@@ -540,25 +542,37 @@ export default function Patterns() {
       {/* Subject Selection - Always visible so modal pops over it */}
       <div className="card dark:!bg-slate-900 p-6">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Select Subject</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {subjects.map((subject) => (
-            <button
-              key={subject.id}
-              onClick={() => handleSubjectSelect(subject)} // This sets selectedSubject, triggering the modal
-              className="p-4 rounded-xl text-left transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg bg-white border-2 border-pink-200 hover:border-pink-400 dark:bg-slate-900 dark:border-slate-700 dark:hover:border-pink-500"
-            >
-              <p className="font-semibold text-slate-900 dark:text-white">{subject.name}</p>
-              <p className="text-sm text-slate-600 dark:text-slate-300 font-mono">{subject.code}</p>
-              {subject.configuration?.parts && (
-                <p className="text-xs text-slate-500 dark:text-slate-300 mt-2">
-                  <span className="pill bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                    {subject.configuration.parts.length} parts
-                  </span>
-                </p>
-              )}
-            </button>
-          ))}
-        </div>
+        {subjects.length === 0 ? (
+          <div className="flex items-start gap-4 p-4 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-900 dark:border-amber-800">
+            <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-300 flex-shrink-0" />
+            <div>
+              <h3 className="text-amber-700 dark:text-amber-200 font-medium">No Subjects Found</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                You haven't created any subjects yet. Head over to the Subjects page to create one.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {subjects.map((subject) => (
+              <button
+                key={subject.id}
+                onClick={() => handleSubjectSelect(subject)} // This sets selectedSubject, triggering the modal
+                className="p-4 rounded-xl text-left transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg bg-white border-2 border-pink-200 hover:border-pink-400 dark:bg-slate-900 dark:border-slate-700 dark:hover:border-pink-500"
+              >
+                <p className="font-semibold text-slate-900 dark:text-white">{subject.name}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300 font-mono">{subject.code}</p>
+                {subject.configuration?.parts && (
+                  <p className="text-xs text-slate-500 dark:text-slate-300 mt-2">
+                    <span className="pill bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                      {subject.configuration.parts.length} parts
+                    </span>
+                  </p>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Pattern Editor Modal - Full Screen Popup */}
@@ -570,38 +584,15 @@ export default function Patterns() {
             {/* Modal Header */}
             <div className="flex-none bg-white dark:bg-slate-900 rounded-t-xl border-b border-pink-200 dark:border-pink-500">
               <div className="flex justify-between items-start px-6 pt-5 pb-4">
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white flex flex-wrap items-center gap-2 sm:gap-3">
                     Pattern for {selectedSubject.name}
                     <span className="text-sm font-normal text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/30 px-3 py-1 rounded-full border border-pink-200 dark:border-pink-800 font-mono">
                       {selectedSubject.code}
                     </span>
                   </h2>
-                  {/* Tab switcher — gradient style like Syllabus/CDAP */}
-                  <div className="flex p-1 mt-3 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
-                    <button
-                      onClick={() => setPatternTab('combined')}
-                      className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all ${
-                        patternTab === 'combined'
-                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                      }`}
-                    >
-                      🔀 Combined
-                    </button>
-                    <button
-                      onClick={() => setPatternTab('individual')}
-                      className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all ${
-                        patternTab === 'individual'
-                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                      }`}
-                    >
-                      🎯 Individual
-                    </button>
-                  </div>
                 </div>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex flex-wrap items-center justify-end gap-2 mt-1 flex-shrink-0">
                   <button
                     onClick={handleSave}
                     disabled={saving}
@@ -620,6 +611,31 @@ export default function Patterns() {
                     title="Close"
                   >
                     <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+              {/* Tab switcher moved outside of the flex justify-between header to allow 100% width on mobile */}
+              <div className="px-4 sm:px-6 pb-4">
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full">
+                  <button
+                    onClick={() => setPatternTab('combined')}
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
+                      patternTab === 'combined'
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    🔀 Combined
+                  </button>
+                  <button
+                    onClick={() => setPatternTab('individual')}
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
+                      patternTab === 'individual'
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    🎯 Individual
                   </button>
                 </div>
               </div>
@@ -662,7 +678,7 @@ export default function Patterns() {
                   </div>
 
                   {/* Inputs Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Marks per Question</label>
                       <div className="relative">
@@ -801,7 +817,7 @@ export default function Patterns() {
                                     onChange={(e) =>
                                       updateBTLDistribution(index, btl, e.target.value === '' ? 0 : Number(e.target.value))
                                     }
-                                    className="w-16 input text-sm py-1 px-2 text-center"
+                                    className="!w-24 input text-sm py-1 px-2 text-center"
                                     min="0"
                                     max={part.questionCount}
                                     placeholder="auto"
@@ -907,7 +923,7 @@ export default function Patterns() {
                                   </div>
 
                                   {/* 3-column grid: Marks per Question, Total Questions, MCQ Count */}
-                                  <div className="grid grid-cols-3 gap-3">
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div className="space-y-1">
                                       <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Marks per Question</label>
                                       <div className="relative">
@@ -1022,7 +1038,7 @@ export default function Patterns() {
                                                   value={part.btlDistribution?.[btl] || ''}
                                                   onClick={e => e.stopPropagation()}
                                                   onChange={e => updateUnitBTLDistribution(unitNum, pIdx, btl, e.target.value === '' ? 0 : Number(e.target.value))}
-                                                  className="w-12 text-center text-sm font-bold border border-purple-300 dark:border-purple-700 rounded bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400 py-0.5"
+                                                  className="w-16 text-center text-sm font-bold border border-purple-300 dark:border-purple-700 rounded bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400 py-0.5"
                                                   min="0" max={part.questionCount} placeholder="auto"
                                                 />
                                               ) : (

@@ -74,7 +74,15 @@ export default function Approvals() {
         res.status === 'fulfilled' ? res.value.data : fallback;
 
       if (results.some(res => res.status === 'rejected')) {
-        setError('Failed to load some data. Please retry.');
+        const firstError = results.find(res => res.status === 'rejected') as PromiseRejectedResult;
+        const err = firstError.reason;
+        if (!err?.response) {
+          setError('Server is unreachable. Please check your connection (Not fetchable).');
+        } else if (err.response.status === 404) {
+          setError('Data is currently empty or not found.');
+        } else {
+          setError(err.response?.data?.detail || err.message || 'Failed to load some data. Please retry.');
+        }
       }
 
       const pendingData = getData(results[0], [] as QuestionBank[]);
@@ -87,7 +95,14 @@ export default function Approvals() {
       setSubjects(subjectsData);
     } catch (err: any) {
       if (mountedRef.current) {
-        setError(err?.message || 'Failed to load data');
+        console.error(err);
+        if (!err?.response) {
+          setError('Server is unreachable. Please check your connection (Not fetchable).');
+        } else if (err.response.status === 404) {
+          setError('Data is currently empty or not found.');
+        } else {
+          setError(err.response?.data?.detail || err.message || 'Failed to load data.');
+        }
       }
     } finally {
       if (mountedRef.current) {
@@ -128,7 +143,7 @@ export default function Approvals() {
   const { setGlobalLoading } = useUiStore();
 
   const handleDownload = async (bank: QuestionBank) => {
-    setGlobalLoading(true, 'Generating and Downloading...');
+    setGlobalLoading(true, 'Downloading');
     try {
       const response = await questionBankApi.download(bank.id);
       await downloadExcel(response.data, `${bank.title || 'question_bank'}.xlsx`);
@@ -185,14 +200,14 @@ export default function Approvals() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700" role="tablist" aria-label="Approvals tabs">
+      <div className="flex border-b border-gray-200 dark:border-gray-700" role="tablist" aria-label="Approvals tabs">
         <button
           onClick={() => setActiveTab('pending')}
           id="approvals-tab-pending"
           role="tab"
           aria-selected={activeTab === 'pending'}
           aria-controls="approvals-panel-pending"
-          className={`px-6 py-3 font-semibold transition-all relative ${activeTab === 'pending'
+          className={`flex-1 text-center py-3 font-semibold transition-all relative ${activeTab === 'pending'
             ? 'text-pink-600 dark:text-pink-400'
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
@@ -208,7 +223,7 @@ export default function Approvals() {
           role="tab"
           aria-selected={activeTab === 'approved'}
           aria-controls="approvals-panel-approved"
-          className={`px-6 py-3 font-semibold transition-all relative ${activeTab === 'approved'
+          className={`flex-1 text-center py-3 font-semibold transition-all relative ${activeTab === 'approved'
             ? 'text-pink-600 dark:text-pink-400'
             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}

@@ -60,8 +60,15 @@ export default function Subjects() {
     try {
       const response = await subjectsApi.getAll();
       setSubjects(response.data);
-    } catch (err) {
-      setError('Failed to load subjects');
+    } catch (err: any) {
+      console.error(err);
+      if (!err.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (err.response.status === 404) {
+        setSubjects([]);
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Failed to load subjects.');
+      }
     } finally {
       setLoading(false);
     }
@@ -501,7 +508,7 @@ function SubjectModal({
             is_active: true,
           });
         } catch {
-          // Pattern sync is best-effort â€” don't fail subject save if it errors
+          // Pattern sync is best-effort — don't fail subject save if it errors
         }
       }
 
@@ -596,7 +603,7 @@ function SubjectModal({
                     setError('');
                     setCurrentStep(stepNum);
                   }}
-                  className="flex items-center flex-1 group focus:outline-none"
+                  className={`flex items-center group focus:outline-none ${idx < totalSteps - 1 ? 'flex-1' : 'flex-none'}`}
                 >
                   <div className="flex items-center">
                     <div
@@ -940,7 +947,7 @@ function SubjectModal({
                 onClick={() => setCurrentStep(currentStep - 1)}
                 className="btn btn-secondary"
               >
-                â† Previous
+                &larr; Previous
               </button>
             )}
 
@@ -960,7 +967,7 @@ function SubjectModal({
                 }}
                 className="btn btn-primary"
               >
-                Next â†’
+                Next &rarr;
               </button>
             ) : (
               <button
@@ -1025,7 +1032,7 @@ function PartEditor({
 
       {expanded && (
         <div className="mt-4 space-y-4">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
               <label className="text-xs text-slate-500 dark:text-slate-400">Part Name</label>
               <input
@@ -1185,7 +1192,7 @@ function Combobox({
   );
 }
 
-// â”€â”€ Mobile HOD Staff Import Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Mobile HOD Staff Import Modal ──────────────────────────────────────────
 function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
   useBackButton(onClose);
   const [file, setFile] = useState<File | null>(null);
@@ -1216,7 +1223,7 @@ function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
   const { setGlobalLoading } = useUiStore();
 
   const handleDownloadTemplate = async () => {
-    setGlobalLoading(true, 'Generating Template...');
+    setGlobalLoading(true, 'Generating Template');
     try {
       const XLSX = await import('xlsx');
       const wb = XLSX.utils.book_new();
@@ -1276,7 +1283,7 @@ function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
                   {file ? (
                     <>
                       <p className="font-semibold text-pink-700 dark:text-pink-300">{file.name}</p>
-                      <p className="text-xs text-slate-400 mt-1">{(file.size / 1024).toFixed(1)} KB â€¢ Tap to change</p>
+                      <p className="text-xs text-slate-400 mt-1">{(file.size / 1024).toFixed(1)} KB &bull; Tap to change</p>
                     </>
                   ) : (
                     <>
@@ -1333,7 +1340,7 @@ function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
                     <AlertCircle className="w-4 h-4" /> {result.errors.length} row(s) had issues:
                   </p>
                   <ul className="space-y-1">
-                    {result.errors.slice(0, 5).map((e, i) => <li key={i} className="text-xs text-amber-600 dark:text-amber-400">â€¢ {e}</li>)}
+                    {result.errors.slice(0, 5).map((e, i) => <li key={i} className="text-xs text-amber-600 dark:text-amber-400">&bull; {e}</li>)}
                     {result.errors.length > 5 && <li className="text-xs text-amber-600 font-medium italic mt-1">...and {result.errors.length - 5} more</li>}
                   </ul>
                 </div>

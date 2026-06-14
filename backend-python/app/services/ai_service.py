@@ -3,9 +3,22 @@ import httpx
 import json
 import re
 import time
+import sys
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from ..config import settings
+
+# Force UTF-8 encoding for standard streams on Windows to prevent UnicodeEncodeErrors with emojis
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
 
 try:
     from json_repair import repair_json as _repair_json
@@ -31,6 +44,7 @@ _K_KEYWORDS: Dict[str, str] = {
     "BTL6": "design, create, formulate, develop, build",
 }
 
+
 class AIServiceError(Exception):
     """
     Raised when all AI providers are exhausted or fail unrecoverably.
@@ -44,11 +58,12 @@ def _log(tag: str, msg: str):
     ts = datetime.now().strftime("%H:%M:%S")
     print(f"[{ts}] [{tag}] {msg}")
 
+
 class AIService:
     """AI Service with automatic provider fallback: Groq → Cerebras → NVIDIA → OpenRouter"""
 
-    # HTTP codes that trigger provider fallback (rate limit, overload, model not found)
-    FALLBACK_STATUS_CODES = {404, 429, 503, 529}
+    # HTTP codes that trigger provider fallback (rate limit, overload, model not found, payload too large)
+    FALLBACK_STATUS_CODES = {404, 413, 429, 503, 529}
 
     # Max questions per single AI call — keeps prompts well within token limits
     CHUNK_SIZE = 10
@@ -57,53 +72,54 @@ class AIService:
         # Build ordered provider chain from available API keys
         self.provider_chain: List[Dict] = []
 
-        # Priority 1: Cerebras key 1 (primary)
-        if settings.CEREBRAS_API_KEY:
-            self.provider_chain.append({
-                "name": "cerebras",
-                "api_key": settings.CEREBRAS_API_KEY,
-                "base_url": "https://api.cerebras.ai/v1",
-                "model": "gpt-oss-120b",
-                "max_tokens": 8000,
-            })
-
-        # Priority 1b: Cerebras key 2 (second account — rotates after key 1)
-        if settings.CEREBRAS_API_KEY_2:
-            self.provider_chain.append({
-                "name": "cerebras-2",
-                "api_key": settings.CEREBRAS_API_KEY_2,
-                "base_url": "https://api.cerebras.ai/v1",
-                "model": "gpt-oss-120b",
-                "max_tokens": 8000,
-            })
-
-        # Priority 2: Groq
+        # Priority 1: Groq — llama-3.3-70b-versatile (60K TPM, handles large prompts)
+        # NOTE: gpt-oss-20b only has 8K TPM limit which is too low for our prompts (~8500 tokens)
         if settings.GROQ_API_KEY:
             self.provider_chain.append({
                 "name": "groq",
                 "api_key": settings.GROQ_API_KEY,
                 "base_url": "https://api.groq.com/openai/v1",
-                "model": "openai/gpt-oss-120b",  # GPT OSS 120B — 500 tok/s on Groq
+                "model": "llama-3.3-70b-versatile",  # ✅ 60K TPM — handles all prompt sizes
                 "max_tokens": 8000,
             })
 
-        # Priority 3: NVIDIA
+        # Priority 2: Cerebras key 1 — gpt-oss-120b (only GPT model on Cerebras)
+        if settings.CEREBRAS_API_KEY:
+            self.provider_chain.append({
+                "name": "cerebras",
+                "api_key": settings.CEREBRAS_API_KEY,
+                "base_url": "https://api.cerebras.ai/v1",
+                "model": "gpt-oss-120b",  # ✅ Only GPT model available on Cerebras
+                "max_tokens": 8000,
+            })
+
+        # Priority 3: Cerebras key 2 — gpt-oss-120b (separate quota)
+        if settings.CEREBRAS_API_KEY_2:
+            self.provider_chain.append({
+                "name": "cerebras-2",
+                "api_key": settings.CEREBRAS_API_KEY_2,
+                "base_url": "https://api.cerebras.ai/v1",
+                "model": "gpt-oss-120b",  # ✅ Only GPT model available on Cerebras (key 2)
+                "max_tokens": 8000,
+            })
+
+        # Priority 4: NVIDIA NIM — openai/gpt-oss-20b (available on NVIDIA)
         if settings.NVIDIA_API_KEY:
             self.provider_chain.append({
                 "name": "nvidia",
                 "api_key": settings.NVIDIA_API_KEY,
                 "base_url": "https://integrate.api.nvidia.com/v1",
-                "model": "openai/gpt-oss-120b",  # GPT OSS 120B on NVIDIA NIM
-                "max_tokens": 4096,  # NVIDIA free tier cap
+                "model": "openai/gpt-oss-20b",  # ✅ Live-verified on NVIDIA NIM
+                "max_tokens": 4096,
             })
 
-        # Priority 4: OpenRouter
+        # Priority 5: OpenRouter (last resort)
         if settings.OPENROUTER_API_KEY:
             self.provider_chain.append({
                 "name": "openrouter",
                 "api_key": settings.OPENROUTER_API_KEY,
                 "base_url": "https://openrouter.ai/api/v1",
-                "model": "openai/gpt-oss-120b",  # GPT OSS 120B via OpenRouter
+                "model": "openai/gpt-oss-20b",  # GPT-OSS 20B via OpenRouter
                 "max_tokens": 8000,
             })
 
@@ -118,7 +134,7 @@ class AIService:
         print("=" * 60)
         if not self.provider_chain:
             print("  ⚠  AI PROVIDER : NONE (fallback mode — no API key found)")
-            print("     Configure CEREBRAS_API_KEY / NVIDIA_API_KEY in .env")
+            print("     Configure GROQ_API_KEY / CEREBRAS_API_KEY / NVIDIA_API_KEY in .env")
         else:
             print(f"  ✅  PRIMARY PROVIDER  : {self.provider_chain[0]['name'].upper()}")
             print(f"  🤖  MODEL             : {self.provider_chain[0]['model']}")
@@ -183,11 +199,21 @@ class AIService:
 
         if response.status_code == 200:
             data = response.json()
-            # Guard: reasoning models (e.g. gpt-oss-120b) can return content=null
-            # when the actual text is in a separate reasoning field — treat as empty.
             choices  = data.get("choices") or []
-            content  = (choices[0].get("message", {}).get("content") if choices else None) or ""
-            content  = content.strip()
+            message  = choices[0].get("message", {}) if choices else {}
+
+            # gpt-oss models are reasoning models: the visible answer is in
+            # `content` when tokens are sufficient, but may be in `reasoning`
+            # when `content` is null/empty (especially with low max_tokens).
+            content   = message.get("content") or ""
+            reasoning = message.get("reasoning") or ""
+
+            # Use reasoning as the answer text if content is empty
+            if not content.strip() and reasoning.strip():
+                _log("AI", f"ℹ️  {p_name.upper()} returned reasoning field — using as content")
+                content = reasoning
+
+            content = content.strip()
 
             usage = data.get("usage", {})
             if usage:
@@ -196,7 +222,7 @@ class AIService:
                            f"total: {usage.get('total_tokens', '?')}")
 
             if not content:
-                _log("AI", f"⚠  {p_name.upper()} returned empty/null content — trying next provider")
+                _log("AI", f"⚠  {p_name.upper()} returned empty content — trying next provider")
                 return None  # Trigger fallback to next provider
 
             _log("AI", f"📄  Response length: {len(content):,} chars")
@@ -225,7 +251,8 @@ class AIService:
             _log("AI", f"    Detail: {response.text[:400]}")
             return None
 
-    async def _call_with_fallback(self, prompt: str, prov_start_idx: int = 0) -> Optional[str]:
+
+    async def _call_with_fallback(self, prompt: str, provider_chain: List[Dict], prov_start_idx: int = 0) -> Optional[str]:
         """
         Try every provider in the chain starting at prov_start_idx.
         - Rate-limited providers get a brief backoff before the next attempt.
@@ -233,16 +260,16 @@ class AIService:
         - Timeouts and unexpected exceptions continue to the next provider.
         Returns content string, or None if every provider failed.
         """
-        if not self.provider_chain:
+        if not provider_chain:
             return None
 
-        num          = len(self.provider_chain)
+        num          = len(provider_chain)
         bad_keys     = set()   # providers whose API key is invalid this session
         rate_limited = set()   # providers that returned 429 this round
 
         for i in range(num):
             idx  = (prov_start_idx + i) % num
-            prov = self.provider_chain[idx]
+            prov = provider_chain[idx]
             p_name = prov["name"]
 
             if p_name in bad_keys:
@@ -271,7 +298,7 @@ class AIService:
                 if content is None:
                     if i + 1 < num:
                         next_idx  = (prov_start_idx + i + 1) % num
-                        next_name = self.provider_chain[next_idx]["name"].upper()
+                        next_name = provider_chain[next_idx]["name"].upper()
                         _log("AI", f"🔁  Switching to next provider: {next_name} ...")
                     continue
 
@@ -307,7 +334,8 @@ class AIService:
         btl_levels = part_config.get("allowedBTLLevels", [])
         mcq_count  = part_config.get("mcqCount", 0)
 
-        if not self.provider_chain:
+        provider_chain = self.provider_chain
+        if not provider_chain:
             _log("AI", "⚠  No AI provider configured — returning placeholder questions")
             return self._generate_fallback(part_config, syllabus_units, cdap_units)
 
@@ -344,17 +372,9 @@ class AIService:
             # Scale btlDistribution to match this chunk's question count.
             # Without scaling, the prompt would demand e.g. BTL1=4q, BTL2=6q but
             # only need to generate chunk_total (e.g. 5) questions — contradictory.
-            part_total   = part_config.get("questionCount", 1) or 1
             orig_dist    = part_config.get("btlDistribution") or {}
             allowed_btls = set(part_config.get("allowedBTLLevels") or [])
-            if orig_dist and chunk_total < part_total:
-                scaled_dist = {
-                    k: round(v * chunk_total / part_total)
-                    for k, v in orig_dist.items() if v and int(v) > 0
-                }
-                scaled_dist = {k: v for k, v in scaled_dist.items() if v > 0 and k in allowed_btls}
-            else:
-                scaled_dist = orig_dist or None
+            scaled_dist = self._scale_distribution_exact(orig_dist, chunk_total, list(allowed_btls)) if orig_dist else None
 
             chunk_config = {
                 **part_config,
@@ -364,8 +384,8 @@ class AIService:
             }
 
             # Rotate providers across chunks for load balancing
-            prov_idx  = chunk_idx % len(self.provider_chain)
-            prov_name = self.provider_chain[prov_idx]["name"].upper()
+            prov_idx  = chunk_idx % len(provider_chain)
+            prov_name = provider_chain[prov_idx]["name"].upper()
 
             unit_summary = ", ".join(
                 f"U{ua['unit'].get('unitNumber','?')}({ua['count']}q)" for ua in chunk_units
@@ -376,14 +396,14 @@ class AIService:
             prompt = self._build_prompt(chunk_units, chunk_config, subject_name, cdap_units)
             _log("AI", f"📝  Prompt length: {len(prompt):,} chars")
 
-            content = await self._call_with_fallback(prompt, prov_start_idx=prov_idx)
+            content = await self._call_with_fallback(prompt, provider_chain=provider_chain, prov_start_idx=prov_idx)
 
             # ── First attempt failed: wait briefly and retry with a different lead provider ──
             if content is None:
-                retry_start = (prov_idx + 1) % len(self.provider_chain) if len(self.provider_chain) > 1 else 0
+                retry_start = (prov_idx + 1) % len(provider_chain) if len(provider_chain) > 1 else 0
                 _log("AI", f"🔄  Chunk {chunk_idx+1}: all providers failed — waiting 5s then retrying...")
                 await asyncio.sleep(5)
-                content = await self._call_with_fallback(prompt, prov_start_idx=retry_start)
+                content = await self._call_with_fallback(prompt, provider_chain=provider_chain, prov_start_idx=retry_start)
 
             if content is None:
                 raise AIServiceError(
@@ -398,8 +418,8 @@ class AIService:
                 # Parse failed after all repair attempts — retry the API call once more
                 _log("AI", f"🔄  Chunk {chunk_idx+1}: parse failed — retrying content generation (3s)...")
                 await asyncio.sleep(3)
-                retry_start = (prov_idx + 1) % len(self.provider_chain) if len(self.provider_chain) > 1 else 0
-                content2 = await self._call_with_fallback(prompt, prov_start_idx=retry_start)
+                retry_start = (prov_idx + 1) % len(provider_chain) if len(provider_chain) > 1 else 0
+                content2 = await self._call_with_fallback(prompt, provider_chain=provider_chain, prov_start_idx=retry_start)
                 if content2 is None:
                     raise AIServiceError(
                         f"AI response could not be parsed and retry also failed ({part_name}, "
@@ -430,23 +450,25 @@ class AIService:
         """
         Round-robin distribute total_q questions across units.
         Returns [{unit: {...}, count: N, mcq: N}]
-        MCQ slots are assigned to the first N units (front-loaded).
+        MCQ slots are assigned proportionally and the final total stays exact.
         """
         if not units or total_q == 0:
             return []
         n = len(units)
         base = total_q // n
         remainder = total_q % n
-        mcq_ratio = mcq_count / total_q if total_q else 0
+        mcq_count = max(0, min(mcq_count, total_q))
+        q_counts = [base + (1 if i < remainder else 0) for i in range(n)]
+        mcq_allocations = AIService._allocate_exact_counts(q_counts, mcq_count)
 
         result = []
         for i, unit in enumerate(units):
-            q = base + (1 if i < remainder else 0)
+            q = q_counts[i]
             if q > 0:
                 result.append({
                     "unit": unit,
                     "count": q,
-                    "mcq": round(mcq_ratio * q),
+                    "mcq": mcq_allocations[i],
                 })
         return result
 
@@ -512,7 +534,6 @@ class AIService:
                     )
                 p1 = _fmt(u.get("part1_topics", []))
                 p2 = _fmt(u.get("part2_topics", []))
-                un = u.get("unit_number", "?")
                 if p1: cdap_lines.append(f"Part1: {p1}")
                 if p2: cdap_lines.append(f"Part2: {p2}")
             if cdap_lines:
@@ -569,7 +590,7 @@ RULES:
             prompt += f"""OUTPUT — JSON array of EXACTLY {count} items:
 [{{"question":"...","unit":1{cdap_field},"btl":"BTL2","marks":{marks},"answer":"..."}}]"""
 
-        prompt += "\nReturn ONLY the JSON array. No markdown. Escape internal quotes as \\\" and newlines as \\\\n."
+        prompt += '\nReturn ONLY the JSON array. No markdown. Escape internal quotes as \\" and newlines as \\n.'
         return prompt
 
     def _get_btl_guidelines(self, btl_levels, marks, subject):
@@ -664,8 +685,63 @@ RULES:
         truncated = truncated.rstrip().rstrip(',')
         return truncated + "\n]"
 
+    @staticmethod
+    def _allocate_exact_counts(weights: List[int], total: int) -> List[int]:
+        """Split `total` across buckets while keeping the final sum exact."""
+        if total <= 0 or not weights:
+            return [0 for _ in weights]
+
+        clean_weights = [max(0, int(w or 0)) for w in weights]
+        weight_sum = sum(clean_weights)
+
+        if weight_sum <= 0:
+            base = total // len(weights)
+            remainder = total % len(weights)
+            return [base + (1 if i < remainder else 0) for i in range(len(weights))]
+
+        raw_values = [w * total / weight_sum for w in clean_weights]
+        counts = [int(v) for v in raw_values]
+        remaining = total - sum(counts)
+
+        remainders = sorted(
+            range(len(raw_values)),
+            key=lambda i: (raw_values[i] - counts[i], -i),
+            reverse=True,
+        )
+        for idx in remainders[:remaining]:
+            counts[idx] += 1
+
+        return counts
+
+    @classmethod
+    def _scale_distribution_exact(
+        cls,
+        distribution: Dict[str, int],
+        total: int,
+        allowed_levels: Optional[List[str]] = None,
+    ) -> Dict[str, int]:
+        """Scale a level distribution so it matches `total` exactly."""
+        if not distribution or total <= 0:
+            return {}
+
+        allowed = set(allowed_levels or [])
+        items = [
+            (level, max(0, int(count or 0)))
+            for level, count in distribution.items()
+            if max(0, int(count or 0)) > 0 and (not allowed or level in allowed)
+        ]
+
+        if not items:
+            return {}
+
+        levels = [level for level, _ in items]
+        weights = [count for _, count in items]
+        allocated = cls._allocate_exact_counts(weights, total)
+        return {level: count for level, count in zip(levels, allocated) if count > 0}
+
     def _parse_questions(self, content: str, part: Dict, has_cdap: bool = False) -> List[Dict]:
-        marks = part.get("marksPerQuestion", 2)
+        marks      = part.get("marksPerQuestion", 2)
+        target_mcq = max(0, int(part.get("mcqCount", 0) or 0))
 
         def _finalise(questions: list) -> list:
             # Filter out non-dict entries — json-repair can return strings for malformed objects
@@ -675,6 +751,42 @@ RULES:
                     q["marks"] = marks
                 if has_cdap and "cdap_part" not in q:
                     q["cdap_part"] = 1
+
+            # ── Enforce MCQ count without overwriting real AI-generated options ──
+            current_mcq = sum(1 for q in questions if q.get("isMCQ"))
+            if current_mcq < target_mcq:
+                need = target_mcq - current_mcq
+                for q in questions:
+                    if need <= 0:
+                        break
+                    if not q.get("isMCQ"):
+                        q["isMCQ"] = True
+                        # Only add placeholder options if the AI didn't provide real ones
+                        opts = q.get("options")
+                        if not isinstance(opts, dict) or not any(
+                            str(v).strip() for v in opts.values() if v
+                        ):
+                            ans = q.get("answer", "")
+                            q["options"] = {
+                                "A": ans.strip() if isinstance(ans, str) and ans.strip() else "Option A",
+                                "B": "Option B",
+                                "C": "Option C",
+                                "D": "Option D",
+                            }
+                        if q.get("correctOption") not in {"A", "B", "C", "D"}:
+                            q["correctOption"] = "A"
+                        need -= 1
+            elif current_mcq > target_mcq:
+                extra = current_mcq - target_mcq
+                for q in reversed(questions):
+                    if extra <= 0:
+                        break
+                    if q.get("isMCQ"):
+                        q["isMCQ"] = False
+                        q.pop("options", None)
+                        q.pop("correctOption", None)
+                        extra -= 1
+
             return self._clean_questions(questions)
 
         try:
@@ -802,7 +914,7 @@ RULES:
                 "unit": unit_num,
                 "btl": btl,
                 "marks": marks,
-                "answer": "Please configure an AI API key (GROQ_API_KEY, CEREBRAS_API_KEY, or OPENROUTER_API_KEY) in backend-python/.env to generate actual questions."
+                "answer": "Please configure an AI API key (GROQ_API_KEY, CEREBRAS_API_KEY, or NVIDIA_API_KEY) in backend-python/.env to generate actual questions."
             }
             
             # Add cdap_part if CDAP is available
@@ -829,12 +941,15 @@ RULES:
         result = {}
         total_start = time.time()
 
+        provider_chain = self.provider_chain
+        primary_model = provider_chain[0]["model"] if provider_chain else "none"
+        primary_name = provider_chain[0]["name"] if provider_chain else "fallback"
+
         _log("QB", "=" * 56)
         _log("QB", f"🎓  Starting full question bank generation")
         _log("QB", f"    Subject : {subject_name}")
         _log("QB", f"    Parts   : {len(parts)} ({', '.join(p.get('partName', '?') for p in parts)})")
-        primary_model = self.provider_chain[0]["model"] if self.provider_chain else "none"
-        _log("QB", f"    Provider: {self.provider.upper()} | Model: {primary_model}")
+        _log("QB", f"    Provider: {primary_name.upper()} | Model: {primary_model}")
         _log("QB", "=" * 56)
 
         for i, part in enumerate(parts, 1):
@@ -856,4 +971,3 @@ RULES:
 
 
 ai_service = AIService()
-

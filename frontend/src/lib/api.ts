@@ -1,6 +1,22 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+// ==========================================
+// 🚀 BACKEND URL CONFIGURATION
+// ==========================================
+// When testing locally, the app will automatically use 'http://localhost:8000/api'.
+// When deploying to Render, you should set the `VITE_API_URL` environment variable 
+// in your Render dashboard to your backend's Render URL (e.g., https://your-backend.onrender.com/api).
+// 
+// If you prefer manual configuration, you can comment/uncomment the lines below:
+
+// 1. Local Development URL (Uncomment this for local testing)
+const API_URL = 'http://127.0.0.1:8000/api';
+
+// 2. Production Render URL (Uncomment this for Render deployment)
+// const API_URL = 'https://question-mind-backend.onrender.com/api';
+
+// 3. Environment Variable Option (Optional)
+// const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -20,7 +36,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+    const isLoginPage = window.location.pathname === '/login';
+    if (error.response?.status === 401 && !isLoginRequest && !isLoginPage) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -35,8 +53,22 @@ export const authApi = {
     api.post('/auth/login', { email, password }),
   register: (data: { email: string; password: string; name: string; role: string; department?: string }) =>
     api.post('/auth/register', data),
+  resetPasswordDirect: (email: string, newPassword: string) =>
+    api.post('/auth/reset-password-direct', { email, new_password: newPassword }),
   getMe: () => api.get('/auth/me'),
+  bulkUploadUsers: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/auth/users/bulk-upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  createUser: (data: { email: string; password: string; name: string; role: string; department?: string }) =>
+    api.post('/auth/users', data),
+  deleteUser: (userId: string) =>
+    api.delete(`/auth/users/${userId}`),
 };
+
 
 // Subjects API
 export const subjectsApi = {
@@ -89,14 +121,11 @@ export const questionBankApi = {
   getAll: (params?: { status?: string; subject_id?: string; own_only?: boolean }) =>
     api.get('/question-bank', { params }),
   get: (id: string) => api.get(`/question-bank/${id}`),
-  getPending: () => api.get('/question-bank/pending'),
   getPattern: (subjectId: string) => api.get(`/question-bank/pattern/${subjectId}`),
   updatePattern: (subjectId: string, data: any) =>
     api.put(`/question-bank/pattern/${subjectId}`, data),
   generate: (data: { subject_id: string; syllabus_id: string; pattern_id?: string; custom_parts?: any[]; selected_unit_ids?: number[]; unit_question_counts?: Record<string, Record<number, number>>; unit_configs?: Record<string, any[]> }) =>
     api.post('/question-bank/generate', data),
-  updateStatus: (id: string, data: { status: string; rejection_reason?: string }) =>
-    api.put(`/question-bank/${id}/status`, data),
   updateQuestions: (id: string, data: { questions: { parts: Record<string, any[]> } }) =>
     api.put(`/question-bank/${id}/questions`, data),
   uploadImage: (file: File) => {

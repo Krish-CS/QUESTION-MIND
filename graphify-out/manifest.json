@@ -20,12 +20,12 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\.github\\modernize\\java-upgrade\\hooks\\scripts\\recordToolUse.ps1": {
-    "mtime": 1780727501.341777,
+    "mtime": 1781413033.796211,
     "ast_hash": "9ecf230451dfd20ff4e0a2a01e80a4e6",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\.github\\modernize\\java-upgrade\\hooks\\scripts\\recordToolUse.sh": {
-    "mtime": 1780727501.3437793,
+    "mtime": 1781413033.7992241,
     "ast_hash": "e25ae501603ce6bf738198f5ce32ba83",
     "semantic_hash": ""
   },
@@ -35,23 +35,23 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\migrate.py": {
-    "mtime": 1772814720.4198675,
-    "ast_hash": "57799461e6e51838ef7aea10a21a0260",
+    "mtime": 1781064321.318892,
+    "ast_hash": "c6b89a3c0c4b6796a436e413a71bc8ca",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\config.py": {
-    "mtime": 1780494228.611215,
-    "ast_hash": "f33daf5a0a55a4ceb120dd6239040916",
+    "mtime": 1781360649.767046,
+    "ast_hash": "122b6f736e84a14cb52aadc3d1944e87",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\database.py": {
-    "mtime": 1769433580.3788416,
-    "ast_hash": "f77c40eca44f72fbb4915412571ceb4b",
+    "mtime": 1781410108.2954557,
+    "ast_hash": "762bb97b4c5b74dffa81f277b1c644de",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\main.py": {
-    "mtime": 1780213103.9313474,
-    "ast_hash": "7064ffdc92987a2d7084f3f0ba8ee4ab",
+    "mtime": 1781406943.177379,
+    "ast_hash": "c2ea8a31594f8729d033d8ac4b11ac76",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\__init__.py": {
@@ -65,13 +65,13 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\models\\help_request.py": {
-    "mtime": 1769433699.064393,
-    "ast_hash": "e2fd17a3ad489d8944f95bd5010561f8",
+    "mtime": 1780817353.2523928,
+    "ast_hash": "9bf1f74b054d4b9ed3a620de207699f2",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\models\\question_bank.py": {
-    "mtime": 1772813818.7381032,
-    "ast_hash": "5025ee33b4e0684bbdc12bea7697693c",
+    "mtime": 1780817341.4722931,
+    "ast_hash": "de5e558fc69519b3114295b109a1f971",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\models\\staff_assignment.py": {
@@ -90,8 +90,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\models\\user.py": {
-    "mtime": 1769433585.4543688,
-    "ast_hash": "d9993f5c9a27cb06ace5db41b618c102",
+    "mtime": 1781355862.0749893,
+    "ast_hash": "496009fbca5a94397f298204af67e3cb",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\models\\__init__.py": {
@@ -100,33 +100,33 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\routers\\ai_settings.py": {
-    "mtime": 1780210157.279698,
-    "ast_hash": "278122fa17dd12a7ba13a9a7b09f19cd",
+    "mtime": 1781064202.688025,
+    "ast_hash": "c8a8f852080fefe93abf3d03c6fd5305",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\routers\\auth.py": {
-    "mtime": 1769434033.803202,
-    "ast_hash": "206403c294339f258aaf25b12fa51172",
+    "mtime": 1781407483.817268,
+    "ast_hash": "0dd6dca163ff122712635a6eb644ddb1",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\routers\\question_bank.py": {
-    "mtime": 1780494415.5038376,
-    "ast_hash": "e85a1b6483ac8effbabc3030cb93d828",
+    "mtime": 1781421654.5632894,
+    "ast_hash": "c83861ecf64f3c271ca74f3507879ba7",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\routers\\staff.py": {
-    "mtime": 1780494381.8014007,
-    "ast_hash": "9c1aea912913757604fd492b8bf65f2d",
+    "mtime": 1781370399.9473302,
+    "ast_hash": "335b3e2e9b22377efa3d7f1f825c28fa",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\routers\\subjects.py": {
-    "mtime": 1769647601.375303,
-    "ast_hash": "c8f575429c1f0f8aa769dc0c0a0cec4a",
+    "mtime": 1781368378.6034508,
+    "ast_hash": "4bdeb2ab3ae42d5d45bd1abfff8f7c88",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\routers\\syllabus.py": {
-    "mtime": 1769938959.1932526,
-    "ast_hash": "01fc9df9c2ce1cd64980e8eae185a2aa",
+    "mtime": 1781370080.3973217,
+    "ast_hash": "8094d84db9f58fc8b8f2a6df252953a5",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\routers\\__init__.py": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\schemas\\question_bank.py": {
-    "mtime": 1772879544.1459882,
-    "ast_hash": "21575ebda9758d4d6e15a005d0c6f970",
+    "mtime": 1781356168.104009,
+    "ast_hash": "f6ab30dd8f64268612caf8d7c65ae0bd",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\schemas\\staff.py": {
@@ -160,23 +160,23 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\schemas\\user.py": {
-    "mtime": 1769433715.583982,
-    "ast_hash": "62dafd6559034aa2eb0149f36a85f256",
+    "mtime": 1781407471.470384,
+    "ast_hash": "b6530f68aadf6740774ff4161840886a",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\schemas\\__init__.py": {
-    "mtime": 1780494327.1024096,
-    "ast_hash": "82ef993de887a52088c09b3f8840538d",
+    "mtime": 1781407477.5912368,
+    "ast_hash": "4a67fb745fede56f569a2e6d54444e17",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\services\\ai_service.py": {
-    "mtime": 1772946893.9981115,
-    "ast_hash": "74ab1d8b9733f0074c6788fd8403ed5d",
+    "mtime": 1781419487.2585132,
+    "ast_hash": "e3771f608775c34e9432ae51fd794a7c",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\services\\auth.py": {
-    "mtime": 1769474962.7384949,
-    "ast_hash": "791526565c62967648986629d43c9b64",
+    "mtime": 1781366921.8429508,
+    "ast_hash": "8c1e06889499cf663ad0869d9f908a35",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\services\\cdap_parser.py": {
@@ -210,8 +210,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\package.json": {
-    "mtime": 1779957380.1738994,
-    "ast_hash": "1fb6112be0851dc3791c30760f64f410",
+    "mtime": 1781369015.2323763,
+    "ast_hash": "9af0b8636d032eaf21d90847b8289fae",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\postcss.config.js": {
@@ -240,8 +240,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\App.tsx": {
-    "mtime": 1780213103.9313474,
-    "ast_hash": "e8b02c743f5a60059ea76bcbdaf45422",
+    "mtime": 1781411992.5829902,
+    "ast_hash": "e0d88ff461dc4741d005289b661ef713",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\main.tsx": {
@@ -255,8 +255,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\ApiKeyInput.tsx": {
-    "mtime": 1780210157.279698,
-    "ast_hash": "7c5c9c87ae0ccb72d9ec5615100ad81c",
+    "mtime": 1781368081.238668,
+    "ast_hash": "890eacd5e71cce9945cacb3808e3dc4c",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\FormattedAnswer.tsx": {
@@ -265,18 +265,18 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\Layout.tsx": {
-    "mtime": 1780214341.5101266,
-    "ast_hash": "e4f064a1d5cac46ab4bf5912cf604995",
+    "mtime": 1781370115.648164,
+    "ast_hash": "a6b65fb9f6c1ee59952dadd826681a5b",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\ProviderSelector.tsx": {
-    "mtime": 1780210157.282698,
-    "ast_hash": "4733245d2ba1439bb1d48fe4df30fe31",
+    "mtime": 1780914435.1649566,
+    "ast_hash": "35bec3353f91e3ae0912e3cd3f607def",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\QuestionBankViewModal.tsx": {
-    "mtime": 1779957380.1783206,
-    "ast_hash": "93a7aa33e11329f842fac53582017816",
+    "mtime": 1781359499.3275878,
+    "ast_hash": "2cc2d08c308058dfdd615e964f9c3f67",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\ui\\ConfirmationModal.tsx": {
@@ -290,18 +290,18 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\lib\\api.ts": {
-    "mtime": 1780494488.8090224,
-    "ast_hash": "66ac2dd45e76ff24df02a1e5494c66d4",
+    "mtime": 1781415381.9907153,
+    "ast_hash": "9adc25c3238666ca3f5ae3a6e0c75e48",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\lib\\settingsStore.ts": {
-    "mtime": 1780210157.279698,
-    "ast_hash": "38b03cc178d0fd0f58771dbb02e885c4",
+    "mtime": 1780914007.0202537,
+    "ast_hash": "82b1382aeebbe93cf84abfc734c224da",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\lib\\store.ts": {
-    "mtime": 1769434579.2163587,
-    "ast_hash": "7e95f7388c55c9121168996fcbadc528",
+    "mtime": 1781411970.7725673,
+    "ast_hash": "36dc231f380e8374ca9088a59117318b",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\lib\\themeStore.ts": {
@@ -309,34 +309,29 @@
     "ast_hash": "81616d5a1b5f9a9733f7566641b4a901",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\frontend\\src\\pages\\Approvals.tsx": {
-    "mtime": 1772982714.8028872,
-    "ast_hash": "d6db72fa2aecce9cefcfd7194fe210eb",
-    "semantic_hash": ""
-  },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Dashboard.tsx": {
-    "mtime": 1780236911.6254177,
-    "ast_hash": "dd2bf03d1aa3f84442e99e282229c512",
+    "mtime": 1781418944.4016006,
+    "ast_hash": "8e7cd81413103a36ae27d82079d86d02",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Login.tsx": {
-    "mtime": 1769821286.3486404,
-    "ast_hash": "41083a3a22d97c7e961346215d195e1e",
+    "mtime": 1781415619.1626706,
+    "ast_hash": "8febe65df3dec9a3bfc2d9fb89e726f2",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Overview.tsx": {
-    "mtime": 1772964203.4980023,
-    "ast_hash": "fc76509aab315dfa7fb60ebd81ac6b1a",
+    "mtime": 1781418944.4026072,
+    "ast_hash": "cd9826da5e2cfbffe91c7114f4543998",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Patterns.tsx": {
-    "mtime": 1772949707.0873275,
-    "ast_hash": "7757ea81c6924e9e885a170be39653bc",
+    "mtime": 1781411496.5898097,
+    "ast_hash": "c4f74f8a8f106f3f20f413bf42eed05c",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\QuestionBanks.tsx": {
-    "mtime": 1780499020.00527,
-    "ast_hash": "ebb4befa2ce5c987386eb914116eae83",
+    "mtime": 1781421022.7203846,
+    "ast_hash": "b56bbe546e3167ff6e0933f992fc645c",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Register.tsx": {
@@ -344,24 +339,19 @@
     "ast_hash": "02a43264913a82f82a43d404ad01255f",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\frontend\\src\\pages\\Settings.tsx": {
-    "mtime": 1780210157.2879686,
-    "ast_hash": "baa75ef0cf4c16d0c0e01868eea1ed08",
-    "semantic_hash": ""
-  },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Subjects.tsx": {
-    "mtime": 1780730904.3216753,
-    "ast_hash": "abeefafb1d8d67b007d2284645b732ec",
+    "mtime": 1781407616.2465513,
+    "ast_hash": "edb878e41fd9d627bfaa9e68a07e1595",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Syllabus.tsx": {
-    "mtime": 1772982714.8897223,
-    "ast_hash": "08cde39d3f88ab54fe6ecedd71f7b48e",
+    "mtime": 1781411308.9953055,
+    "ast_hash": "905675afdc18419cdde4bb27f23e32fd",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\types\\index.ts": {
-    "mtime": 1772879544.1459882,
-    "ast_hash": "3754b7f2b88fcf822e8c2693010f6f67",
+    "mtime": 1781356535.169382,
+    "ast_hash": "384f0c8552ac9a4b93344f9ad25d7a71",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\capacitor.config.ts": {
@@ -370,8 +360,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\package.json": {
-    "mtime": 1780761304.3240836,
-    "ast_hash": "aa3a382f3672b9689405b130b874c004",
+    "mtime": 1781071233.4948697,
+    "ast_hash": "a4d3322628d97ee10c9897e975488b28",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\postcss.config.js": {
@@ -400,13 +390,13 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\build.gradle": {
-    "mtime": 1780546267.6882145,
-    "ast_hash": "0e60c9bfd7dbd4428e166f4767baf524",
+    "mtime": 1781065699.4613254,
+    "ast_hash": "df5235a24ce72ce71aed42f56cfd1745",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\capacitor.settings.gradle": {
-    "mtime": 1780763067.4464278,
-    "ast_hash": "1e75756edc4da12189405d1d116060fe",
+    "mtime": 1781071292.041212,
+    "ast_hash": "0f6a045828ffc6162d10b08e982ec60f",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\gradlew": {
@@ -425,13 +415,13 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\build.gradle": {
-    "mtime": 1779457550.516226,
-    "ast_hash": "98300d8ffc1ab0d505d1705f784558b1",
+    "mtime": 1781070961.1424296,
+    "ast_hash": "9b476fa48aae01d8c5a6ccda78276e06",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\capacitor.build.gradle": {
-    "mtime": 1780763067.447433,
-    "ast_hash": "a6008b461b25d07d3b19f46575ed9cff",
+    "mtime": 1781071292.041212,
+    "ast_hash": "5523e9c3af47602d4bcea4514464e9d6",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\androidTest\\java\\com\\getcapacitor\\myapp\\ExampleInstrumentedTest.java": {
@@ -440,22 +430,22 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\capacitor.config.json": {
-    "mtime": 1780763067.1480658,
+    "mtime": 1781071291.9596505,
     "ast_hash": "5a3f233b212bafb3b186c267cec679b8",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\capacitor.plugins.json": {
-    "mtime": 1780763067.2958934,
-    "ast_hash": "dd1f7d039b24b3eca5d996ff8b2f1234",
+    "mtime": 1781071292.0105078,
+    "ast_hash": "a152c036cb36ac1e4aac564b8d92814d",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\cordova.js": {
-    "mtime": 1780763067.4328704,
+    "mtime": 1781071292.0376778,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\cordova_plugins.js": {
-    "mtime": 1780763067.4338534,
+    "mtime": 1781071292.0381937,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
@@ -475,13 +465,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\java\\com\\krishacademia\\questionmind\\MainActivity.java": {
-    "mtime": 1779457550.5141494,
-    "ast_hash": "e0c93e48e6d797aaaea7565c4caff5ce",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\java\\com\\krishacademia\\questionmind\\PythonBridge.kt": {
-    "mtime": 1780209673.0809355,
-    "ast_hash": "997f2316421409e383cc26de421b7633",
+    "mtime": 1781065761.478609,
+    "ast_hash": "047d546ea6c1631f57aa61a1576dd101",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\test\\java\\com\\getcapacitor\\myapp\\ExampleUnitTest.java": {
@@ -490,12 +475,12 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\capacitor-cordova-android-plugins\\build.gradle": {
-    "mtime": 1780763067.4604487,
+    "mtime": 1781071292.0432127,
     "ast_hash": "13a885b925f99b619845018a13d508d3",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\capacitor-cordova-android-plugins\\cordova.variables.gradle": {
-    "mtime": 1780763067.4624374,
+    "mtime": 1781071292.0442076,
     "ast_hash": "299becb7733b8720b74d289e3cb837f1",
     "semantic_hash": ""
   },
@@ -520,8 +505,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\App.tsx": {
-    "mtime": 1780762407.5066888,
-    "ast_hash": "8e63ba5382f32b339cf3c91bafd2173f",
+    "mtime": 1781071247.8956933,
+    "ast_hash": "235d825847301b175f0c7bfb50464d6b",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\main.tsx": {
@@ -565,8 +550,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\components\\QuestionBankViewModal.tsx": {
-    "mtime": 1780761520.60296,
-    "ast_hash": "fd67182c8027f0813df9a1b2f1081887",
+    "mtime": 1780998455.783676,
+    "ast_hash": "72fd2940f62b79d4f7285ee3809190a9",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\components\\ui\\ConfirmationModal.tsx": {
@@ -580,8 +565,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\aiService.ts": {
-    "mtime": 1780238844.4449236,
-    "ast_hash": "a56718aa394d7a96248d2ec1dcf00fd3",
+    "mtime": 1780914066.557609,
+    "ast_hash": "c27d435d6c689a4f8a0c123826cd357d",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\aiSettingsApi.ts": {
@@ -590,13 +575,13 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\api.ts": {
-    "mtime": 1780759594.8147078,
-    "ast_hash": "d50ae1f72bc19b223856862a3f6fbcd0",
+    "mtime": 1781070553.3966708,
+    "ast_hash": "26816cd582017b3578a7c75163e2f50d",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\excelGenerator.ts": {
-    "mtime": 1779952095.547217,
-    "ast_hash": "6b12ffeab22cefe0768fdf4b8a2aed7b",
+    "mtime": 1780999469.587664,
+    "ast_hash": "f635211c5a0948cd990793048594e8c4",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\pdfExtractor.ts": {
@@ -605,8 +590,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\settingsStore.ts": {
-    "mtime": 1780218730.9093494,
-    "ast_hash": "8298190a44969d47f7c30f5781aff4b1",
+    "mtime": 1781065110.4079435,
+    "ast_hash": "24823ab6f32f937a4d2a3096ccf2a510",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\store.ts": {
@@ -635,13 +620,13 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Approvals.tsx": {
-    "mtime": 1780731053.2227829,
-    "ast_hash": "399fbc19ef61faed8fa43335d496c1f9",
+    "mtime": 1780999178.4664288,
+    "ast_hash": "6b0885304d4bf4e0a6bf0b6867a2f865",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Dashboard.tsx": {
-    "mtime": 1780761020.9100251,
-    "ast_hash": "7d090b3ea0fe4376f55df32cb71f1953",
+    "mtime": 1781063959.2850626,
+    "ast_hash": "418870801aed4cd4874bc3b25837cb94",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Login.tsx": {
@@ -650,18 +635,18 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Overview.tsx": {
-    "mtime": 1780731116.3410244,
-    "ast_hash": "c5a1acf7eada14c43bff3c0fa444ee65",
+    "mtime": 1780999174.6569822,
+    "ast_hash": "2aecc253dde3929161673f21f3aaed69",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Patterns.tsx": {
-    "mtime": 1780761711.0280192,
-    "ast_hash": "9d243c72de07404b5659cd57c4aa68b4",
+    "mtime": 1780997401.171553,
+    "ast_hash": "d7423d47fcb3fa951e0dfbf534b7ca5e",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\QuestionBanks.tsx": {
-    "mtime": 1780761645.3050954,
-    "ast_hash": "89be1c71a5085a2a4c60b50d7539cc9d",
+    "mtime": 1781421022.7779665,
+    "ast_hash": "a065e9b99dd72f413e9f3b9acec769c6",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Register.tsx": {
@@ -670,18 +655,18 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Settings.tsx": {
-    "mtime": 1780221444.2608306,
-    "ast_hash": "8b8a9bbe1bce7135ff1b56d595392e0c",
+    "mtime": 1781071090.1609128,
+    "ast_hash": "ad1cd79ecd36813a0ee71d0dad086d8b",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Subjects.tsx": {
-    "mtime": 1780761608.8238761,
-    "ast_hash": "6264b2251723adbf7df83c4075b2fedf",
+    "mtime": 1781418944.4846864,
+    "ast_hash": "5e9318e78f008876a1a4cf78c27b701f",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Syllabus.tsx": {
-    "mtime": 1780761667.1238904,
-    "ast_hash": "4fdda823ba422f7b6913c2f7aaa7033a",
+    "mtime": 1780996746.099771,
+    "ast_hash": "b5f265c5f35bd69515d9dd679b1daae0",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\types\\index.ts": {
@@ -704,114 +689,9 @@
     "ast_hash": "318a3e146544cd77ff211822f5bf65ea",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\AI_SETTINGS_COMPLETE_SUMMARY.md": {
-    "mtime": 1780210368.096253,
-    "ast_hash": "9c9526c5e30a99671a437460a828c5de",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\AI_SETTINGS_IMPLEMENTATION_GUIDE.md": {
-    "mtime": 1780210157.279698,
-    "ast_hash": "8fdbfb7eeeadfb6de9e2b62c0a795ecf",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\AUDIT_REPORT_STANDALONE_READINESS.md": {
-    "mtime": 1779957380.1636696,
-    "ast_hash": "94e5f1dc08ec05e9018ac2bf59013707",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\CHAQUOPY_DELIVERY_SUMMARY.md": {
-    "mtime": 1780209673.076933,
-    "ast_hash": "a7f58bda268cdee4a68005f0bd333e7c",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\CHAQUOPY_IMPLEMENTATION_CHECKLIST.md": {
-    "mtime": 1780209673.076933,
-    "ast_hash": "bcfe2e0fdb29f538e79642a14fff70f5",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\CHAQUOPY_IMPLEMENTATION_GUIDE.md": {
-    "mtime": 1780209673.0759337,
-    "ast_hash": "3f5f4fa281d4ea5053b2c814c67d472e",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\CHAQUOPY_MIGRATION_PLAN.md": {
-    "mtime": 1780209673.0749173,
-    "ast_hash": "54c6aed1dc83dc7464b0f5bf1ee8e151",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\CHAQUOPY_MIGRATION_SUMMARY.md": {
-    "mtime": 1780209673.0759337,
-    "ast_hash": "71485589b234a0606163d28af60ac55f",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\CHAQUOPY_QUICK_REFERENCE.md": {
-    "mtime": 1780209673.0759337,
-    "ast_hash": "5604b06beb83ace8826cd4454ced10b1",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\ENHANCED_AI_SERVICE_ARCHITECTURE.md": {
-    "mtime": 1780210157.2372918,
-    "ast_hash": "003e8159050bb1c1180b95e1125e8f39",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\FINAL_AUDIT_COMPLETE.md": {
-    "mtime": 1779957380.6020956,
-    "ast_hash": "3c05e9ee5a20f0ae3011d0c730f12ac5",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\FULL_SOLUTION_SUMMARY.md": {
-    "mtime": 1779956159.390976,
-    "ast_hash": "a9d5411daf9746516f03fd800cc39d22",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\IMPLEMENTATION_COMPLETE.md": {
-    "mtime": 1779952095.547217,
-    "ast_hash": "c87b7e55cc671ce994dc143a261e211a",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\MOBILE_AI_SETTINGS_GUIDE.md": {
-    "mtime": 1780210157.279698,
-    "ast_hash": "15a107c5a77dcbf51622981f23b58151",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\MOBILE_TESTING_QUICK_REFERENCE.md": {
-    "mtime": 1780547037.984677,
-    "ast_hash": "2e4c7752721479fa73381be13f18e176",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\MOBILE_USB_DEBUGGING_TEST_GUIDE.md": {
-    "mtime": 1780547020.89532,
-    "ast_hash": "35ecb3015ff02305f799d2f0c3b80924",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\PARSER_INTEGRATION_GUIDE.md": {
-    "mtime": 1779955841.842286,
-    "ast_hash": "1692ba528442de75919ec6348751edd9",
-    "semantic_hash": ""
-  },
   "D:\\QUESTION MIND\\README.md": {
-    "mtime": 1772952275.288272,
-    "ast_hash": "84df3b5b3ab3de950e41905b270f97df",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\STANDALONE_AUDIT_FINAL_REPORT.md": {
-    "mtime": 1779957380.3016858,
-    "ast_hash": "3d8cd6becd6e0a0cc29e9223c5440793",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\STANDALONE_SETUP.md": {
-    "mtime": 1779952095.5609286,
-    "ast_hash": "31fdb69d363991b7f4aea2751569f632",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\STANDALONE_STATUS.md": {
-    "mtime": 1779957380.4787004,
-    "ast_hash": "60d3c48bb7d7ae141dfd20282e6606b1",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\TESTING_QUICK_START.md": {
-    "mtime": 1780210423.462086,
-    "ast_hash": "51970d6a0f5927f2633ccbc203b88032",
+    "mtime": 1781421783.921148,
+    "ast_hash": "5436685d82ee256f85bc99d478c4c901",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\.agents\\rules\\graphify.md": {
@@ -835,8 +715,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\requirements.txt": {
-    "mtime": 1780494448.2343774,
-    "ast_hash": "ce0ba977df278bbd9537f292bf298fa6",
+    "mtime": 1781357374.1529446,
+    "ast_hash": "74701cf9a9911a1550d929f8de1c05c1",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\index.html": {
@@ -850,8 +730,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\index.html": {
-    "mtime": 1780763065.010013,
-    "ast_hash": "39ff8a266aad46642aecf843f19a9b82",
+    "mtime": 1781070241.4688213,
+    "ast_hash": "66b256652f8805118c5754a20b46377e",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\src\\main\\python\\requirements.txt": {
@@ -1085,7 +965,7 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\logo-5KIOeEvm.png": {
-    "mtime": 1780763065.010013,
+    "mtime": 1781070241.4572232,
     "ast_hash": "3316984efb8fe6109ba67d7f17f04953",
     "semantic_hash": ""
   },
@@ -1145,78 +1025,78 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.png": {
-    "mtime": 1780763027.5198104,
-    "ast_hash": "bf417a2eabd0f89735189f9dfee1719b",
+    "mtime": 1780996644.4832108,
+    "ast_hash": "5b60ad158fa6e840a1de65092741fe41",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763027.541154,
-    "ast_hash": "9f936cc543534fa030131834d62c821c",
+    "mtime": 1780996644.7389302,
+    "ast_hash": "8b6ae8ef6a02c18c703e953bee5530e8",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_round.png": {
-    "mtime": 1780763027.5227928,
-    "ast_hash": "a374b4b905f44983ed0d1ddc133ab4cd",
+    "mtime": 1780996644.51581,
+    "ast_hash": "ede3df503e42e287e99f948086cda1df",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.png": {
-    "mtime": 1780763027.483439,
-    "ast_hash": "b4aeb61be7e0d422173b6bb9bfe90683",
+    "mtime": 1780996644.4264364,
+    "ast_hash": "3bffc73ef5cf6d97ed18b8d2ccb71a53",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763027.501514,
-    "ast_hash": "ab1ad5976265fdc6be6cf30a8b885518",
+    "mtime": 1780996644.712858,
+    "ast_hash": "0a9b0fa151a702b58e589c2cea160858",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_round.png": {
-    "mtime": 1780763027.4883716,
-    "ast_hash": "4a8111834b81dfd653594f158eef166d",
+    "mtime": 1780996644.4611282,
+    "ast_hash": "84451612f4cf7b0721ba369bf0ce3039",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.png": {
-    "mtime": 1780763027.5586505,
-    "ast_hash": "6487d4aaef6c4265548772176e462e08",
+    "mtime": 1780996644.5403883,
+    "ast_hash": "6e0487063bad6f7985dfb245f7edc22d",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763027.5819674,
-    "ast_hash": "972205603244c9843cfb833e50b5bb96",
+    "mtime": 1780996644.7698894,
+    "ast_hash": "275db567c406999b4ca7c8aed81fc393",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_round.png": {
-    "mtime": 1780763027.5607054,
-    "ast_hash": "89d95a9fa23a4cbc1516138c93eaca3e",
+    "mtime": 1780996644.5639603,
+    "ast_hash": "c53d441b9d553ff85ae80c1fb745fb95",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.png": {
-    "mtime": 1780763027.6061723,
-    "ast_hash": "4e393ee3c85c61a6b9090fbcf4349a16",
+    "mtime": 1780996644.5936472,
+    "ast_hash": "5314f2ebd8d7a361f385341b8b84b2ce",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763027.6424375,
-    "ast_hash": "edd82893c26b5b8ddbbd90c17804cdc9",
+    "mtime": 1780996644.8458605,
+    "ast_hash": "01ee73218e6fb82cc552cfba216d9c2b",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_round.png": {
-    "mtime": 1780763027.6111927,
-    "ast_hash": "6758f6d19e891f785b9e80171816796b",
+    "mtime": 1780996644.6194181,
+    "ast_hash": "27b39833f0d3ea1f38116f4fb8521995",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.png": {
-    "mtime": 1780763027.6646347,
-    "ast_hash": "060ce3ee43176f5e47e8fe2a2ed77fe6",
+    "mtime": 1780996644.6530826,
+    "ast_hash": "d7450a3b85fd4d2614131ac0f8139cac",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763027.711604,
-    "ast_hash": "40bad6ae6a2e207e5848e3e95cfd856c",
+    "mtime": 1780996644.9426737,
+    "ast_hash": "5502b54e3c12d7d355dd6ed33e98c462",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_round.png": {
-    "mtime": 1780763027.6751308,
-    "ast_hash": "819d6d33b17339320128f1f3dc9ccc87",
+    "mtime": 1780996644.6872897,
+    "ast_hash": "b768228d8e05fbb432a6f950e42f068b",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\assets\\logo.png": {
@@ -1244,24 +1124,9 @@
     "ast_hash": "1d6edc7f4cef2bc127f3756baf6cfe0b",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\test-keys.js": {
-    "mtime": 1780220554.395216,
-    "ast_hash": "100d124c89d19224ea05e1c7d15074ec",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\pdf.worker-RyG79FsO.js": {
-    "mtime": 1780763065.0120366,
-    "ast_hash": "f0431abd1bf5a400ced4081aaaaf1b2d",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\backend-python\\app\\services\\drive_service.py": {
-    "mtime": 1780494293.8531506,
-    "ast_hash": "b6dbc96376af1938ee0e14f1dcf62b19",
-    "semantic_hash": ""
-  },
   "D:\\QUESTION MIND\\backend-python\\app\\services\\email_service.py": {
-    "mtime": 1780494275.0130012,
-    "ast_hash": "165e328dcee2bd8e7c6caec3ac1503c2",
+    "mtime": 1781421647.5275745,
+    "ast_hash": "234960109f7a147ee639cbc94caef29d",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\patch.py": {
@@ -1270,13 +1135,13 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\components\\GlobalLoader.tsx": {
-    "mtime": 1780763044.4103477,
-    "ast_hash": "203543cbd4ae98bb8ea9d4606116bebb",
+    "mtime": 1780999251.8815734,
+    "ast_hash": "69254f685467ddf01ba2a80609c4afe1",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\public\\assets\\app_logo.png": {
-    "mtime": 1780759965.0261805,
-    "ast_hash": "950d672d75fb09bfe6d1ab8b81c07e6a",
+    "mtime": 1780761821.6181207,
+    "ast_hash": "b2a03ef4a5de06720f32728270dcbd80",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\splash_screen_video.mp4": {
@@ -1299,44 +1164,629 @@
     "ast_hash": "b2a03ef4a5de06720f32728270dcbd80",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\excelGenerator-CtNjVYtt.js": {
-    "mtime": 1780763065.010013,
-    "ast_hash": "7f032dfe0374d25f17bb63655ed2dca3",
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_cdap_7958dfd3_74388996.md": {
+    "mtime": 1781421790.6035402,
+    "ast_hash": "7cc5bdce066c6bcef6b5c52fb9f90036",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\index-Bp6MNq6X.js": {
-    "mtime": 1780763065.0120366,
-    "ast_hash": "154f2c20fdc27cf6a96e4655b61b149c",
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_cdap_153c13a6_41a291e7.md": {
+    "mtime": 1781421790.616539,
+    "ast_hash": "f5f092440f931ae40de7114b6c684a9c",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\index-DU4DYdy4.js": {
-    "mtime": 1780763065.010013,
-    "ast_hash": "a253b8e0c4365104f1df31bbdbd9caba",
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_153150_c1babb73.md": {
+    "mtime": 1781421790.6424012,
+    "ast_hash": "d515abe7bb0167b47c29629df87188fb",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-BGenaL8m.js": {
-    "mtime": 1780763065.010013,
-    "ast_hash": "051ddb6b4f94d6d54d941987f316fa7c",
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_163215_92c085e9.md": {
+    "mtime": 1781421790.6679218,
+    "ast_hash": "add6bfb99a1d1ff04143264fed1bbb45",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-Bi_v6ifN.js": {
-    "mtime": 1780763065.010013,
-    "ast_hash": "079e1768866a59159c248566fb449c1f",
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_194636_dd665057.md": {
+    "mtime": 1781421790.7113454,
+    "ast_hash": "80efe6cd59c3c8eb91c9e1b32d996ace",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-CnkAU5Kx.js": {
-    "mtime": 1780763065.010013,
-    "ast_hash": "c8df175a8d1f56b4894d26402ed15bb5",
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_195556_ea4e0f03.md": {
+    "mtime": 1781421790.745718,
+    "ast_hash": "57fa43669b19f69f897cdbdf818d9733",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-iaDeVxl2.js": {
-    "mtime": 1780763065.010013,
-    "ast_hash": "498cbbb83395a1c3f05093c68cf90c74",
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_112638_35a7294d.md": {
+    "mtime": 1781421790.792788,
+    "ast_hash": "380aff85ef2a3b5e40a90e1df3186964",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-J58eGlt-.js": {
-    "mtime": 1780763065.010013,
-    "ast_hash": "7d222861666d2ff9b7004bd5f8241882",
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_113145_186d344b.md": {
+    "mtime": 1781421790.8036797,
+    "ast_hash": "7b0944c7dc188edec6d9fadee0579486",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_113859_23c82583.md": {
+    "mtime": 1781421790.8348343,
+    "ast_hash": "dfa6a780373b0bd351b199f0c297d738",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_114333_2e32bd9c.md": {
+    "mtime": 1781421790.873254,
+    "ast_hash": "fae6b18685a27cb5b31eed816626df1a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_114850_709f5eea.md": {
+    "mtime": 1781421790.9030342,
+    "ast_hash": "d824625053942e74635f75bde85341b9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_115144_0511a736.md": {
+    "mtime": 1781421790.9429028,
+    "ast_hash": "b5abadd06b75adb260ece0adc7d7d608",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_115513_4791a0cb.md": {
+    "mtime": 1781421790.9679396,
+    "ast_hash": "b04e2c7a441599b7eb20c85596096760",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_115829_16ee1f2b.md": {
+    "mtime": 1781421790.9930558,
+    "ast_hash": "d6845c3401a30d17c47856701b20df7d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_145830_b43a0efb.md": {
+    "mtime": 1781421791.0092328,
+    "ast_hash": "94f21be6a1ded7ac412e32a3b375a338",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_154322_7412a532.md": {
+    "mtime": 1781421791.0290718,
+    "ast_hash": "c1baa414ec550d6858c7c64ecee4fb0f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_154749_c76f86da.md": {
+    "mtime": 1781421791.0635033,
+    "ast_hash": "c23f31c8425d9acece3dc9039dedc536",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_155249_7d194487.md": {
+    "mtime": 1781421791.0979435,
+    "ast_hash": "d70f88b50f4223ce6d48003abd388cd0",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_155628_5619096f.md": {
+    "mtime": 1781421791.1330967,
+    "ast_hash": "72d2957c3d1cd9b1efc7ee265d100abf",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_155901_7e4b357f.md": {
+    "mtime": 1781421791.1701543,
+    "ast_hash": "0b83d54bb17b56f8eca060ecc15bbdc7",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_163241_6901c0c8.md": {
+    "mtime": 1781421791.207744,
+    "ast_hash": "25015c376e9b3b0547a065eb484d512d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_214622_322b7f0b.md": {
+    "mtime": 1781421791.2321959,
+    "ast_hash": "31331ed411857021cbceacecb78e3f5a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_215338_2e12b958.md": {
+    "mtime": 1781421791.3114016,
+    "ast_hash": "5b5461f4c30accea9adfbc27fa3a837c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_215815_671f18dd.md": {
+    "mtime": 1781421791.3591359,
+    "ast_hash": "423e7fd5c8c315ca590b90fc69f4c016",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_220236_1b16f72a.md": {
+    "mtime": 1781421791.3958201,
+    "ast_hash": "7c4015d885f902ee076bef129c656b6e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_220845_334f0812.md": {
+    "mtime": 1781421791.444255,
+    "ast_hash": "282a9acb8b0e9acd86bc624881af07f6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260129_061717_d21a8d3e.md": {
+    "mtime": 1781421791.4939177,
+    "ast_hash": "7a62200099acd726f3b9a8de6bef87e0",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260130_145428_fec597e4.md": {
+    "mtime": 1781421791.5233192,
+    "ast_hash": "b5cb449d5a530291eca712f1493677cb",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_133640_32cf7646.md": {
+    "mtime": 1781421791.566916,
+    "ast_hash": "f2517edd7ddb2b886727c940034eb7dd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_135447_cc67831a.md": {
+    "mtime": 1781421791.6099153,
+    "ast_hash": "b23a4c2e3a0bc7791e714d656bc49221",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_163451_a98894cd.md": {
+    "mtime": 1781421791.6488104,
+    "ast_hash": "cd86d1b82c1fd6f7b99a13e949cf55e6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_191909_d85b0b0e.md": {
+    "mtime": 1781421791.6928804,
+    "ast_hash": "a08ab4258a6c32c29049063b4affdc4d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_192613_5c27110c.md": {
+    "mtime": 1781421791.7383773,
+    "ast_hash": "e274e0322d17241c845f4c8658d93e82",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_192713_7b418371.md": {
+    "mtime": 1781421791.7795608,
+    "ast_hash": "67b600ee6f5e2044d34020e778d76c64",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_195715_001eaba7.md": {
+    "mtime": 1781421791.8145223,
+    "ast_hash": "02ddc1ee2add3b12edbd12321fe12f90",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_113234_f07dd1ed.md": {
+    "mtime": 1781421791.85481,
+    "ast_hash": "fc723279d410323500e35c7431f1193d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_113905_4f43fdc0.md": {
+    "mtime": 1781421791.8973577,
+    "ast_hash": "509eae95a81181df5577748f3ec3fa7f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_114232_943f0119.md": {
+    "mtime": 1781421791.911885,
+    "ast_hash": "aeaaf8d88df21f53a3685d5f59d02c19",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_115135_633e8508.md": {
+    "mtime": 1781421791.9475515,
+    "ast_hash": "602e808033f3261843146fc44c4ee48d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_152308_3ec6e0ae.md": {
+    "mtime": 1781421791.9907427,
+    "ast_hash": "859b83f9dcae025fd06a06bad2341bfd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_061501_e1fc4605.md": {
+    "mtime": 1781421792.0345435,
+    "ast_hash": "7ed82e951dae8e76f57689362db42ab3",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_061629_09f50249.md": {
+    "mtime": 1781421792.0744777,
+    "ast_hash": "88929b4c6e414915065c013b4f26cc55",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_062742_3b4e4811.md": {
+    "mtime": 1781421792.1132083,
+    "ast_hash": "7bc80005341cfbcd4959ce4ab6f74a6b",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_063359_9a46fbee.md": {
+    "mtime": 1781421792.1848202,
+    "ast_hash": "4771ead33673e2eb8afe7f29db5a2cfd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_065924_9059a67b.md": {
+    "mtime": 1781421792.2324755,
+    "ast_hash": "e55ec4058a90f0fd8547451d8e686294",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_070328_325cb643.md": {
+    "mtime": 1781421792.2729673,
+    "ast_hash": "dfbd4da1f8ef8e6f5ff75341503148a1",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_070806_47e8ed78.md": {
+    "mtime": 1781421792.318065,
+    "ast_hash": "75b5f9fb799eb4606bc31b49e8a1f857",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_070842_d49cb943.md": {
+    "mtime": 1781421792.3616803,
+    "ast_hash": "a751a41ebe0210bda9039bf1979e4f69",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_140336_c24230f6.md": {
+    "mtime": 1781421792.4050717,
+    "ast_hash": "bffe2030b96ecf13006dfb1bc117f34f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_143452_a6e38e57.md": {
+    "mtime": 1781421792.424843,
+    "ast_hash": "6137e91c7ab63d6c079d6bd35a78ec10",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_152010_6ab8b55e.md": {
+    "mtime": 1781421792.462253,
+    "ast_hash": "431d669771ff7fafa028edebb710e4a5",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_152026_ca2d7d77.md": {
+    "mtime": 1781421792.4882004,
+    "ast_hash": "aa5a13a0de9be0576c78b1e42f761b2f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_111355_8e971f9f.md": {
+    "mtime": 1781421792.5143456,
+    "ast_hash": "205c9d2c2487401d963a4f8d99beb920",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_111552_a34e4986.md": {
+    "mtime": 1781421792.5604768,
+    "ast_hash": "1a97c3b30998b422cd6dd579aaf7cfc5",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_112217_ad6fe290.md": {
+    "mtime": 1781421792.5992208,
+    "ast_hash": "154e227b4374c6ca7d85e693e1294a4d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_122625_3511858b.md": {
+    "mtime": 1781421792.655542,
+    "ast_hash": "e17f05b792892f044e72f42f1c4f18d4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_143123_dfe93cc7.md": {
+    "mtime": 1781421792.6811717,
+    "ast_hash": "d7b49f384d6732a1cf2d7fd254e134a8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_195800_6c34d766.md": {
+    "mtime": 1781421792.735709,
+    "ast_hash": "d3a15eb464d8509d638319c6413fa783",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260306_111948_3afec71d.md": {
+    "mtime": 1781421792.7817044,
+    "ast_hash": "b66a3c84c524eedd26cfad42d79a72b6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260307_202151_09961a2e.md": {
+    "mtime": 1781421792.8244553,
+    "ast_hash": "4b720de29b63548acaf5314fca39f9d7",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260308_162944_21301cd5.md": {
+    "mtime": 1781421792.863834,
+    "ast_hash": "2182dc6a73a4d842374c86e69e98b220",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\dbms question bank_95163910.md": {
+    "mtime": 1781421793.2211,
+    "ast_hash": "8c12f5358b2c88a5b6b9eb8231e84776",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\OS CDAP_e040c93a.md": {
+    "mtime": 1781421793.2488425,
+    "ast_hash": "c68a6fbb97e0a975b49ebdb403b3afca",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\dbms question bank_e476cdb6.md": {
+    "mtime": 1781421793.4566011,
+    "ast_hash": "8c12f5358b2c88a5b6b9eb8231e84776",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\OS CDAP_70e4ebef.md": {
+    "mtime": 1781421793.487547,
+    "ast_hash": "c68a6fbb97e0a975b49ebdb403b3afca",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\JSON SECRETS\\question-mind-e4d0ba94065c.json": {
+    "mtime": 1780909557.6166098,
+    "ast_hash": "7d0e7163d826f3d27a367d7a9fcaccbe",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\pages\\AdminDashboard.tsx": {
+    "mtime": 1781370451.7743704,
+    "ast_hash": "45e7b08f9a8213b13fff5ff2c5c34c34",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\index-WTMhnkVv.js": {
+    "mtime": 1781070241.4688213,
+    "ast_hash": "f8e054f733b6e61a55f31d5dbd63b6c4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-BXwplYvo.js": {
+    "mtime": 1781070241.4688213,
+    "ast_hash": "d19bbde49513e10d354f3d2e4fe07a25",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-DCebbxVx.js": {
+    "mtime": 1781070241.4688213,
+    "ast_hash": "2d49e08217eb3f67a9a9144c7e0714bd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-DKnyhJCK.js": {
+    "mtime": 1781070241.4688213,
+    "ast_hash": "4a46a94920548c79085f0b4a221dd884",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\xlsx-D_0l8YDs.js": {
+    "mtime": 1781070241.4688213,
+    "ast_hash": "a80e7f778bd925f7caae84a0bc049774",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\java\\com\\krishacademia\\questionmind\\PythonBridge.java": {
+    "mtime": 1781067550.716833,
+    "ast_hash": "49f4f4731ba27007052efef6c9bcea61",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\java\\com\\krishacademia\\questionmind\\PythonBridgePlugin.java": {
+    "mtime": 1781067504.566471,
+    "ast_hash": "3e90992bd0076282c810e27e7587762e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\config.py": {
+    "mtime": 1781356610.8340447,
+    "ast_hash": "71d37091ecdf27c3fdb9e7ebfde8030e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\database.py": {
+    "mtime": 1781356642.5479205,
+    "ast_hash": "cd5d6e5edbcc08b3aa2d3f4465cd8f44",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\main.py": {
+    "mtime": 1781356633.4548635,
+    "ast_hash": "daaaad453be2f4d5d657c3c9336c1603",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\mobile_bridge.py": {
+    "mtime": 1781070571.5381382,
+    "ast_hash": "21b69c6bd4d6ee2ae246ca58634a9f56",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\__init__.py": {
+    "mtime": 1769435220.4893458,
+    "ast_hash": "df77654bb1989fdfdb5172b97169c707",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\cdap.py": {
+    "mtime": 1769852500.804045,
+    "ast_hash": "12d4582ee38601059ac6c6e5a4b21e60",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\help_request.py": {
+    "mtime": 1780817353.2523928,
+    "ast_hash": "9bf1f74b054d4b9ed3a620de207699f2",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\question_bank.py": {
+    "mtime": 1780817341.4722931,
+    "ast_hash": "de5e558fc69519b3114295b109a1f971",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\staff_assignment.py": {
+    "mtime": 1769433699.0465791,
+    "ast_hash": "3c2afa6bc0a8c80c6bac90fb7590ab23",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\subject.py": {
+    "mtime": 1769852523.8508868,
+    "ast_hash": "d3071332049423ae02582a9c3196aab4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\syllabus.py": {
+    "mtime": 1769433699.0465791,
+    "ast_hash": "70ed58c53a5a73b01019a76fa1d3ea75",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\user.py": {
+    "mtime": 1780817327.0698884,
+    "ast_hash": "70617fbc22d49680af1e10cd5f20be48",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\__init__.py": {
+    "mtime": 1769852521.756713,
+    "ast_hash": "33fececd5758400d8a7d69ffc94f8727",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\ai_settings.py": {
+    "mtime": 1781064202.688025,
+    "ast_hash": "c8a8f852080fefe93abf3d03c6fd5305",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\auth.py": {
+    "mtime": 1769434033.803202,
+    "ast_hash": "206403c294339f258aaf25b12fa51172",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\question_bank.py": {
+    "mtime": 1781065090.2345932,
+    "ast_hash": "82718dd958f3d65888033479f95a03e4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\staff.py": {
+    "mtime": 1780494381.8014007,
+    "ast_hash": "9c1aea912913757604fd492b8bf65f2d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\subjects.py": {
+    "mtime": 1769647601.375303,
+    "ast_hash": "c8f575429c1f0f8aa769dc0c0a0cec4a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\syllabus.py": {
+    "mtime": 1769938959.1932526,
+    "ast_hash": "01fc9df9c2ce1cd64980e8eae185a2aa",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\__init__.py": {
+    "mtime": 1769434255.8079958,
+    "ast_hash": "27618dcf31539ea32d0cffac55dc0a38",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\cdap.py": {
+    "mtime": 1769938075.4485993,
+    "ast_hash": "44e48b96b6312b8997b53dc6408d10fb",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\question_bank.py": {
+    "mtime": 1780914681.4552405,
+    "ast_hash": "1f230e45fc8d0c1de380bcadb608f7e7",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\staff.py": {
+    "mtime": 1780494316.8718853,
+    "ast_hash": "f639c7130646077be4ade8afead43e5b",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\subject.py": {
+    "mtime": 1772780808.906029,
+    "ast_hash": "4b4e356a8f4cbb42d8cfbae7cbfb970c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\syllabus.py": {
+    "mtime": 1769433969.9667594,
+    "ast_hash": "f8900bbf62de0dcdc3e710581426f48d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\user.py": {
+    "mtime": 1769433715.583982,
+    "ast_hash": "62dafd6559034aa2eb0149f36a85f256",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\__init__.py": {
+    "mtime": 1780494327.1024096,
+    "ast_hash": "82ef993de887a52088c09b3f8840538d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\ai_service.py": {
+    "mtime": 1781064166.6047566,
+    "ast_hash": "5a2cea2d42f7fe511ff9a80837ecaa0f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\auth.py": {
+    "mtime": 1781070953.5973296,
+    "ast_hash": "f4755596fd4037fb1493153f14cec0cc",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\cdap_parser.py": {
+    "mtime": 1781066968.6394596,
+    "ast_hash": "2e8ca4b6b4321925acfc6eae470e08b0",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\drive_service.py": {
+    "mtime": 1781065067.3871188,
+    "ast_hash": "04c1d0de8952f4bdb1cecfdd1046f50c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\email_service.py": {
+    "mtime": 1780494275.0130012,
+    "ast_hash": "165e328dcee2bd8e7c6caec3ac1503c2",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\enhanced_ai_service.py": {
+    "mtime": 1780210157.279698,
+    "ast_hash": "b07bb6262d2e128a1452ebf5761dfa5a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\excel_service.py": {
+    "mtime": 1781067770.0371842,
+    "ast_hash": "7b42b712b6021f73c9c9f48a67109a51",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\google_drive_service.py": {
+    "mtime": 1781068066.5545347,
+    "ast_hash": "5410772f17c105a14905e7bff89dbbaa",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\local_model_service.py": {
+    "mtime": 1780210157.279698,
+    "ast_hash": "2e444fc8c34ac643aea44251b3f29c4e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\syllabus_parser.py": {
+    "mtime": 1781067320.8911958,
+    "ast_hash": "6bf25ad331b865c20823b8e9a725db85",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\__init__.py": {
+    "mtime": 1769434033.7866015,
+    "ast_hash": "5795d91cdae8c4c484b94b7e87860f91",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\chaquopyBridge.ts": {
+    "mtime": 1781065854.0683267,
+    "ast_hash": "058ad15f700463f5fcbb9ff7735db274",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\MOBILE_APP_GUIDE.md": {
+    "mtime": 1781071577.688751,
+    "ast_hash": "b10911febc54d104dac0af28d5374c3b",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\backend-python\\seed_admin.py": {
+    "mtime": 1781366724.3454106,
+    "ast_hash": "6e9eca515cc14894784671449462e72e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\backend-python\\update_email.py": {
+    "mtime": 1781368727.382934,
+    "ast_hash": "7337030c62dea3b73935b2cffcde8c5d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\components\\Combobox.tsx": {
+    "mtime": 1781368116.6654377,
+    "ast_hash": "e157219eb3584ecdb879bdd68ba7d6d6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\splash.mp4": {
+    "mtime": 1781405263.27789,
+    "ast_hash": "1e8eb423d1cfe71465d22dc9a10a550f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\backend-python\\uploads\\syllabus\\cse_792823c6.pdf": {
+    "mtime": 1781410532.717639,
+    "ast_hash": "558952261c4b0f09447f8bb91d9a2b68",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\cse_cdap_cbba219a_4a3c7d74.md": {
+    "mtime": 1781421790.628827,
+    "ast_hash": "f30412f5f397c07a063be54724c16d21",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\components\\GlobalLoader.tsx": {
+    "mtime": 1781411979.4925027,
+    "ast_hash": "23e76e776d5d03d9eb509cc9f6d0bf56",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_102422_9a2cac5b.md": {
+    "mtime": 1781421792.9255958,
+    "ast_hash": "6eff25f5b163763f29ad9fbfb1bd7b2c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_111822_0eb40d20.md": {
+    "mtime": 1781421792.9936142,
+    "ast_hash": "2f1caccd4084802c5ae692268b8fb60a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_121213_964bf8fd.md": {
+    "mtime": 1781421793.0660381,
+    "ast_hash": "f05f2a68c1c972b068988a59190d9fb0",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_124320_1646531e.md": {
+    "mtime": 1781421793.1447937,
+    "ast_hash": "c1f7adf632296d988b324ea95e68e101",
     "semantic_hash": ""
   }
 }

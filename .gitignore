@@ -49,3 +49,19 @@ coverage/
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Google Secrets / Credentials
+*credentials.json
+JSON SECRETS/
+client_secret*.json
+
+# Graphify Caches
+graphify-out/cache/
+mobile-app/graphify-out/cache/
+
+# Graphify Converted Outputs
+graphify-out/converted/
+mobile-app/graphify-out/converted/
+
+# Databases
+*.db

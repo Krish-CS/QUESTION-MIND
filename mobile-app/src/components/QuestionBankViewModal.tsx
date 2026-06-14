@@ -226,13 +226,13 @@ export default function QuestionBankViewModal({
                             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-full sm:w-auto">
                                 <button
                                     onClick={() => setActiveTab('questions')}
-                                    className={`flex-1 sm:flex-initial px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-all text-center ${activeTab === 'questions'
+                                    className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-md transition-all text-center ${activeTab === 'questions'
                                         ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
                                 >Questions</button>
                                 <button
                                     onClick={() => setActiveTab('answers')}
-                                    className={`flex-1 sm:flex-initial px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-all text-center ${activeTab === 'answers'
+                                    className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-md transition-all text-center ${activeTab === 'answers'
                                         ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
                                 >With Answers</button>

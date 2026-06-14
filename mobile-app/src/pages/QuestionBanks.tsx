@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { subjectsApi, syllabusApi, questionBankApi, staffApi, downloadExcel } from '../lib/api';
 import { useAuthStore, useUiStore } from '../lib/store';
 import {
@@ -26,6 +28,7 @@ import { Subject, Syllabus, QuestionBank, MySubjectAssignment, PartConfiguration
 import QuestionBankViewModal from '../components/QuestionBankViewModal';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { useBackButton } from '../lib/useBackButton';
+import { useAISettingsStore } from '../lib/settingsStore';
 
 export default function QuestionBanks() {
   const { user } = useAuthStore();
@@ -121,7 +124,15 @@ export default function QuestionBanks() {
         res.status === 'fulfilled' ? res.value.data : fallback;
 
       if (results.some(res => res.status === 'rejected')) {
-        setError('Failed to load some data. Please retry.');
+        const firstError = results.find(res => res.status === 'rejected') as PromiseRejectedResult;
+        const err = firstError.reason;
+        if (!err?.response) {
+          setError('Server is unreachable. Please check your connection (Not fetchable).');
+        } else if (err.response.status === 404) {
+          setError('Data is currently empty or not found.');
+        } else {
+          setError(err.response?.data?.detail || err.message || 'Failed to load some data. Please retry.');
+        }
       }
 
       const syllabusData = getData(results[0], [] as Syllabus[]);
@@ -162,7 +173,14 @@ export default function QuestionBanks() {
         setPendingApprovals(pendingData.filter((b: QuestionBank) => approvableSubjects.includes(b.subject_id)));
       }
     } catch (err: any) {
-      setError(err?.message || 'Failed to load data');
+      console.error(err);
+      if (!err.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (err.response.status === 404) {
+        setError('Data is currently empty or not found.');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Failed to load data.');
+      }
     } finally {
       setLoading(false);
     }
@@ -264,12 +282,8 @@ export default function QuestionBanks() {
         applyPatternToLocalState(pattern, syllabusUnits);
       }
     }
-    // Auto-detect generation mode from saved pattern
-    setQbMode(
-      (pattern?.unit_configs && Object.keys(pattern.unit_configs).length > 0) ||
-      (pattern?.unit_question_counts && Object.keys(pattern.unit_question_counts).length > 0)
-        ? 'individual' : 'combined'
-    );
+    // Always stay in combined mode
+    setQbMode('combined');
     if (syllabusUnits.length > 0) {
       setSelectedUnitIds(syllabusUnits.map((u: any) => u.unitNumber));
     } else {
@@ -448,12 +462,12 @@ export default function QuestionBanks() {
     const hasUnitCfg = qbMode === 'individual' && localUnitCfg
       && Object.keys(localUnitCfg).length > 0;
 
-    const unitCfg = hasUnitCfg
+    const unitCfg = qbMode === 'combined' ? undefined : (hasUnitCfg
       ? Object.fromEntries(
           Object.entries(localUnitCfg)
             .filter(([unitNum]) => selectedUnitIds.includes(Number(unitNum)))
         )
-      : undefined;
+      : undefined);
 
     const uqc = !hasUnitCfg && qbMode === 'individual' && selectedSubjectPattern?.unit_question_counts
       && Object.keys(selectedSubjectPattern.unit_question_counts).length > 0
@@ -468,14 +482,36 @@ export default function QuestionBanks() {
       : undefined;
 
     try {
+      const aiSettings = useAISettingsStore.getState();
       const response = await questionBankApi.generate({
         subject_id: selectedSubjectId,
         syllabus_id: syllabus.id,
         selected_unit_ids: qbMode === 'combined' && !isAllSelected ? selectedUnitIds : undefined,
         unit_configs: unitCfg,
         unit_question_counts: uqc,
+        ai_settings: {
+          preferred_provider: aiSettings.preferredProvider,
+          provider_keys: aiSettings.providerKeys,
+          custom_keys: aiSettings.customKeys,
+        },
       });
       const newBank: QuestionBank = response.data;
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const check = await LocalNotifications.checkPermissions();
+          if (check.display !== 'granted') await LocalNotifications.requestPermissions();
+          await LocalNotifications.schedule({
+            notifications: [{
+              title: 'Generation Complete',
+              body: `Question Bank "${newBank.title || 'Untitled'}" has been successfully generated!`,
+              id: Math.floor(Math.random() * 1000000),
+              sound: 'default'
+            }]
+          });
+        } catch (e) {
+          console.warn('Failed to send generation notification', e);
+        }
+      }
       setQuestionBanks(prev => [newBank, ...prev]);
       setLatestBankId(newBank.id);
       setSuccessBank(newBank);
@@ -493,7 +529,7 @@ export default function QuestionBanks() {
   const { setGlobalLoading } = useUiStore();
 
   const handleDownload = async (bank: QuestionBank) => {
-    setGlobalLoading(true, 'Generating and Downloading...');
+    setGlobalLoading(true, 'Downloading');
     try {
       const response = await questionBankApi.download(bank.id);
       await downloadExcel(response.data, `${bank.title || 'question_bank'}.xlsx`);
@@ -672,7 +708,7 @@ export default function QuestionBanks() {
                 className="btn w-full md:w-auto bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 text-white shadow-lg shadow-pink-500/40 hover:shadow-pink-500/60 hover:scale-105 active:scale-95 transition-all duration-300 font-extrabold tracking-wide border-0 disabled:opacity-90 disabled:cursor-not-allowed"
               >
                 {generating
-                  ? <><Loader2 className="w-5 h-5 animate-spin" />Generating...</>
+                  ? <><Loader2 className="w-5 h-5 animate-spin" />Generating • We'll notify you</>
                   : <><Sparkles className="w-5 h-5 animate-pulse" />Generate</>
                 }
               </button>
@@ -688,10 +724,10 @@ export default function QuestionBanks() {
             {selectedSubjectId && syllabi[selectedSubjectId] && (
               <div>
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Generation Mode</p>
-                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full">
                   <button
                     onClick={() => setQbMode('combined')}
-                    className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
                       qbMode === 'combined'
                         ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
@@ -701,7 +737,7 @@ export default function QuestionBanks() {
                   </button>
                   <button
                     onClick={() => setQbMode('individual')}
-                    className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
                       qbMode === 'individual'
                         ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'

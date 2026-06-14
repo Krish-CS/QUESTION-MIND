@@ -4,6 +4,7 @@ from ..database import Base
 import enum
 
 class UserRole(str, enum.Enum):
+    ADMIN = "ADMIN"
     HOD = "HOD"
     FACULTY = "FACULTY"
 

@@ -41,8 +41,8 @@ async def get_all_staff(
     user: User = Depends(get_current_user)
 ):
     """HOD-only: list every registered staff/faculty member with their subject assignments."""
-    if user.role != UserRole.HOD:
-        raise HTTPException(status_code=403, detail="Only HOD can view all staff")
+    if user.role != UserRole.ADMIN.value:
+        raise HTTPException(status_code=403, detail="Only ADMIN can view all staff assignments")
 
     faculty = db.query(User).filter(User.role == UserRole.FACULTY).all()
 
@@ -123,8 +123,8 @@ async def assign_staff(
     user: User = Depends(get_current_user)
 ):
     """Assign staff to a subject"""
-    if user.role != UserRole.HOD:
-        raise HTTPException(status_code=403, detail="Only HOD can assign staff")
+    if user.role != UserRole.ADMIN.value:
+        raise HTTPException(status_code=403, detail="Only ADMIN can assign staff")
     
     existing = db.query(StaffAssignment).filter(
         StaffAssignment.subject_id == subject_id,
@@ -165,8 +165,8 @@ async def update_permissions(
     user: User = Depends(get_current_user)
 ):
     """Update staff permissions"""
-    if user.role != UserRole.HOD:
-        raise HTTPException(status_code=403, detail="Only HOD can update permissions")
+    if user.role != UserRole.ADMIN.value:
+        raise HTTPException(status_code=403, detail="Only ADMIN can update permissions")
     
     assignment = db.query(StaffAssignment).filter(StaffAssignment.id == assignment_id).first()
     if not assignment:
@@ -188,8 +188,8 @@ async def remove_staff(
     user: User = Depends(get_current_user)
 ):
     """Remove staff from subject"""
-    if user.role != UserRole.HOD:
-        raise HTTPException(status_code=403, detail="Only HOD can remove staff")
+    if user.role != UserRole.ADMIN.value:
+        raise HTTPException(status_code=403, detail="Only ADMIN can remove staff")
     
     assignment = db.query(StaffAssignment).filter(StaffAssignment.id == assignment_id).first()
     if not assignment:
@@ -207,10 +207,10 @@ async def delete_staff_member(
     user: User = Depends(get_current_user)
 ):
     """HOD-only: permanently deactivate a staff member account."""
-    if user.role != UserRole.HOD:
-        raise HTTPException(status_code=403, detail="Only HOD can remove staff members")
+    if user.role != UserRole.ADMIN.value:
+        raise HTTPException(status_code=403, detail="Only ADMIN can remove staff members")
 
-    staff = db.query(User).filter(User.id == staff_id, User.role == UserRole.FACULTY).first()
+    staff = db.query(User).filter(User.id == staff_id, User.role.in_([UserRole.FACULTY, UserRole.HOD])).first()
     if not staff:
         raise HTTPException(status_code=404, detail="Staff member not found")
 
@@ -244,8 +244,8 @@ async def import_staff_from_excel(
     If the 'subjects' column is absent entirely, staff identities are created
     without any subject assignment. The HOD can assign subjects manually later.
     """
-    if user.role != UserRole.HOD:
-        raise HTTPException(status_code=403, detail="Only HOD can import staff")
+    if user.role != UserRole.ADMIN.value:
+        raise HTTPException(status_code=403, detail="Only ADMIN can import staff assignments")
 
     allowed_types = {
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

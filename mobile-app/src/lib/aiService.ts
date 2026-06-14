@@ -10,6 +10,8 @@
  * - Markdown stripping & unit reference removal
  */
 
+import { useAISettingsStore } from './settingsStore';
+
 // K-Level / BTL keyword guide
 const K_KEYWORDS: Record<string, string> = {
   BTL1: 'define, recall, list, identify, state, name',
@@ -78,17 +80,37 @@ class AIService {
     this.rebuildProviderChain();
   }
 
-  /**
-   * Rebuild the provider chain from localStorage keys
-   */
   rebuildProviderChain() {
     this.providerChain = [];
 
-    const cerebrasKey = localStorage.getItem('CEREBRAS_API_KEY') || '';
-    const cerebrasKey2 = localStorage.getItem('CEREBRAS_API_KEY_2') || '';
-    const groqKey = localStorage.getItem('GROQ_API_KEY') || '';
-    const nvidiaKey = localStorage.getItem('NVIDIA_API_KEY') || '';
-    const openrouterKey = localStorage.getItem('OPENROUTER_API_KEY') || '';
+    const store = useAISettingsStore.getState();
+    const providerKeys = store.providerKeys || {};
+    const customKeys = store.customKeys || {};
+    const preferredProvider = store.preferredProvider || 'backend';
+
+    const getKeyValue = (prov: string, systemKeyName: string) => {
+      const source = providerKeys[prov] || 'system-1';
+      if (preferredProvider === 'custom') {
+        return customKeys[prov] || '';
+      }
+      if (source === 'system-1') {
+        return localStorage.getItem(systemKeyName) || '';
+      }
+      if (source === 'system-2') {
+        if (prov === 'cerebras') {
+          return localStorage.getItem('CEREBRAS_API_KEY_2') || '';
+        }
+      }
+      if (source === 'custom') {
+        return customKeys[prov] || '';
+      }
+      return '';
+    };
+
+    const cerebrasKey = getKeyValue('cerebras', 'CEREBRAS_API_KEY');
+    const groqKey = getKeyValue('groq', 'GROQ_API_KEY');
+    const nvidiaKey = getKeyValue('nvidia', 'NVIDIA_API_KEY');
+    const openrouterKey = getKeyValue('openrouter', 'OPENROUTER_API_KEY');
 
     // Priority 1: Cerebras key 1
     if (cerebrasKey.trim()) {
@@ -102,10 +124,12 @@ class AIService {
     }
 
     // Priority 1b: Cerebras key 2
-    if (cerebrasKey2.trim()) {
+    // Only append if system key 1 is selected and key 2 is available, to preserve default fallback behavior
+    const system2KeyVal = localStorage.getItem('CEREBRAS_API_KEY_2') || '';
+    if (providerKeys.cerebras === 'system-1' && preferredProvider !== 'custom' && system2KeyVal.trim()) {
       this.providerChain.push({
         name: 'cerebras-2',
-        apiKey: cerebrasKey2.trim(),
+        apiKey: system2KeyVal.trim(),
         baseUrl: 'https://api.cerebras.ai/v1',
         model: 'gpt-oss-120b',
         maxTokens: 8000,

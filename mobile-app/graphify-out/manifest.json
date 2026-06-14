@@ -5,8 +5,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\package.json": {
-    "mtime": 1780761304.3240836,
-    "ast_hash": "aa3a382f3672b9689405b130b874c004",
+    "mtime": 1780819921.698265,
+    "ast_hash": "e797653413bf6f6f7e4dbb528068bf85",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\postcss.config.js": {
@@ -40,7 +40,7 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\capacitor.settings.gradle": {
-    "mtime": 1780763687.6560757,
+    "mtime": 1780995971.9508908,
     "ast_hash": "1e75756edc4da12189405d1d116060fe",
     "semantic_hash": ""
   },
@@ -65,7 +65,7 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\capacitor.build.gradle": {
-    "mtime": 1780763687.6560757,
+    "mtime": 1780995971.951894,
     "ast_hash": "a6008b461b25d07d3b19f46575ed9cff",
     "semantic_hash": ""
   },
@@ -75,22 +75,22 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\capacitor.config.json": {
-    "mtime": 1780763687.5262632,
+    "mtime": 1780995971.7478766,
     "ast_hash": "5a3f233b212bafb3b186c267cec679b8",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\capacitor.plugins.json": {
-    "mtime": 1780763687.5958085,
+    "mtime": 1780995971.8628876,
     "ast_hash": "dd1f7d039b24b3eca5d996ff8b2f1234",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\cordova.js": {
-    "mtime": 1780763687.6518922,
+    "mtime": 1780995971.9448907,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\cordova_plugins.js": {
-    "mtime": 1780763687.6529117,
+    "mtime": 1780995971.9458892,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
@@ -130,12 +130,12 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\capacitor-cordova-android-plugins\\build.gradle": {
-    "mtime": 1780763687.658927,
+    "mtime": 1780995971.9548924,
     "ast_hash": "13a885b925f99b619845018a13d508d3",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\capacitor-cordova-android-plugins\\cordova.variables.gradle": {
-    "mtime": 1780763687.658927,
+    "mtime": 1780995971.9568968,
     "ast_hash": "299becb7733b8720b74d289e3cb837f1",
     "semantic_hash": ""
   },
@@ -180,8 +180,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\App.tsx": {
-    "mtime": 1780762407.5066888,
-    "ast_hash": "8e63ba5382f32b339cf3c91bafd2173f",
+    "mtime": 1780995671.5869064,
+    "ast_hash": "3a5a374940d292b9e3137de48ae78bf0",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\main.tsx": {
@@ -240,8 +240,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\aiService.ts": {
-    "mtime": 1780238844.4449236,
-    "ast_hash": "a56718aa394d7a96248d2ec1dcf00fd3",
+    "mtime": 1780914066.557609,
+    "ast_hash": "c27d435d6c689a4f8a0c123826cd357d",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\aiSettingsApi.ts": {
@@ -250,8 +250,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\api.ts": {
-    "mtime": 1780759594.8147078,
-    "ast_hash": "d50ae1f72bc19b223856862a3f6fbcd0",
+    "mtime": 1780995649.8161516,
+    "ast_hash": "8c55102d33a1519342bba8e63dc9458c",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\excelGenerator.ts": {
@@ -265,8 +265,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\settingsStore.ts": {
-    "mtime": 1780218730.9093494,
-    "ast_hash": "8298190a44969d47f7c30f5781aff4b1",
+    "mtime": 1780914038.0897312,
+    "ast_hash": "3e366cdd169e869858a01648b250809e",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\store.ts": {
@@ -295,13 +295,13 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Approvals.tsx": {
-    "mtime": 1780731053.2227829,
-    "ast_hash": "399fbc19ef61faed8fa43335d496c1f9",
+    "mtime": 1780916196.4212513,
+    "ast_hash": "ce8b133d475a17f7dcc61b3aeb358bdf",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Dashboard.tsx": {
-    "mtime": 1780761020.9100251,
-    "ast_hash": "7d090b3ea0fe4376f55df32cb71f1953",
+    "mtime": 1780915237.7979774,
+    "ast_hash": "969dc56db2cee6d76b1220c0a9d36450",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Login.tsx": {
@@ -310,18 +310,18 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Overview.tsx": {
-    "mtime": 1780731116.3410244,
-    "ast_hash": "c5a1acf7eada14c43bff3c0fa444ee65",
+    "mtime": 1780915307.3052313,
+    "ast_hash": "1efb8454d98ed657f2a317ad6c098cbf",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Patterns.tsx": {
-    "mtime": 1780761711.0280192,
-    "ast_hash": "9d243c72de07404b5659cd57c4aa68b4",
+    "mtime": 1780915566.3351486,
+    "ast_hash": "5ef86f836c0824495da810e621b24ed1",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\QuestionBanks.tsx": {
-    "mtime": 1780761645.3050954,
-    "ast_hash": "89be1c71a5085a2a4c60b50d7539cc9d",
+    "mtime": 1780915171.8839655,
+    "ast_hash": "59ba2ebcbfa8a81e998700f886b0c8ff",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Register.tsx": {
@@ -330,18 +330,18 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Settings.tsx": {
-    "mtime": 1780221444.2608306,
-    "ast_hash": "8b8a9bbe1bce7135ff1b56d595392e0c",
+    "mtime": 1780914260.91005,
+    "ast_hash": "413747863c41161a402222ea4b51f374",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Subjects.tsx": {
-    "mtime": 1780761608.8238761,
-    "ast_hash": "6264b2251723adbf7df83c4075b2fedf",
+    "mtime": 1780916636.7464516,
+    "ast_hash": "76b3d9f6355073b74b196b03a3ae7491",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Syllabus.tsx": {
-    "mtime": 1780761667.1238904,
-    "ast_hash": "4fdda823ba422f7b6913c2f7aaa7033a",
+    "mtime": 1780915149.5516715,
+    "ast_hash": "4cfb0f256860559b95fbfba1caa4f18d",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\types\\index.ts": {
@@ -355,8 +355,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\index.html": {
-    "mtime": 1780763673.9540403,
-    "ast_hash": "8d249f617fe91eb095ef273b5248cd0b",
+    "mtime": 1780995728.9890513,
+    "ast_hash": "6a9ee2251efba40bc43b30e2fb88ec37",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\src\\main\\python\\requirements.txt": {
@@ -390,7 +390,7 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\logo-5KIOeEvm.png": {
-    "mtime": 1780763673.9530408,
+    "mtime": 1780995728.9880495,
     "ast_hash": "3316984efb8fe6109ba67d7f17f04953",
     "semantic_hash": ""
   },
@@ -450,78 +450,78 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.png": {
-    "mtime": 1780763619.088758,
-    "ast_hash": "c19e9dfc167a937bdedee292bdc4e007",
+    "mtime": 1780765260.0493886,
+    "ast_hash": "bce2c334f70e3f73257825aae74bd237",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763619.1133547,
-    "ast_hash": "9f936cc543534fa030131834d62c821c",
+    "mtime": 1780765260.07957,
+    "ast_hash": "354db30ce7698568226d95dbd064d3aa",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_round.png": {
-    "mtime": 1780763619.0899057,
-    "ast_hash": "a374b4b905f44983ed0d1ddc133ab4cd",
+    "mtime": 1780765260.0513875,
+    "ast_hash": "72460984930e0de1f0bc9ba29adf284c",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.png": {
-    "mtime": 1780763619.0439558,
-    "ast_hash": "4341e09196eb724f7bd6b683c4c900dd",
+    "mtime": 1780765259.997137,
+    "ast_hash": "bef9c8f2ddc3974c11745b0ca3df92da",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763619.0640068,
-    "ast_hash": "ab1ad5976265fdc6be6cf30a8b885518",
+    "mtime": 1780765260.0253885,
+    "ast_hash": "a5fe29975e820fdf0a0cf5c538c50c22",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_round.png": {
-    "mtime": 1780763619.0439558,
-    "ast_hash": "4a8111834b81dfd653594f158eef166d",
+    "mtime": 1780765259.9981356,
+    "ast_hash": "5ade937ff9cc58871cf37715d91ca079",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.png": {
-    "mtime": 1780763619.1398275,
-    "ast_hash": "157d641e689935cadf01c71f7111ab88",
+    "mtime": 1780765260.106104,
+    "ast_hash": "f2d1def2a57900489461eac49190c9b0",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763619.167079,
-    "ast_hash": "972205603244c9843cfb833e50b5bb96",
+    "mtime": 1780765260.1387353,
+    "ast_hash": "e41dd6336ad5e80fd3f00b3efe88da31",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_round.png": {
-    "mtime": 1780763619.140909,
-    "ast_hash": "89d95a9fa23a4cbc1516138c93eaca3e",
+    "mtime": 1780765260.109116,
+    "ast_hash": "f0318e4d744d52e1ea37ed81bfcd8b0a",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.png": {
-    "mtime": 1780763619.1919053,
-    "ast_hash": "022e54554f5b02bce05d940a70368447",
+    "mtime": 1780765260.16842,
+    "ast_hash": "138f7d9d7947d95d1640193ecb6113a1",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763619.228167,
-    "ast_hash": "edd82893c26b5b8ddbbd90c17804cdc9",
+    "mtime": 1780765260.2138376,
+    "ast_hash": "b0ba04f604e46196a51c645ec0c13e9c",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_round.png": {
-    "mtime": 1780763619.195991,
-    "ast_hash": "6758f6d19e891f785b9e80171816796b",
+    "mtime": 1780765260.1724198,
+    "ast_hash": "ed98a51a4d4a970bb4ddb43b178d7dd1",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.png": {
-    "mtime": 1780763619.259614,
-    "ast_hash": "a3db417c16f720d6c62c32d0d7cc8ca1",
+    "mtime": 1780765260.2517533,
+    "ast_hash": "060a862e19db2c34829b8babf521dbf5",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_foreground.png": {
-    "mtime": 1780763619.3093748,
-    "ast_hash": "40bad6ae6a2e207e5848e3e95cfd856c",
+    "mtime": 1780765260.306896,
+    "ast_hash": "ec0cce1373fd5d8b0048348c0a57919b",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_round.png": {
-    "mtime": 1780763619.2680476,
-    "ast_hash": "819d6d33b17339320128f1f3dc9ccc87",
+    "mtime": 1780765260.25928,
+    "ast_hash": "40fd1cb2c029c8231dd4251ac1a28cf7",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\assets\\logo.png": {
@@ -530,8 +530,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\components\\GlobalLoader.tsx": {
-    "mtime": 1780763660.4822443,
-    "ast_hash": "4d6cba0a4ab1c371c33f5c03dcb64fc9",
+    "mtime": 1780764627.7690268,
+    "ast_hash": "132a04e7eb2d3dfc3ad1fed09091d8cc",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\useBackButton.ts": {
@@ -559,44 +559,14 @@
     "ast_hash": "b6cc4cc5c6e9e0a820e0f6da7e72f679",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\excelGenerator-B83pVW3J.js": {
-    "mtime": 1780763673.9540403,
-    "ast_hash": "bca57fced152a1e0cf92afd5f9679bdf",
+  "D:\\QUESTION MIND\\mobile-app\\graphify-out\\converted\\dbms question bank_e476cdb6.md": {
+    "mtime": 1780995968.759974,
+    "ast_hash": "8c12f5358b2c88a5b6b9eb8231e84776",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\index-DOxEnthh.js": {
-    "mtime": 1780763673.9562473,
-    "ast_hash": "7858d5d549d187a618c74ebca160041f",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\index-orJY85_N.js": {
-    "mtime": 1780763673.9550517,
-    "ast_hash": "51f545f08997bbf28ba1ec91a81448af",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-Bd1cfNBT.js": {
-    "mtime": 1780763673.9550517,
-    "ast_hash": "c58884c453404abcb68df0ec8e21c37f",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-BdpsI6LL.js": {
-    "mtime": 1780763673.9540403,
-    "ast_hash": "31424476521267e32220bf282e151413",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-CXM96AlT.js": {
-    "mtime": 1780763673.9530408,
-    "ast_hash": "838c343ab7bdab4b8ad20737f40cd74e",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-Dw86qjHx.js": {
-    "mtime": 1780763673.9530408,
-    "ast_hash": "7bb338cb59f19346bb196f9300c9acf2",
-    "semantic_hash": ""
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-El34ag6B.js": {
-    "mtime": 1780763673.9540403,
-    "ast_hash": "93d021a87fd9fee291bd16e48a3abf3e",
+  "D:\\QUESTION MIND\\mobile-app\\graphify-out\\converted\\OS CDAP_70e4ebef.md": {
+    "mtime": 1780995968.8548322,
+    "ast_hash": "c68a6fbb97e0a975b49ebdb403b3afca",
     "semantic_hash": ""
   }
 }

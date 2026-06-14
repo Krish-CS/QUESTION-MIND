@@ -41,3 +41,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 }));
+
+interface UiState {
+  isGlobalLoading: boolean;
+  globalLoadingText: string;
+  setGlobalLoading: (isLoading: boolean, text?: string) => void;
+}
+
+export const useUiStore = create<UiState>((set) => ({
+  isGlobalLoading: false,
+  globalLoadingText: 'Loading...',
+  setGlobalLoading: (isLoading, text = 'Loading...') => set({ isGlobalLoading: isLoading, globalLoadingText: text }),
+}));

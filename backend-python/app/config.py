@@ -2,10 +2,10 @@ from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 class Settings(BaseSettings):
-    # ── Database (CockroachDB Serverless — Mumbai) ─────────────────────────
-    # Connection string from CockroachDB Cloud console.
-    # Format: cockroachdb://<user>:<password>@<host>:26257/<database>?sslmode=verify-full
-    DATABASE_URL: str = "cockroachdb://root@localhost:26257/question_mind?sslmode=disable"
+    # ── Database (Aiven PostgreSQL) ─────────────────────────
+    # Connection string from Aiven console.
+    # Format: postgresql://<user>:<password>@<host>:<port>/<database>?sslmode=require
+    DATABASE_URL: str = "postgresql://root@localhost:5432/question_mind?sslmode=disable"
 
     # JWT
     JWT_SECRET: str = "your-super-secret-jwt-key-change-in-production"
@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     RENDER_EXTERNAL_URL: str = ""
 
     # ── Email / SMTP ──────────────────────────────────────────────────────
+    EMAIL_PROVIDER: str = "local" # 'local' or 'brevo'
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
@@ -32,12 +33,11 @@ class Settings(BaseSettings):
     FROM_EMAIL: str = ""
     FROM_NAME: str = "Question Mind"
 
-    # ── Google Drive (for question bank Excel sharing) ────────────────────
-    GOOGLE_DRIVE_FOLDER_ID: str = ""
-    GOOGLE_SERVICE_ACCOUNT_JSON: str = ""
+
 
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 @lru_cache()
 def get_settings():

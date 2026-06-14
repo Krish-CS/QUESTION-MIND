@@ -1,4 +1,4 @@
-from .user import UserCreate, UserLogin, UserResponse, TokenResponse, UserRole
+from .user import UserCreate, UserLogin, UserResponse, TokenResponse, UserRole, UserUpdateRequest, PasswordResetRequest, PublicPasswordResetRequest
 from .subject import SubjectCreate, SubjectUpdate, SubjectResponse, SubjectConfiguration, PartConfiguration, BloomLevel
 from .syllabus import SyllabusCreate, SyllabusUpdate, SyllabusResponse, SyllabusUnit
 from .question_bank import (UpdateQuestionsRequest,
@@ -14,5 +14,5 @@ __all__ = [
     "GenerateQuestionsRequest", "UpdatePatternRequest", "UpdateStatusRequest", "UpdateQuestionsRequest",
     "QuestionPatternResponse", "QuestionBankResponse", "QuestionBankStatus",
     "AssignStaffRequest", "UpdatePermissionsRequest", "StaffAssignmentResponse", "MySubjectAssignment", "FacultyListResponse",
-    "StaffImportResult", "AllStaffResponse"
+    "StaffImportResult", "AllStaffResponse", "PublicPasswordResetRequest"
 ]

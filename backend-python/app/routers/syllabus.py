@@ -23,19 +23,11 @@ os.makedirs(CDAP_UPLOAD_DIR, exist_ok=True)
 
 def can_upload_syllabus(db: Session, user: User, subject_id: str) -> bool:
     """Check if user can upload syllabus for this subject"""
-    # HOD can always upload
-    if user.role == UserRole.HOD:
+    # HOD and Faculty can always upload
+    if user.role in [UserRole.HOD, UserRole.FACULTY]:
         return True
     
-    # Check if staff is assigned to this subject with generate questions permission
-    assignment = db.query(StaffAssignment).filter(
-        StaffAssignment.subject_id == subject_id,
-        StaffAssignment.staff_email == user.email,
-        StaffAssignment.is_active == True,
-        StaffAssignment.can_generate_questions == True
-    ).first()
-    
-    return assignment is not None
+    return False
 
 @router.get("", response_model=List[SyllabusResponse])
 async def get_all_syllabus(

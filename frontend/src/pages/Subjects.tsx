@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { subjectsApi, staffApi, questionBankApi } from '../lib/api';
 import { useAuthStore } from '../lib/store';
+import { Combobox } from '../components/Combobox';
 import {
   Plus,
   Edit2,
@@ -52,8 +53,15 @@ export default function Subjects() {
     try {
       const response = await subjectsApi.getAll();
       setSubjects(response.data);
-    } catch (err) {
-      setError('Failed to load subjects');
+    } catch (err: any) {
+      console.error(err);
+      if (!err.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (err.response.status === 404) {
+        setSubjects([]);
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Failed to load subjects.');
+      }
     } finally {
       setLoading(false);
     }
@@ -91,27 +99,18 @@ export default function Subjects() {
           <h1 className="text-3xl font-bold text-pink-600 dark:text-pink-400">📚 Subjects</h1>
           <p className="text-purple-700 dark:text-purple-300 mt-1 font-medium">Manage subjects and their exam configurations</p>
         </div>
-        {isHOD && (
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={() => setShowImportModal(true)}
-              className="btn btn-secondary"
-            >
-              <Upload className="w-4 h-4" />
-              Import Staff
-            </button>
-            <button
-              onClick={() => {
-                setEditingSubject(null);
-                setShowModal(true);
-              }}
-              className="btn btn-primary"
-            >
-              <Plus className="w-5 h-5" />
-              Add Subject
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={() => {
+              setEditingSubject(null);
+              setShowModal(true);
+            }}
+            className="btn btn-primary"
+          >
+            <Plus className="w-5 h-5" />
+            Add Subject
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -142,12 +141,10 @@ export default function Subjects() {
           <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No Subjects</h3>
           <p className="text-slate-600 dark:text-slate-400 mb-6">Get started by adding your first subject</p>
-          {isHOD && (
-            <button onClick={() => setShowModal(true)} className="btn btn-primary mx-auto">
-              <Plus className="w-5 h-5" />
-              Add Subject
-            </button>
-          )}
+          <button onClick={() => setShowModal(true)} className="btn btn-primary mx-auto">
+            <Plus className="w-5 h-5" />
+            Add Subject
+          </button>
         </div>
       ) : (
         <div className="space-y-8">
@@ -249,17 +246,15 @@ function SubjectCard({
         )}
       </div>
 
-      {isHOD && (
-        <div className="flex gap-2 mt-4 pt-4 border-t border-pink-200 dark:border-pink-700">
-          <button onClick={onEdit} className="btn btn-secondary flex-1 justify-center">
-            <Edit2 className="w-4 h-4" />
-            Edit
-          </button>
-          <button onClick={onDelete} className="btn btn-danger">
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <div className="flex gap-2 mt-4 pt-4 border-t border-pink-200 dark:border-pink-700">
+        <button onClick={onEdit} className="btn btn-secondary flex-1 justify-center">
+          <Edit2 className="w-4 h-4" />
+          Edit
+        </button>
+        <button onClick={onDelete} className="btn btn-danger">
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -274,8 +269,8 @@ function SubjectModal({
   onSave: () => void;
 }) {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
-  const stepNames = ['Subject Details', 'Question Pattern', 'Assign Staff'];
+  const totalSteps = 2;
+  const stepNames = ['Subject Details', 'Question Pattern'];
   const [formData, setFormData] = useState({
     code: subject?.code || '',
     name: subject?.name || '',
@@ -451,21 +446,6 @@ function SubjectModal({
         subjectId = response.data.id;
       }
 
-      // Save staff assignments
-      if (subjectId && assignedStaff.length > 0) {
-        for (const staffData of assignedStaff) {
-          await staffApi.assign(subjectId, {
-            staff_email: staffData.email,
-            staff_name: staffData.name,
-            permissions: {
-              canEditPattern: staffData.canEditPattern,
-              canGenerateQuestions: staffData.canGenerateQuestions,
-              canApprove: staffData.canApprove,
-            },
-          });
-        }
-      }
-
       // Sync the QuestionPattern table so Patterns page stays up-to-date
       if (subjectId && formData.hasExam && formData.parts.length > 0) {
         try {
@@ -549,8 +529,8 @@ function SubjectModal({
         </div>
 
         {/* Step Indicators */}
-        <div className="px-6 py-4 border-b border-pink-200 dark:border-pink-700 bg-pink-50 dark:bg-slate-900">
-          <div className="flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-pink-200 dark:border-pink-700 bg-pink-50 dark:bg-slate-900 flex justify-center">
+          <div className="flex items-center justify-between w-full max-w-md">
             {stepNames.map((name, idx) => {
               const stepNum = idx + 1;
               const isActive = currentStep === stepNum;
@@ -569,7 +549,7 @@ function SubjectModal({
                     setError('');
                     setCurrentStep(stepNum);
                   }}
-                  className="flex items-center flex-1 group focus:outline-none"
+                  className={`flex items-center group focus:outline-none ${idx < totalSteps - 1 ? 'flex-1' : 'flex-none'}`}
                 >
                   <div className="flex items-center">
                     <div
@@ -626,7 +606,7 @@ function SubjectModal({
             {/* Step 1: Details */}
             {currentStep === 1 && (
               <>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="label">Subject Code</label>
                     <input
@@ -651,7 +631,7 @@ function SubjectModal({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="label">Semester</label>
                     <Combobox
@@ -995,7 +975,7 @@ function PartEditor({
 
       {expanded && (
         <div className="mt-4 space-y-4">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
               <label className="text-xs text-slate-500 dark:text-slate-400">Part Name</label>
               <input
@@ -1073,245 +1053,8 @@ function PartEditor({
   );
 }
 
-function Combobox({
-  options,
-  value,
-  onChange,
-  placeholder,
-}: {
-  options: string[];
-  value: string;
-  onChange: (val: string) => void;
-  placeholder: string;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const filteredOptions = query === ''
-    ? options
-    : options.filter((option) =>
-      option.toLowerCase().includes(query.toLowerCase())
-    );
-
-  return (
-    <div className="relative" ref={wrapperRef}>
-      <div className="relative">
-        <input
-          type="text"
-          className="input pr-10"
-          value={value || query} // Show value if set, else show query
-          onChange={(event) => {
-            setQuery(event.target.value);
-            onChange(event.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
-        />
-        <button
-          className="absolute inset-y-0 right-0 flex items-center pr-3 group pointer-events-none"
-        >
-          <ChevronDown className="h-5 w-5 text-gray-400 group-hover:text-pink-500 transition-colors" aria-hidden="true" />
-        </button>
-      </div>
-
-      {isOpen && (
-        <ul className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-slate-900 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm border border-pink-100 dark:border-pink-900">
-          {filteredOptions.length === 0 && query !== '' ? (
-            <div className="relative cursor-default select-none py-2 px-4 text-gray-700 dark:text-gray-400">
-              Create "{query}"
-            </div>
-          ) : (
-            filteredOptions.map((option, idx) => (
-              <li
-                key={idx}
-                className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 dark:text-gray-100 hover:bg-pink-50 dark:hover:bg-pink-900/20"
-                onClick={() => {
-                  onChange(option);
-                  setQuery('');
-                  setIsOpen(false);
-                }}
-              >
-                <span className={`block truncate ${value === option ? 'font-semibold text-pink-600 dark:text-pink-400' : ''}`}>
-                  {option}
-                </span>
-              </li>
-            ))
-          )}
-        </ul>
-      )}
-    </div>
-  );
-}
 
 
-
-
-// ── HOD Staff Import Modal ────────────────────────────────────────────────────
-function StaffImportModal({ onClose }: { onClose: () => void }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [importing, setImporting] = useState(false);
-  const [result, setResult] = useState<{ created: number; updated: number; assignments_added: number; errors: string[] } | null>(null);
-  const [error, setError] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (f) setFile(f);
-  };
-
-  const handleImport = async () => {
-    if (!file) return;
-    setImporting(true);
-    setError('');
-    try {
-      const res = await staffApi.importExcel(file);
-      setResult(res.data);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Import failed. Please check your file and try again.');
-    } finally {
-      setImporting(false);
-    }
-  };
-
-  return createPortal(
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div
-        className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl border border-pink-200 dark:border-pink-700 overflow-hidden"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-pink-100 dark:border-pink-800 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
-              <UserPlus className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 dark:text-white">Import Staff from Excel</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bulk-add faculty members via Excel upload</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-5">
-          {!result ? (
-            <>
-              {/* File upload */}
-              <div>
-                <div
-                  onClick={() => inputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
-                    file
-                      ? 'border-pink-400 bg-pink-50 dark:bg-pink-900/20 dark:border-pink-600'
-                      : 'border-slate-300 dark:border-slate-600 hover:border-pink-300 dark:hover:border-pink-700 hover:bg-pink-50/50 dark:hover:bg-pink-900/10'
-                  }`}
-                >
-                  <Upload className={`w-8 h-8 mx-auto mb-3 ${file ? 'text-pink-500' : 'text-slate-400'}`} />
-                  {file ? (
-                    <>
-                      <p className="font-semibold text-pink-700 dark:text-pink-300">{file.name}</p>
-                      <p className="text-xs text-slate-400 mt-1">{(file.size / 1024).toFixed(1)} KB • Click to change</p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="font-medium text-slate-600 dark:text-slate-300">Click to upload Excel file</p>
-                      <p className="text-xs text-slate-400 mt-1">.xlsx or .xls format</p>
-                    </>
-                  )}
-                  <input
-                    ref={inputRef}
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </div>
-              </div>
-
-              {error && (
-                <div className="p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-300 text-sm">
-                  {error}
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button onClick={onClose} className="btn btn-secondary flex-1">Cancel</button>
-                <button
-                  onClick={handleImport}
-                  disabled={!file || importing}
-                  className="btn btn-primary flex-1 disabled:opacity-50"
-                >
-                  {importing ? <><Loader2 className="w-4 h-4 animate-spin" /> Importing...</> : <><Upload className="w-4 h-4" /> Import Staff</>}
-                </button>
-              </div>
-            </>
-          ) : (
-            /* Result view */
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-                  <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{result.created}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">New Staff Created</p>
-                </div>
-                <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{result.updated}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Existing Updated</p>
-                </div>
-                <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl">
-                  <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{result.assignments_added}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Subjects Assigned</p>
-                </div>
-              </div>
-
-              {result.errors.length > 0 && (
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                  <p className="font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-2 mb-2">
-                    <AlertCircle className="w-4 h-4" /> {result.errors.length} row(s) had issues:
-                  </p>
-                  <ul className="space-y-1">
-                    {result.errors.map((e, i) => (
-                      <li key={i} className="text-xs text-amber-600 dark:text-amber-400">• {e}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {result.errors.length === 0 && (
-                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                  <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">
-                    Import completed successfully with no errors!
-                  </p>
-                </div>
-              )}
-
-              <p className="text-xs text-slate-400 dark:text-slate-500">
-                Default password for new staff: <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono">Welcome@123</code> (they should change it on first login)
-              </p>
-
-              <button onClick={onClose} className="btn btn-primary w-full">Done</button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-}
 
 
 // ── HOD Staff Import Modal ────────────────────────────────────────────────────

@@ -111,7 +111,7 @@ export default function GlobalLoader() {
       <div className="absolute bottom-20 flex flex-col items-center gap-3 px-6 max-w-sm w-[90%] text-center">
         {/* Plain pink text — no gradient, no uppercase noise */}
         <p className="text-krish-pink dark:text-pink-400 font-bold text-lg sm:text-xl tracking-wide">
-          Downloading…
+          {globalLoadingText || 'Loading'}
         </p>
 
         {/* Three pulsing dots as a minimal activity indicator */}

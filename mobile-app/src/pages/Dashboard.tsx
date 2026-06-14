@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [myAssignments, setMyAssignments] = useState<MySubjectAssignment[]>([]);
   const [viewingBank, setViewingBank] = useState<QuestionBank | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboard();
@@ -58,8 +59,15 @@ export default function Dashboard() {
         const assignmentsRes = await staffApi.getMySubjects();
         setMyAssignments(assignmentsRes.data);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load dashboard', err);
+      if (!err.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (err.response.status === 404) {
+        setError('No data found for your dashboard.');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Failed to load dashboard data.');
+      }
     } finally {
       setLoading(false);
     }
@@ -70,7 +78,7 @@ export default function Dashboard() {
   };
 
   const handleDownload = async (bank: QuestionBank) => {
-    setGlobalLoading(true, 'Generating and Downloading...');
+    setGlobalLoading(true, 'Downloading');
     try {
       const response = await questionBankApi.download(bank.id);
       await downloadExcel(response.data, `${bank.title || 'question_bank'}.xlsx`);
@@ -103,6 +111,12 @@ export default function Dashboard() {
           {isHOD ? 'Manage your department\'s question banks with clear oversight.' : 'Generate and manage question banks with streamlined AI support.'}
         </p>
       </div>
+
+      {error && (
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border-2 border-rose-200 dark:border-rose-900/40 rounded-xl text-rose-800 dark:text-rose-200 text-sm font-semibold flex items-center gap-2">
+          <span>⚠️</span> {error}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

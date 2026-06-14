@@ -90,54 +90,7 @@ export const ProviderSelector: React.FC = () => {
         </div>
       </label>
 
-      {/* Local Model Option */}
-      <div
-        className={`p-4 border rounded-lg transition ${
-          deviceCapabilities?.supportsLocalModels
-            ? 'border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'
-            : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed'
-        }`}
-      >
-        <label className="flex items-start space-x-3">
-          <input
-            type="radio"
-            name="provider"
-            value="local"
-            checked={preferredProvider === 'local'}
-            onChange={() => handleProviderChange('local')}
-            disabled={!deviceCapabilities?.supportsLocalModels}
-            className="mt-1 w-4 h-4"
-          />
-          <div className="flex-1">
-            <p className="font-medium text-gray-900 dark:text-white">Use Local Model</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {deviceCapabilities?.supportsLocalModels
-                ? 'Run Gemma 2B offline on your device'
-                : 'Local models not supported on this device'}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-              {deviceCapabilities?.supportsLocalModels
-                ? `✓ Offline ✓ No API needed • Slower responses (${deviceCapabilities.availableMemoryMB}MB RAM available)`
-                : '✗ Insufficient resources'}
-            </p>
 
-            {/* Local Model Details */}
-            {deviceCapabilities?.supportsLocalModels && (
-              <div className="mt-3 space-y-2 text-xs bg-white dark:bg-gray-900 p-2 rounded border border-gray-100 dark:border-gray-800">
-                <p className="font-medium text-gray-700 dark:text-gray-300">Available Models:</p>
-                {deviceCapabilities.availableModels.map((model) => (
-                  <div key={model.name} className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">{model.label}</span>
-                    <span className="text-gray-500 dark:text-gray-500">
-                      {model.memoryMB}MB • {model.storageMB}MB
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </label>
-      </div>
 
       {/* Fallback Strategy */}
       <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/40 rounded-lg">

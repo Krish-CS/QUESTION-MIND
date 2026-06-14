@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { subjectsApi, questionBankApi, downloadExcel } from '../lib/api';
 import { useUiStore } from '../lib/store';
 import {
@@ -114,7 +114,13 @@ export default function Overview() {
       });
     } catch (error: any) {
       console.error('Failed to fetch overview data:', error);
-      setError(error.response?.data?.detail || 'Failed to load overview data. Please try again.');
+      if (!error.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (error.response.status === 404) {
+        setError('Data is currently empty or not found.');
+      } else {
+        setError(error.response?.data?.detail || error.message || 'Failed to load overview data.');
+      }
     } finally {
       setLoading(false);
     }
@@ -613,7 +619,7 @@ export default function Overview() {
             // I'll inline the logic or just pass a simple one.
             // Actually, let's just use the API directly here.
             (async () => {
-              setGlobalLoading(true, 'Generating and Downloading...');
+              setGlobalLoading(true, 'Downloading');
               try {
                 const response = await questionBankApi.download(viewingBank.id);
                 await downloadExcel(response.data, `${viewingBank.title}.xlsx`);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../lib/store';
+import { useAuthStore, useUiStore } from '../lib/store';
 import { subjectsApi, questionBankApi, staffApi } from '../lib/api';
 import {
   BookOpen,
@@ -14,16 +14,15 @@ import QuestionBankViewModal from '../components/QuestionBankViewModal';
 
 export default function Dashboard() {
   const { user } = useAuthStore();
+  const { setGlobalLoading } = useUiStore();
   const navigate = useNavigate();
-  const isHOD = user?.role === 'HOD';
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalSubjects: 0,
     totalQuestionBanks: 0,
-    pendingApprovals: 0,
-    approvedBanks: 0,
   });
+  const [error, setError] = useState<string | null>(null);
   const [recentBanks, setRecentBanks] = useState<QuestionBank[]>([]);
   const [myAssignments, setMyAssignments] = useState<MySubjectAssignment[]>([]);
   const [viewingBank, setViewingBank] = useState<QuestionBank | null>(null);
@@ -37,7 +36,7 @@ export default function Dashboard() {
     try {
       const [subjectsRes, banksRes] = await Promise.all([
         subjectsApi.getAll(),
-        questionBankApi.getAll({ own_only: !isHOD }),
+        questionBankApi.getAll({ own_only: false }),
       ]);
 
       const subjectsList: Subject[] = subjectsRes.data;
@@ -47,18 +46,25 @@ export default function Dashboard() {
       setStats({
         totalSubjects: subjectsList.length,
         totalQuestionBanks: banks.length,
-        pendingApprovals: banks.filter((b) => b.status === 'PENDING_APPROVAL').length,
-        approvedBanks: banks.filter((b) => b.status === 'APPROVED').length,
       });
 
       setRecentBanks(banks.slice(0, 5));
 
-      if (!isHOD) {
+      try {
         const assignmentsRes = await staffApi.getMySubjects();
         setMyAssignments(assignmentsRes.data);
+      } catch (err) {
+        // Ignored
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load dashboard', err);
+      if (!err.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (err.response.status === 404) {
+        setError('No data found for your dashboard.');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Failed to load dashboard data.');
+      }
     } finally {
       setLoading(false);
     }
@@ -69,6 +75,7 @@ export default function Dashboard() {
   };
 
   const handleDownload = async (bank: QuestionBank) => {
+    setGlobalLoading(true, 'Downloading');
     try {
       const response = await questionBankApi.download(bank.id);
       const blob = new Blob([response.data], {
@@ -82,6 +89,8 @@ export default function Dashboard() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Failed to download');
+    } finally {
+      setGlobalLoading(false);
     }
   };
 
@@ -101,15 +110,15 @@ export default function Dashboard() {
       {/* Header */}
       <div className="card dark:!bg-slate-900 p-8">
         <h1 className="text-3xl font-bold text-pink-600 dark:text-pink-400 mb-2">
-          Welcome back, {user?.name}! ✨
+          {user?.role === 'HOD' ? `${user?.name} (Academic HOD)` : `Welcome back, ${user?.name}! ✨`}
         </h1>
         <p className="text-purple-700 dark:text-purple-300 font-medium">
-          {isHOD ? 'Manage your department\'s question banks with clear oversight.' : 'Generate and manage question banks with streamlined AI support.'}
+          Generate and manage question banks with streamlined AI support.
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard
           icon={BookOpen}
           label="Total Subjects"
@@ -124,24 +133,10 @@ export default function Dashboard() {
           color="purple"
           onClick={() => navigate('/question-banks')}
         />
-        <StatCard
-          icon={Clock}
-          label="Pending Approval"
-          value={stats.pendingApprovals}
-          color="orange"
-          onClick={() => navigate('/approvals')}
-        />
-        <StatCard
-          icon={CheckCircle}
-          label="Approved"
-          value={stats.approvedBanks}
-          color="green"
-          onClick={() => navigate('/question-banks?status=APPROVED')}
-        />
       </div>
 
       {/* Staff assignments */}
-      {!isHOD && myAssignments.length > 0 && (
+      {myAssignments.length > 0 && (
         <div className="card dark:!bg-slate-900 p-6">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-2xl">📚</span> My Assigned Subjects

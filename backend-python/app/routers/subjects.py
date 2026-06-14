@@ -61,8 +61,7 @@ async def create_subject(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    if user.role != UserRole.HOD:
-        raise HTTPException(status_code=403, detail="Only HOD can create subjects")
+    # Any authenticated user can create subjects now
     
     # Check duplicate code
     existing = db.query(Subject).filter(Subject.code == data.code).first()
@@ -83,6 +82,22 @@ async def create_subject(
     db.add(subject)
     db.commit()
     db.refresh(subject)
+    
+    # Automatically assign the creator to the subject so they can manage it
+    assignment = StaffAssignment(
+        id=str(uuid.uuid4()),
+        subject_id=subject.id,
+        staff_email=user.email,
+        staff_name=user.name,
+        can_edit_pattern=True,
+        can_generate_questions=True,
+        can_approve=True,
+        is_active=True,
+        assigned_by=user.id
+    )
+    db.add(assignment)
+    db.commit()
+    
     return subject
 
 @router.put("/{subject_id}", response_model=SubjectResponse)
@@ -135,8 +150,7 @@ async def delete_subject(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    if user.role != UserRole.HOD:
-        raise HTTPException(status_code=403, detail="Only HOD can delete subjects")
+    # Any authenticated user can delete subjects now
     
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
     if not subject:

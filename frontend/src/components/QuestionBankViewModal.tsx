@@ -41,9 +41,6 @@ export default function QuestionBankViewModal({
     initialEditMode = false,
 }: QuestionBankViewModalProps) {
     const { user } = useAuthStore();
-    const [isApproving, setIsApproving] = useState(false);
-    const [rejectionReason, setRejectionReason] = useState('');
-    const [showRejectionForm, setShowRejectionForm] = useState(false);
     const [activeTab, setActiveTab] = useState<'questions' | 'answers'>('questions');
 
     // Part + Unit tab navigation (view & edit)
@@ -69,11 +66,7 @@ export default function QuestionBankViewModal({
     const [saveError, setSaveError] = useState('');
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
-    const canApprove = user?.role === 'HOD' ||
-        (bank.status === 'PENDING_APPROVAL' && user?.id !== bank.generated_by);
-
-    const canEdit = (user?.id === bank.generated_by || user?.role === 'HOD') &&
-        (bank.status === 'DRAFT' || bank.status === 'REJECTED');
+    const canEdit = user?.id === bank.generated_by || user?.role === 'HOD';
 
     // ---- Edit mode helpers ----
     const enterEdit = () => {
@@ -166,35 +159,6 @@ export default function QuestionBankViewModal({
         }
     };
 
-    // ---- Approve / Reject ----
-    const handleApprove = async () => {
-        if (!canApprove) return;
-        setIsApproving(true);
-        try {
-            await questionBankApi.updateStatus(bank.id, { status: 'APPROVED' });
-            setIsApproving(false);
-            onClose();
-            window.location.reload();
-        } catch {
-            setIsApproving(false);
-            alert('Failed to approve');
-        }
-    };
-
-    const handleReject = async () => {
-        if (!rejectionReason.trim()) { alert('Please provide a rejection reason'); return; }
-        setIsApproving(true);
-        try {
-            await questionBankApi.updateStatus(bank.id, { status: 'REJECTED', rejection_reason: rejectionReason });
-            setIsApproving(false);
-            onClose();
-            window.location.reload();
-        } catch {
-            setIsApproving(false);
-            alert('Failed to reject');
-        }
-    };
-
     const displayParts: Record<string, Question[]> = isEditing ? editedParts : parts;
     const currentPartQuestions: Question[] = displayParts[activePart] || [];
     const unitNumbers = useMemo(() => getUnitNumbers(currentPartQuestions), [currentPartQuestions]);
@@ -225,13 +189,13 @@ export default function QuestionBankViewModal({
                             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
                                 <button
                                     onClick={() => setActiveTab('questions')}
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'questions'
+                                    className={`px-3 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'questions'
                                         ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
                                 >Questions</button>
                                 <button
                                     onClick={() => setActiveTab('answers')}
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'answers'
+                                    className={`px-3 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'answers'
                                         ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
                                 >With Answers</button>
@@ -331,41 +295,6 @@ export default function QuestionBankViewModal({
                         </button>
                     )}
 
-                    {/* Approval Section */}
-                    {bank.status === 'PENDING_APPROVAL' && canApprove && !isEditing && (
-                        <div className="border-t-2 border-dashed border-slate-200 dark:border-slate-800 pt-6 mt-8">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Review & Decision</h3>
-                            {!showRejectionForm ? (
-                                <div className="flex gap-4">
-                                    <button onClick={handleApprove} disabled={isApproving}
-                                        className="btn flex-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20">
-                                        {isApproving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
-                                        Approve Request
-                                    </button>
-                                    <button onClick={() => setShowRejectionForm(true)} disabled={isApproving}
-                                        className="btn flex-1 bg-white border-2 border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 dark:bg-slate-900 dark:border-rose-900 dark:text-rose-400 dark:hover:bg-rose-900/20">
-                                        <XCircle className="w-5 h-5" />Reject & Request Changes
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 space-y-4 dark:bg-rose-950/30 dark:border-rose-900">
-                                    <label className="block text-rose-900 dark:text-rose-100 font-semibold mb-1">Feedback for Rejection</label>
-                                    <textarea value={rejectionReason} onChange={e => setRejectionReason(e.target.value)}
-                                        placeholder="Please explain what changes are needed..."
-                                        className="input w-full min-h-[100px] border-rose-200 focus:border-rose-400 focus:ring-rose-500/20" />
-                                    <div className="flex gap-3 justify-end">
-                                        <button onClick={() => { setShowRejectionForm(false); setRejectionReason(''); }} disabled={isApproving}
-                                            className="px-4 py-2 rounded-lg text-slate-600 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-                                        <button onClick={handleReject} disabled={isApproving || !rejectionReason.trim()}
-                                            className="btn bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/20">
-                                            {isApproving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
-                                            Confirm Rejection
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
                 </div>
 
                 {/* Fixed Footer */}

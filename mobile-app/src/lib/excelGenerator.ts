@@ -1,10 +1,10 @@
 /**
  * Excel Generator Service for Question Banks
  * Replaces Python excel_service.py with ExcelJS
- * Generates beautifully formatted question papers
+ * Generates beautifully formatted question papers with IMAGE support
  */
 
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 interface QuestionData {
   question: string;
@@ -16,6 +16,7 @@ interface QuestionData {
   options?: Record<string, string>;
   correctOption?: string;
   cdap_part?: number;
+  imageData?: string;
 }
 
 interface ExcelOptions {
@@ -32,48 +33,43 @@ export class ExcelGeneratorService {
   /**
    * Generate a formatted question paper Excel file
    */
-  static generateQuestionPaper(
+  static async generateQuestionPaper(
     questions: QuestionData[],
     parts: Record<string, QuestionData[]>,
     options: ExcelOptions
-  ): Blob {
-    const workbook = XLSX.utils.book_new();
+  ): Promise<Blob> {
+    const workbook = new ExcelJS.Workbook();
 
     // Sheet 1: Cover Page
-    const coverSheet = XLSX.utils.aoa_to_sheet([
-      [options.title],
-      [""],
-      [`Subject: ${options.subject}`],
-      [`Date: ${options.date || new Date().toLocaleDateString()}`],
-      [`Total Marks: ${options.totalMarks || 100}`],
-      [`Duration: ${options.duration || "3 Hours"}`],
-      [""],
-      ["Instructions:"],
-      ["1. Answer all questions"],
-      ["2. Use blue/black pen only"],
-      ["3. Show all working for calculations"],
-    ]);
-    XLSX.utils.book_append_sheet(workbook, coverSheet, "Cover");
+    const coverSheet = workbook.addWorksheet("Cover");
+    coverSheet.addRow([options.title]);
+    coverSheet.addRow([]);
+    coverSheet.addRow([`Subject: ${options.subject}`]);
+    coverSheet.addRow([`Date: ${options.date || new Date().toLocaleDateString()}`]);
+    coverSheet.addRow([`Total Marks: ${options.totalMarks || 100}`]);
+    coverSheet.addRow([`Duration: ${options.duration || "3 Hours"}`]);
+    coverSheet.addRow([]);
+    coverSheet.addRow(["Instructions:"]);
+    coverSheet.addRow(["1. Answer all questions"]);
+    coverSheet.addRow(["2. Use blue/black pen only"]);
+    coverSheet.addRow(["3. Show all working for calculations"]);
 
     // Sheet 2: Questions
-    const questionsSheet = this.generateQuestionsSheet(questions, options);
-    XLSX.utils.book_append_sheet(workbook, questionsSheet, "Questions");
+    this.generateQuestionsSheet(workbook, questions, options);
 
     // Sheet 3: Answer Key (if requested)
     if (options.includeAnswers) {
-      const answersSheet = this.generateAnswersSheet(questions, options);
-      XLSX.utils.book_append_sheet(workbook, answersSheet, "Answer Key");
+      this.generateAnswersSheet(workbook, questions, options);
     }
 
     // Sheet 4: Statistics (if requested)
     if (options.includeUnitInfo) {
-      const statsSheet = this.generateStatsSheet(questions, options);
-      XLSX.utils.book_append_sheet(workbook, statsSheet, "Statistics");
+      this.generateStatsSheet(workbook, questions, options);
     }
 
     // Write and convert to blob
-    const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    return new Blob([wbout], {
+    const buffer = await workbook.xlsx.writeBuffer();
+    return new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
   }
@@ -82,15 +78,22 @@ export class ExcelGeneratorService {
    * Generate questions sheet
    */
   private static generateQuestionsSheet(
+    workbook: ExcelJS.Workbook,
     questions: QuestionData[],
     options: ExcelOptions
-  ): XLSX.WorkSheet {
-    const data: any[][] = [
-      ["Question Paper", "", "", ""],
-      [options.subject, "", "", ""],
-      ["", "", "", ""],
-      ["Q.No", "Question", "Marks", "BTL"],
+  ): void {
+    const sheet = workbook.addWorksheet("Questions");
+    sheet.columns = [
+      { width: 8 },  // Q.No
+      { width: 60 }, // Question
+      { width: 10 }, // Marks
+      { width: 10 }, // BTL
     ];
+
+    sheet.addRow(["Question Paper", "", "", ""]);
+    sheet.addRow([options.subject, "", "", ""]);
+    sheet.addRow(["", "", "", ""]);
+    sheet.addRow(["Q.No", "Question", "Marks", "BTL"]);
 
     let qNum = 1;
     for (const q of questions) {
@@ -104,42 +107,61 @@ export class ExcelGeneratorService {
         }
       }
 
-      data.push([qNum.toString(), fullText, q.marks.toString(), q.btl]);
+      const row = sheet.addRow([qNum.toString(), fullText, q.marks.toString(), q.btl]);
+      row.getCell(2).alignment = { wrapText: true, vertical: 'top' };
+      
+      let rowHeight = 60;
+
+      // Embed Image if exists
+      if (q.imageData) {
+        try {
+          const extension = q.imageData.split(';')[0].split('/')[1] || 'png';
+          // Ensure extension is supported by exceljs (jpeg, png, gif)
+          const validExt = ['jpeg', 'jpg', 'png', 'gif'].includes(extension.toLowerCase()) ? extension.toLowerCase().replace('jpg', 'jpeg') : 'png';
+          
+          const imageId = workbook.addImage({
+            base64: q.imageData,
+            extension: validExt as any,
+          });
+
+          // Insert image below text in the 'Question' column (col 1 is B since it's 0-indexed in exceljs tl obj)
+          // Actually, let's make row taller to accommodate it
+          sheet.addImage(imageId, {
+            tl: { col: 1, row: row.number - 1 + 0.3 }, // slightly below top
+            ext: { width: 300, height: 180 }
+          });
+          
+          rowHeight = Math.max(rowHeight, 150); // Provide space for image
+        } catch (e) {
+          console.error("Failed to add image to Excel sheet", e);
+        }
+      }
+
+      row.height = rowHeight;
       qNum++;
     }
-
-    const sheet = XLSX.utils.aoa_to_sheet(data);
-
-    // Set column widths
-    sheet["!cols"] = [
-      { wch: 5 },  // Q.No
-      { wch: 50 }, // Question
-      { wch: 8 },  // Marks
-      { wch: 8 },  // BTL
-    ];
-
-    // Set row heights
-    sheet["!rows"] = data.map((_, i) => {
-      if (i <= 2) return { hpx: 20 }; // Header rows
-      return { hpx: 60 }; // Question rows
-    });
-
-    return sheet;
   }
 
   /**
    * Generate answer key sheet
    */
   private static generateAnswersSheet(
+    workbook: ExcelJS.Workbook,
     questions: QuestionData[],
     options: ExcelOptions
-  ): XLSX.WorkSheet {
-    const data: any[][] = [
-      ["Answer Key", "", "", ""],
-      [options.subject, "", "", ""],
-      ["", "", "", ""],
-      ["Q.No", "Answer", "Marks", "Marks Distribution"],
+  ): void {
+    const sheet = workbook.addWorksheet("Answer Key");
+    sheet.columns = [
+      { width: 8 },
+      { width: 60 },
+      { width: 10 },
+      { width: 20 },
     ];
+
+    sheet.addRow(["Answer Key", "", "", ""]);
+    sheet.addRow([options.subject, "", "", ""]);
+    sheet.addRow(["", "", "", ""]);
+    sheet.addRow(["Q.No", "Answer", "Marks", "Marks Distribution"]);
 
     let qNum = 1;
     for (const q of questions) {
@@ -150,32 +172,27 @@ export class ExcelGeneratorService {
       }
 
       const marksDistribution = this.getMarksDistribution(q.marks);
-      data.push([qNum.toString(), answerText, q.marks.toString(), marksDistribution]);
+      const row = sheet.addRow([qNum.toString(), answerText, q.marks.toString(), marksDistribution]);
+      row.getCell(2).alignment = { wrapText: true, vertical: 'top' };
+      row.height = 80;
       qNum++;
     }
-
-    const sheet = XLSX.utils.aoa_to_sheet(data);
-    sheet["!cols"] = [
-      { wch: 5 },
-      { wch: 60 },
-      { wch: 8 },
-      { wch: 15 },
-    ];
-    sheet["!rows"] = data.map((_, i) => ({
-      hpx: i <= 2 ? 20 : 80,
-    }));
-
-    return sheet;
   }
 
   /**
    * Generate statistics sheet
    */
   private static generateStatsSheet(
+    workbook: ExcelJS.Workbook,
     questions: QuestionData[],
     _options: ExcelOptions
-  ): XLSX.WorkSheet {
-    // Count by unit
+  ): void {
+    const sheet = workbook.addWorksheet("Statistics");
+    sheet.columns = [
+      { width: 25 },
+      { width: 15 }
+    ];
+
     const unitStats: Record<number, number> = {};
     const btlStats: Record<string, number> = {};
     let totalMarks = 0;
@@ -188,32 +205,25 @@ export class ExcelGeneratorService {
       if (q.isMCQ) mcqCount++;
     }
 
-    const data: any[][] = [
-      ["Question Bank Statistics", ""],
-      ["", ""],
-      ["Total Questions", questions.length],
-      ["MCQ Count", mcqCount],
-      ["Descriptive Questions", questions.length - mcqCount],
-      ["Total Marks", totalMarks],
-      ["", ""],
-      ["By Unit", "Count"],
-    ];
+    sheet.addRow(["Question Bank Statistics", ""]);
+    sheet.addRow(["", ""]);
+    sheet.addRow(["Total Questions", questions.length]);
+    sheet.addRow(["MCQ Count", mcqCount]);
+    sheet.addRow(["Descriptive Questions", questions.length - mcqCount]);
+    sheet.addRow(["Total Marks", totalMarks]);
+    sheet.addRow(["", ""]);
+    sheet.addRow(["By Unit", "Count"]);
 
     for (const [unit, count] of Object.entries(unitStats).sort()) {
-      data.push([`Unit ${unit}`, count]);
+      sheet.addRow([`Unit ${unit}`, count]);
     }
 
-    data.push(["", ""]);
-    data.push(["By BTL Level", "Count"]);
+    sheet.addRow(["", ""]);
+    sheet.addRow(["By BTL Level", "Count"]);
 
     for (const [btl, count] of Object.entries(btlStats).sort()) {
-      data.push([btl, count]);
+      sheet.addRow([btl, count]);
     }
-
-    const sheet = XLSX.utils.aoa_to_sheet(data);
-    sheet["!cols"] = [{ wch: 25 }, { wch: 15 }];
-
-    return sheet;
   }
 
   /**
@@ -239,14 +249,11 @@ export class ExcelGeneratorService {
    */
   private static cleanText(text: string): string {
     if (!text) return "";
-    // Remove markdown bold/italic
     text = text.replace(/\*\*(.+?)\*\*/g, "$1");
     text = text.replace(/\*(.+?)\*/g, "$1");
     text = text.replace(/__(.+?)__/g, "$1");
     text = text.replace(/_(.+?)_/g, "$1");
-    // Remove markdown headers
     text = text.replace(/^#+\s+/gm, "");
-    // Collapse excessive newlines
     text = text.replace(/\n{3,}/g, "\n\n");
     return text.trim();
   }

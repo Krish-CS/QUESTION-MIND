@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Trash2, Check, AlertCircle } from 'lucide-react';
 import { useAISettingsStore } from '../lib/settingsStore';
 import { aiSettingsApi } from '../lib/aiSettingsApi';
+import toast from 'react-hot-toast';
 
 interface ApiKeyInputProps {
   provider?: 'groq' | 'cerebras' | 'openrouter' | 'custom';
@@ -33,7 +34,7 @@ export const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ provider = 'custom', o
 
   const handleSaveKey = async () => {
     if (!apiKey.trim()) {
-      alert('Please enter an API key');
+      toast.error('Please enter an API key');
       return;
     }
 
@@ -47,7 +48,7 @@ export const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ provider = 'custom', o
       setKeyTestResult(null);
       onSave?.();
     } else {
-      alert(`Failed to save: ${result.error}`);
+      toast.error(`Failed to save: ${result.error}`);
     }
 
     setSaving(false);
@@ -55,7 +56,7 @@ export const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ provider = 'custom', o
 
   const handleTestKey = async () => {
     if (!apiKey.trim()) {
-      alert('Please enter an API key first');
+      toast.error('Please enter an API key first');
       return;
     }
 
@@ -74,7 +75,7 @@ export const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ provider = 'custom', o
         setLabel('');
         setKeyTestResult(null);
       } else {
-        alert(`Failed to delete: ${result.error}`);
+        toast.error(`Failed to delete: ${result.error}`);
       }
     }
   };

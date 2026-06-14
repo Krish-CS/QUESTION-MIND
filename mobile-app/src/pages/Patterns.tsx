@@ -89,8 +89,15 @@ export default function Patterns() {
       }
 
       setSubjects(examSubjects);
-    } catch (err) {
-      setError('Failed to load subjects');
+    } catch (err: any) {
+      console.error(err);
+      if (!err.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (err.response.status === 404) {
+        setError('Data is currently empty or not found.');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Failed to load subjects.');
+      }
     } finally {
       setLoading(false);
     }
@@ -580,36 +587,13 @@ export default function Patterns() {
             {/* Modal Header */}
             <div className="flex-none bg-white dark:bg-slate-900 rounded-t-xl border-b border-pink-200 dark:border-pink-500">
               <div className="flex justify-between items-start px-4 sm:px-6 pt-5 pb-4 gap-2">
-                <div className="min-w-0">
+                <div className="flex-1 min-w-0">
                   <h2 className="text-xl font-semibold text-slate-900 dark:text-white flex flex-wrap items-center gap-2 sm:gap-3">
                     Pattern for {selectedSubject.name}
                     <span className="text-sm font-normal text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/30 px-3 py-1 rounded-full border border-pink-200 dark:border-pink-800 font-mono">
                       {selectedSubject.code}
                     </span>
                   </h2>
-                  {/* Tab switcher — gradient style like Syllabus/CDAP */}
-                  <div className="flex p-1 mt-3 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
-                    <button
-                      onClick={() => setPatternTab('combined')}
-                      className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all ${
-                        patternTab === 'combined'
-                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                      }`}
-                    >
-                      🔀 Combined
-                    </button>
-                    <button
-                      onClick={() => setPatternTab('individual')}
-                      className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all ${
-                        patternTab === 'individual'
-                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                      }`}
-                    >
-                      🎯 Individual
-                    </button>
-                  </div>
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-2 mt-1 flex-shrink-0">
                   <button
@@ -630,6 +614,31 @@ export default function Patterns() {
                     title="Close"
                   >
                     <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              {/* Tab switcher moved outside of the flex justify-between header to allow 100% width on mobile */}
+              <div className="px-4 sm:px-6 pb-4">
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full">
+                  <button
+                    onClick={() => setPatternTab('combined')}
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
+                      patternTab === 'combined'
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    🔀 Combined
+                  </button>
+                  <button
+                    onClick={() => setPatternTab('individual')}
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
+                      patternTab === 'individual'
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    🎯 Individual
                   </button>
                 </div>
               </div>
@@ -672,7 +681,7 @@ export default function Patterns() {
                   </div>
 
                   {/* Inputs Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Marks per Question</label>
                       <div className="relative">
@@ -811,7 +820,7 @@ export default function Patterns() {
                                     onChange={(e) =>
                                       updateBTLDistribution(index, btl, e.target.value === '' ? 0 : Number(e.target.value))
                                     }
-                                    className="w-16 input text-sm py-1 px-2 text-center"
+                                    className="!w-20 input text-sm py-1 px-2 text-center"
                                     min="0"
                                     max={part.questionCount}
                                     placeholder="auto"
@@ -917,7 +926,7 @@ export default function Patterns() {
                                   </div>
 
                                   {/* 3-column grid: Marks per Question, Total Questions, MCQ Count */}
-                                  <div className="grid grid-cols-3 gap-3">
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div className="space-y-1">
                                       <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Marks per Question</label>
                                       <div className="relative">

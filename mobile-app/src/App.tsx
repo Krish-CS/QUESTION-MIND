@@ -17,6 +17,8 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
+import { Network } from '@capacitor/network';
+import { RefreshCw, WifiOff } from 'lucide-react';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loadFromStorage } = useAuthStore();
@@ -34,6 +36,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const { loadFromStorage } = useAuthStore();
+  const [isOnline, setIsOnline] = useState(true); // Default true until first check
+  const [isRetrying, setIsRetrying] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
     // Play splash screen once per session
     return !sessionStorage.getItem('splash_shown');
@@ -49,6 +53,29 @@ export default function App() {
   };
 
   useEffect(() => {
+    const checkNetwork = async () => {
+      const status = await Network.getStatus();
+      setIsOnline(status.connected);
+    };
+    checkNetwork();
+
+    const networkListener = Network.addListener('networkStatusChange', status => {
+      setIsOnline(status.connected);
+    });
+
+    return () => {
+      networkListener.then(listener => listener.remove());
+    };
+  }, []);
+
+  const retryConnection = async () => {
+    setIsRetrying(true);
+    const status = await Network.getStatus();
+    setIsOnline(status.connected);
+    setIsRetrying(false);
+  };
+
+  useEffect(() => {
     loadFromStorage();
 
     let backListenerPromise: Promise<any> | null = null;
@@ -58,7 +85,10 @@ export default function App() {
         const extra = notificationAction.notification.extra;
         if (notificationAction.actionId === 'tap' && extra && extra.filePath) {
           try {
-            await FileOpener.openFile({ path: extra.filePath });
+            await FileOpener.openFile({ 
+              path: extra.filePath,
+              mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
           } catch (e) {
             console.error('Error opening file:', e);
           }
@@ -101,6 +131,31 @@ export default function App() {
     }
   }, [showSplash]);
 
+  if (!isOnline) {
+    return (
+      <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-pink-50 px-6 dark:bg-slate-950">
+        <div className="modal-content w-full max-w-sm rounded-lg border-2 border-pink-200 bg-white p-7 text-center shadow-2xl shadow-pink-200/60 dark:border-purple-800 dark:bg-slate-900 dark:shadow-black/50">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-100 to-purple-100 text-pink-600 dark:from-pink-950 dark:to-purple-950 dark:text-pink-300">
+            <WifiOff size={32} aria-hidden="true" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">No internet connection</h1>
+          <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+            Question Mind needs an active internet connection. Connect to Wi-Fi or mobile data, then try again.
+          </p>
+          <button
+            type="button"
+            onClick={retryConnection}
+            disabled={isRetrying}
+            className="btn btn-primary mt-6 w-full justify-center"
+          >
+            <RefreshCw size={18} className={isRetrying ? 'animate-spin' : ''} aria-hidden="true" />
+            {isRetrying ? 'Checking connection' : 'Try again'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {showSplash && (
@@ -113,6 +168,8 @@ export default function App() {
             src="/assets/splash_screen_video.mp4"
             autoPlay
             playsInline
+            preload="auto"
+            style={{ pointerEvents: 'none' }}
             onEnded={handleVideoEnd}
             className="w-full h-full object-cover"
           />

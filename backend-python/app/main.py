@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
-from app.routers import auth, subjects, syllabus, question_bank, staff, ai_settings
+from app.routers import auth, subjects, syllabus, question_bank, staff
 from .config import settings
 
-# Create tables (CockroachDB will create them if they don't exist)
+# Create tables (PostgreSQL will create them if they don't exist)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -18,6 +18,8 @@ allowed_origins = [
     settings.FRONTEND_URL,
     "http://localhost:5173",
     "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
     "http://localhost:3000",
     # Capacitor mobile app origins
     "capacitor://localhost",
@@ -44,11 +46,15 @@ app.include_router(subjects, prefix="/api")
 app.include_router(syllabus, prefix="/api")
 app.include_router(question_bank, prefix="/api")
 app.include_router(staff, prefix="/api")
-app.include_router(ai_settings.router, prefix="/api")
+
+import os
+from fastapi.staticfiles import StaticFiles
+os.makedirs("data/images", exist_ok=True)
+app.mount("/api/static/images", StaticFiles(directory="data/images"), name="images")
 
 @app.get("/")
 async def root():
-    return {"message": "Question Mind API v2.0 - FastAPI + CockroachDB"}
+    return {"message": "Question Mind API v2.0 - FastAPI + PostgreSQL"}
 
 @app.get("/api/health")
 async def health():

@@ -4,17 +4,102 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, RefreshCw, Settings2, Cpu } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Settings2, Cpu, Eye, EyeOff, AlertCircle, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ProviderSelector } from '../components/ProviderSelector';
-import { ApiKeyInput } from '../components/ApiKeyInput';
 import { useAISettingsStore } from '../lib/settingsStore';
 import { aiSettingsApi } from '../lib/aiSettingsApi';
 import type { ProviderStatus } from '../lib/settingsStore';
 
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
-  const { deviceCapabilities, useLocalModels, setUseLocalModels } = useAISettingsStore();
+  const {
+    deviceCapabilities,
+    useLocalModels,
+    setUseLocalModels,
+    providerKeys,
+    setProviderKey,
+    customKeys,
+    setCustomKey,
+  } = useAISettingsStore();
+
+  const [inputKeyMap, setInputKeyMap] = useState<Record<string, string>>({});
+  const [showKeyMap, setShowKeyMap] = useState<Record<string, boolean>>({});
+  const [testingMap, setTestingMap] = useState<Record<string, boolean>>({});
+  const [testResultMap, setTestResultMap] = useState<Record<string, { success: boolean; message: string }>>({});
+
+  useEffect(() => {
+    setInputKeyMap(customKeys || {});
+  }, [customKeys]);
+
+  const handleKeyChange = (providerId: string, val: string) => {
+    setInputKeyMap((prev) => ({ ...prev, [providerId]: val }));
+  };
+
+  const handleSaveCustomKey = (providerId: string) => {
+    const keyVal = inputKeyMap[providerId] || '';
+    if (!keyVal.trim()) {
+      alert('Please enter an API key');
+      return;
+    }
+    setCustomKey(providerId, keyVal.trim());
+    alert('Custom key saved successfully!');
+  };
+
+  const handleTestCustomKey = async (providerId: string) => {
+    const keyVal = inputKeyMap[providerId] || '';
+    if (!keyVal.trim()) {
+      alert('Please enter an API key first');
+      return;
+    }
+    setTestingMap((prev) => ({ ...prev, [providerId]: true }));
+    setTestResultMap((prev) => {
+      const next = { ...prev };
+      delete next[providerId];
+      return next;
+    });
+
+    const result = await aiSettingsApi.testAPIKey(providerId, keyVal);
+    setTestResultMap((prev) => ({
+      ...prev,
+      [providerId]: {
+        success: result.success,
+        message: result.data?.message || (result as any).error || 'Connection failed'
+      }
+    }));
+    setTestingMap((prev) => ({ ...prev, [providerId]: false }));
+  };
+
+  const providersConfig = [
+    {
+      id: 'cerebras',
+      name: 'Cerebras',
+      logo: '🧠',
+      hasBackup: true,
+      desc: 'High-speed inference on Cerebras Wafer-Scale Engine'
+    },
+    {
+      id: 'groq',
+      name: 'Groq',
+      logo: '⚡',
+      hasBackup: false,
+      desc: 'Ultra-fast Llama inference on LPU architecture'
+    },
+    {
+      id: 'nvidia',
+      name: 'NVIDIA NIM',
+      logo: '🟢',
+      hasBackup: false,
+      desc: 'Enterprise-grade GPU accelerated NIM deployment'
+    },
+    {
+      id: 'openrouter',
+      name: 'OpenRouter',
+      logo: '🌐',
+      hasBackup: false,
+      desc: 'Unified endpoint router accessing multiple open-source LLMs'
+    }
+  ];
 
   const [providerStatuses, setProviderStatuses] = useState<ProviderStatus[]>([]);
   const [loadingStatuses, setLoadingStatuses] = useState(false);
@@ -112,9 +197,125 @@ export const Settings: React.FC = () => {
               <ProviderSelector />
             </div>
 
-            {/* Custom API Key */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-pink-100 dark:border-pink-900/30 p-5 shadow-sm">
-              <ApiKeyInput />
+            {/* API Key Configurations per Provider */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-pink-100 dark:border-pink-900/30 p-5 shadow-sm space-y-5">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                  API Key Configurations per Provider
+                </h3>
+                <p className="text-xs text-purple-700 dark:text-purple-300 mt-1 font-medium">
+                  Choose between System Keys (hidden for security) or paste your own Custom API Key.
+                </p>
+              </div>
+
+              <div className="space-y-5 border-t border-pink-100/40 dark:border-pink-900/20 pt-4">
+                {providersConfig.map((p) => {
+                  const source = providerKeys[p.id] || 'system-1';
+                  const customKeyVal = inputKeyMap[p.id] || '';
+                  const isCustom = source === 'custom';
+                  const showKey = showKeyMap[p.id] || false;
+                  const testing = testingMap[p.id] || false;
+                  const testResult = testResultMap[p.id] || null;
+
+                  return (
+                    <div
+                      key={p.id}
+                      className="p-4 bg-slate-50 dark:bg-slate-950 rounded-xl border border-pink-100/40 dark:border-pink-900/20 space-y-4"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-2xl">{p.logo}</span>
+                          <div>
+                            <h4 className="font-semibold text-sm text-slate-900 dark:text-white">{p.name}</h4>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{p.desc}</p>
+                          </div>
+                        </div>
+
+                        {/* Source Select */}
+                        <div className="flex items-center justify-between sm:justify-start gap-2">
+                          <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">Key Source:</span>
+                          <select
+                            value={source}
+                            onChange={(e) => setProviderKey(p.id, e.target.value)}
+                            className="text-xs px-2.5 py-1.5 border border-pink-200 dark:border-pink-800 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                          >
+                            <option value="system-1">System Key 1 (Default)</option>
+                            {p.hasBackup && <option value="system-2">System Key 2 (Backup)</option>}
+                            <option value="custom">Custom API Key</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Custom Key Input & Actions */}
+                      {isCustom && (
+                        <div className="space-y-3 pt-2 border-t border-pink-100/20 dark:border-pink-900/10 animate-in fade-in duration-200">
+                          <div>
+                            <label className="block text-xs font-semibold text-purple-700 dark:text-purple-300 mb-1.5">
+                              Paste Custom {p.name} API Key:
+                            </label>
+                            <div className="relative">
+                              <input
+                                type={showKey ? 'text' : 'password'}
+                                value={customKeyVal}
+                                onChange={(e) => handleKeyChange(p.id, e.target.value)}
+                                placeholder={`Enter custom ${p.name} key`}
+                                className="w-full text-xs px-3 py-2 pr-10 border border-pink-200 dark:border-pink-850 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowKeyMap((prev) => ({ ...prev, [p.id]: !showKey }))}
+                                className="absolute right-3 top-2 text-slate-500 hover:text-slate-750 dark:text-slate-400"
+                              >
+                                {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Test Result Display */}
+                          {testResult && (
+                            <div
+                              className={`p-3 border rounded-lg flex items-start space-x-2 text-xs ${
+                                testResult.success
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-250 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-200'
+                                  : 'bg-rose-50 dark:bg-rose-950/20 border-rose-250 dark:border-rose-900/40 text-rose-800 dark:text-rose-200'
+                              }`}
+                            >
+                              {testResult.success ? (
+                                <Check size={14} className="mt-0.5 flex-shrink-0" />
+                              ) : (
+                                <AlertCircle size={14} className="mt-0.5 flex-shrink-0" />
+                              )}
+                              <div>
+                                <p className="font-bold">{testResult.success ? 'Key Validated' : 'Validation Failed'}</p>
+                                <p className="mt-0.5 opacity-90">{testResult.message}</p>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex gap-2 justify-end">
+                            <button
+                              type="button"
+                              onClick={() => handleTestCustomKey(p.id)}
+                              disabled={!customKeyVal.trim() || testing}
+                              className="px-3 py-1.5 text-xs font-semibold border border-pink-200 dark:border-pink-800 rounded-lg text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-pink-950/20 disabled:opacity-50 transition"
+                            >
+                              {testing ? 'Testing...' : 'Test Key'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveCustomKey(p.id)}
+                              disabled={!customKeyVal.trim()}
+                              className="px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg active:scale-95 transition-transform"
+                            >
+                              Save Key
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Provider Status */}

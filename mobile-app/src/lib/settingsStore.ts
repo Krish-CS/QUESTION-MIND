@@ -40,11 +40,18 @@ export interface AISettingsState {
   // Custom API Key
   customAPIKey: string | null;
   customKeySettings: APIKeySettings | null;
+
+  // Key source selections per provider
+  providerKeys: Record<string, string>;
+  // Custom API Keys per provider
+  customKeys: Record<string, string>;
   
   // Preferences
   preferredProvider: 'backend' | 'custom' | 'local';
   useLocalModels: boolean;
   fallbackStrategy: 'next_available' | 'manual_select';
+  
+  backendUrl: string;
   
   // Device capabilities
   deviceCapabilities: DeviceCapabilities | null;
@@ -62,9 +69,13 @@ export interface AISettingsState {
   // Actions
   setCustomAPIKey: (key: string) => void;
   removeCustomAPIKey: () => void;
+  setProviderKey: (provider: string, keySource: string) => void;
+  setCustomKey: (provider: string, apiKey: string) => void;
+  removeCustomKey: (provider: string) => void;
   setPreferredProvider: (provider: 'backend' | 'custom' | 'local') => void;
   setUseLocalModels: (enabled: boolean) => void;
   setFallbackStrategy: (strategy: 'next_available' | 'manual_select') => void;
+  setBackendUrl: (url: string) => void;
   setDeviceCapabilities: (caps: DeviceCapabilities) => void;
   setProviderStatuses: (statuses: ProviderStatus[]) => void;
   setShowApiKeyModal: (show: boolean) => void;
@@ -113,9 +124,12 @@ export const useAISettingsStore = create<AISettingsState>()(
     (set) => ({
       customAPIKey: getInitialAPIKey(),
       customKeySettings: getInitialKeySettings(getInitialAPIKey()),
+      providerKeys: { groq: 'system-1', cerebras: 'system-1', nvidia: 'system-1', openrouter: 'system-1' },
+      customKeys: { groq: '', cerebras: '', nvidia: '', openrouter: '' },
       preferredProvider: 'backend',
       useLocalModels: false,
       fallbackStrategy: 'next_available',
+      backendUrl: import.meta.env.VITE_API_URL || '',
       deviceCapabilities: null,
       providerStatuses: [],
       showApiKeyModal: false,
@@ -149,11 +163,18 @@ export const useAISettingsStore = create<AISettingsState>()(
         });
       },
       removeCustomAPIKey: () => set({ customAPIKey: null, customKeySettings: null }),
+      setProviderKey: (provider: string, keySource: string) =>
+        set((state) => ({ providerKeys: { ...state.providerKeys, [provider]: keySource } })),
+      setCustomKey: (provider: string, apiKey: string) =>
+        set((state) => ({ customKeys: { ...state.customKeys, [provider]: apiKey } })),
+      removeCustomKey: (provider: string) =>
+        set((state) => ({ customKeys: { ...state.customKeys, [provider]: '' } })),
       setPreferredProvider: (provider: 'backend' | 'custom' | 'local') =>
         set({ preferredProvider: provider }),
       setUseLocalModels: (enabled: boolean) => set({ useLocalModels: enabled }),
       setFallbackStrategy: (strategy: 'next_available' | 'manual_select') =>
         set({ fallbackStrategy: strategy }),
+      setBackendUrl: (url: string) => set({ backendUrl: url }),
       setDeviceCapabilities: (caps: DeviceCapabilities) =>
         set({ deviceCapabilities: caps }),
       setProviderStatuses: (statuses: ProviderStatus[]) =>
@@ -172,6 +193,9 @@ export const useAISettingsStore = create<AISettingsState>()(
         useLocalModels: state.useLocalModels,
         fallbackStrategy: state.fallbackStrategy,
         customKeySettings: state.customKeySettings, // Safely persist masked key details
+        providerKeys: state.providerKeys,
+        customKeys: state.customKeys,
+        backendUrl: state.backendUrl,
       }),
     }
   )

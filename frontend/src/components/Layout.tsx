@@ -32,16 +32,18 @@ export default function Layout({ children }: LayoutProps) {
 
   const isHOD = user?.role === 'HOD';
 
-  const navItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    ...(isHOD ? [{ path: '/overview', icon: BarChart3, label: 'Overview' }] : []),
-    { path: '/subjects', icon: BookOpen, label: 'Subjects' },
-    { path: '/syllabus', icon: FileText, label: 'Syllabus' },
-    { path: '/patterns', icon: Brain, label: 'Patterns' },
-    { path: '/question-banks', icon: FileQuestion, label: 'Question Banks' },
-    { path: '/settings', icon: Settings, label: 'AI Settings' },
-    ...(isHOD ? [{ path: '/approvals', icon: CheckCircle, label: 'Approvals' }] : []),
-  ];
+  const isAdmin = user?.role === 'ADMIN';
+
+  const navItems = isAdmin
+    ? [{ path: '/admin', icon: Settings, label: 'Admin Console' }]
+    : [
+        { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+        ...(isHOD ? [{ path: '/overview', icon: BarChart3, label: 'Overview' }] : []),
+        { path: '/subjects', icon: BookOpen, label: 'Subjects' },
+        { path: '/syllabus', icon: FileText, label: 'Syllabus' },
+        { path: '/patterns', icon: Brain, label: 'Patterns' },
+        { path: '/question-banks', icon: FileQuestion, label: 'Question Banks' },
+      ];
 
   const handleLogout = () => {
     logout();
@@ -63,7 +65,7 @@ export default function Layout({ children }: LayoutProps) {
 
 
 
-          <Link to="/" className="flex items-center gap-2">
+          <Link to={isAdmin ? "/admin" : "/"} className="flex items-center gap-2">
             <img src={logo} alt="Logo" className="h-10 w-auto object-contain" />
           </Link>
         </div>
@@ -83,7 +85,7 @@ export default function Layout({ children }: LayoutProps) {
       >
         {/* Sidebar Header */}
         <div className="p-6 border-b-2 border-pink-300 dark:border-pink-600 flex items-center justify-between bg-gradient-to-br from-pink-100 via-purple-100 to-orange-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 flex-shrink-0">
-          <Link to="/" className="flex items-center justify-center w-full group">
+          <Link to={isAdmin ? "/admin" : "/"} className="flex items-center justify-center w-full group">
             <img src={logo} alt="Logo" className="h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
           </Link>
           <button
@@ -134,13 +136,6 @@ export default function Layout({ children }: LayoutProps) {
               <p className="text-xs text-slate-500 dark:text-slate-400 truncate capitalize font-semibold">{user?.role}</p>
             </div>
           </div>
-          <Link
-            to="/settings"
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-2 bg-gradient-to-r from-pink-500 via-purple-500 to-orange-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition duration-200 hover:scale-102 active:scale-98"
-          >
-            <Brain className="w-5 h-5 animate-pulse" />
-            <span>AI Settings</span>
-          </Link>
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 text-white dark:bg-slate-800 rounded-xl font-semibold hover:bg-slate-800 dark:hover:bg-slate-700 transition"

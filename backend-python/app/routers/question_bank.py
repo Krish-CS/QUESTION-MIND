@@ -5,6 +5,7 @@ from typing import List
 import uuid
 import os
 import shutil
+import tempfile
 
 from ..database import get_db
 from ..models import QuestionBank, QuestionPattern, Subject, Syllabus, User, UserRole, StaffAssignment, CDAP
@@ -14,10 +15,9 @@ from ..schemas import (
     QuestionPatternResponse, QuestionBankResponse
 )
 from ..services.auth import get_current_user
-from ..services.ai_service import ai_service, AIServiceError
+from ..services.ai_service import ai_service, AIServiceError, AIService
 from ..services.excel_service import excel_service
 from ..services.email_service import send_share_notification
-from ..services.drive_service import upload_to_drive
 
 
 router = APIRouter(prefix="/question-bank", tags=["Question Bank"])
@@ -70,53 +70,11 @@ async def get_all_question_banks(
     if subject_id:
         query = query.filter(QuestionBank.subject_id == subject_id)
     
-    # Both HOD and Staff see their own question banks by default
-    # HOD can see all by setting own_only=False
-    if user.role != UserRole.HOD or own_only:
+    # Both HOD and Staff see their own question banks by default, unless own_only is False
+    if own_only:
         query = query.filter(QuestionBank.generated_by == user.id)
     
     banks = query.order_by(QuestionBank.created_at.desc()).all()
-    
-    # Add staff names
-    result = []
-    for bank in banks:
-        bank_dict = QuestionBankResponse.from_orm(bank).dict()
-        if bank.generated_by:
-            creator = db.query(User).filter(User.id == bank.generated_by).first()
-            if creator:
-                bank_dict['generated_by_name'] = creator.name
-        result.append(bank_dict)
-    
-    return result
-
-@router.get("/pending", response_model=List[QuestionBankResponse])
-async def get_pending_approvals(
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
-):
-    if user.role == UserRole.HOD:
-        # HOD sees all pending approvals
-        banks = db.query(QuestionBank).filter(
-            QuestionBank.status == QuestionBankStatus.PENDING_APPROVAL
-        ).all()
-    elif user.role == UserRole.FACULTY:
-        # Staff sees pending approvals only for subjects they have can_approve permission
-        staff_assignments = db.query(StaffAssignment).filter(
-            StaffAssignment.staff_email == user.email,
-            StaffAssignment.is_active == True,
-            StaffAssignment.can_approve == True
-        ).all()
-        
-        subject_ids = [a.subject_id for a in staff_assignments]
-        if not subject_ids:
-            return []
-        
-        banks = db.query(QuestionBank).filter(
-            QuestionBank.status == QuestionBankStatus.PENDING_APPROVAL,
-            QuestionBank.subject_id.in_(subject_ids)
-        ).all()
-    else:
-        raise HTTPException(status_code=403, detail="No permission to view pending approvals")
     
     # Add staff names
     result = []
@@ -163,16 +121,9 @@ async def update_pattern(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    # Check permission
-    if user.role != UserRole.HOD:
-        assignment = db.query(StaffAssignment).filter(
-            StaffAssignment.subject_id == subject_id,
-            StaffAssignment.staff_email == user.email,
-            StaffAssignment.is_active == True
-        ).first()
-        
-        if not assignment or not assignment.can_edit_pattern:
-            raise HTTPException(status_code=403, detail="No permission to edit pattern")
+    # Check permission - HOD and Faculty have full permissions
+    if user.role not in [UserRole.HOD, UserRole.FACULTY]:
+        raise HTTPException(status_code=403, detail="No permission to edit pattern")
     
     # Check subject exists
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
@@ -289,6 +240,17 @@ async def generate_questions(
                     continue  # user deleted/excluded this unit
 
                 unit_parts = normalize_parts(unit_cfg[unit_num_str])
+
+                # Inherit mcqCount from global parts config when per-unit has mcqCount=0
+                # unit_configs stored in DB often lack mcqCount, so we pull from global parts_data
+                global_mcq_map = {p["partName"]: p.get("mcqCount", 0) for p in parts_data}
+                for up in unit_parts:
+                    if not up.get("mcqCount"):
+                        inherited = global_mcq_map.get(up["partName"], 0)
+                        if inherited:
+                            up["mcqCount"] = inherited
+                            print(f"[QB]   Inherited mcqCount={inherited} for {up['partName']} from global config")
+
                 print(f"[QB]   Unit {unit_num_str}: {len(unit_parts)} parts")
                 for p in unit_parts:
                     print(f"     [{p['partName']}] count={p['questionCount']} marks={p['marksPerQuestion']} "
@@ -315,39 +277,48 @@ async def generate_questions(
                 part_counts = unit_q_counts.get(part_name, {})
                 part_results: list = []
 
+                unit_rows = []
                 for unit in selected_units:
                     unit_num = unit.get("unitNumber")
-                    count = part_counts.get(unit_num, 0) if isinstance(part_counts, dict) else 0
-                    if count == 0:
-                        continue
-
-                    # Build a per-unit part config with the specific count
-                    orig_total = part.get("questionCount", 1) or 1
-                    mcq_scaled = round((part.get("mcqCount", 0) / orig_total) * count)
-
-                    # Scale btlDistribution proportionally to the new unit count.
-                    # E.g. if original dist is {BTL1:4, BTL2:6} for 10 Qs and this unit
-                    # gets 3 Qs, scale to {BTL1:1, BTL2:2} (3/10 ratio).
-                    orig_dist = part.get("btlDistribution") or {}
-                    if orig_dist:
-                        scaled_dist = {
-                            k: round(v * count / orig_total)
-                            for k, v in orig_dist.items() if v and int(v) > 0
-                        }
-                        # Remove zero-rounded entries; keep only active BTL levels
-                        allowed = set(part.get("allowedBTLLevels") or [])
-                        scaled_dist = {k: v for k, v in scaled_dist.items() if v > 0 and k in allowed}
+                    if isinstance(part_counts, dict):
+                        count = part_counts.get(unit_num, part_counts.get(str(unit_num), 0))
                     else:
-                        scaled_dist = None
+                        count = 0
+                    if count > 0:
+                        unit_rows.append((unit, count))
+
+                if not unit_rows:
+                    questions[part_name] = part_results
+                    print(f"[QB]   {part_name} total: {len(part_results)} questions")
+                    continue
+
+                q_counts = [count for _, count in unit_rows]
+                mcq_total = min(sum(q_counts), max(0, int(part.get("mcqCount", 0) or 0)))
+                mcq_allocations = AIService._allocate_exact_counts(q_counts, mcq_total)
+
+                orig_dist = part.get("btlDistribution") or {}
+                allowed_levels = [lvl for lvl in (part.get("allowedBTLLevels") or []) if lvl in orig_dist]
+                per_level_allocations = {}
+                for level, level_count in orig_dist.items():
+                    if level_count and int(level_count) > 0 and (not allowed_levels or level in allowed_levels):
+                        per_level_allocations[level] = AIService._allocate_exact_counts(q_counts, int(level_count))
+
+                for idx, (unit, count) in enumerate(unit_rows):
+                    unit_num = unit.get("unitNumber")
+                    unit_btl_dist = {
+                        level: alloc[idx]
+                        for level, alloc in per_level_allocations.items()
+                        if alloc[idx] > 0
+                    } or None
 
                     unit_part_config = {
                         **part,
                         "questionCount": count,
-                        "mcqCount": mcq_scaled,
-                        "btlDistribution": scaled_dist,
+                        "mcqCount": mcq_allocations[idx],
+                        "btlDistribution": unit_btl_dist,
                     }
                     print(f"[QB]   {part_name} | Unit {unit_num}: {count} questions | "
-                          f"btlDist={scaled_dist}")
+                          f"mcq={mcq_allocations[idx]} btlDist={unit_btl_dist}")
 
                     unit_questions = await ai_service.generate_questions(
                         syllabus_units=[unit],
@@ -394,8 +365,8 @@ async def generate_questions(
         has_cdap=cdap is not None  # Flag to enable CDAP Part column
     )
     
-    # Save question bank — HOD's own banks are auto-approved; staff banks start as DRAFT
-    initial_status = QuestionBankStatus.APPROVED if user.role == UserRole.HOD else QuestionBankStatus.DRAFT
+    # Save question bank — automatically approved
+    initial_status = QuestionBankStatus.APPROVED
     qb = QuestionBank(
         id=str(uuid.uuid4()),
         subject_id=subject.id,
@@ -411,43 +382,52 @@ async def generate_questions(
     db.commit()
     db.refresh(qb)
     
+    # Auto-email the generated question bank to the user
+    try:
+        send_share_notification(
+            recipients=[user.email],
+            bank_title=f"{subject.code} Question Bank",
+            subject_name=subject.name,
+            subject_code=subject.code,
+            sender_name="Krish Academia",
+            excel_path=excel_path
+        )
+    except Exception as e:
+        print(f"[QB] ⚠️ Failed to auto-email generated question bank to {user.email}: {e}")
+    
     return qb
 
 # ── Image upload ──────────────────────────────────────────────────────────────
-IMAGES_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "question-images")
 
 @router.post("/upload-image")
 async def upload_question_image(
     file: UploadFile = File(...),
     user: User = Depends(get_current_user)
 ):
-    """Upload an image for a question. Returns a URL to reference in imageData."""
+    """Upload an image for a question to local storage. Returns a URL to reference in imageData."""
     allowed_types = {"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"}
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Unsupported image type. Use JPEG, PNG, GIF, or WebP.")
 
-    os.makedirs(IMAGES_DIR, exist_ok=True)
-
     ext = os.path.splitext(file.filename or ".png")[1] or ".png"
     filename = f"{uuid.uuid4().hex}{ext}"
-    dest = os.path.join(IMAGES_DIR, filename)
+    
+    # Save directly to data/images folder
+    dest_dir = "data/images"
+    os.makedirs(dest_dir, exist_ok=True)
+    dest = os.path.join(dest_dir, filename)
 
-    with open(dest, "wb") as f:
-        shutil.copyfileobj(file.file, f)
-
-    return {"url": f"/api/question-bank/images/{filename}"}
-
-
-@router.get("/images/{filename}")
-async def get_question_image(filename: str):
-    """Serve an uploaded question image. Public endpoint — filenames are UUID-based."""
-    # Prevent path traversal
-    if "/" in filename or "\\" in filename or ".." in filename:
-        raise HTTPException(status_code=400, detail="Invalid filename")
-    path = os.path.join(IMAGES_DIR, filename)
-    if not os.path.exists(path):
-        raise HTTPException(status_code=404, detail="Image not found")
-    return FileResponse(path)
+    try:
+        with open(dest, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+            
+        # Return URL pointing to static files mount
+        # e.g., /api/static/images/12345.png
+        url = f"/api/static/images/{filename}"
+        return {"url": url}
+    except Exception as e:
+        logger.error(f"Failed to save image: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save image locally.")
 
 
 @router.put("/{qb_id}/questions", response_model=QuestionBankResponse)
@@ -462,18 +442,13 @@ async def update_questions(
     if not qb:
         raise HTTPException(status_code=404, detail="Question bank not found")
 
-    # Only the creator or an HOD can edit questions
-    if qb.generated_by != user.id and user.role != UserRole.HOD:
+    # Only the creator, HOD, or Faculty can edit questions
+    if qb.generated_by != user.id and user.role not in [UserRole.HOD, UserRole.FACULTY]:
         raise HTTPException(status_code=403, detail="You don't have permission to edit this question bank")
 
     # Save updated questions
     questions_dict = data.questions if isinstance(data.questions, dict) else dict(data.questions)
     qb.questions = questions_dict
-
-    # If the bank was pending/approved, reset to DRAFT so it goes through approval again
-    if qb.status in [QuestionBankStatus.PENDING_APPROVAL, QuestionBankStatus.APPROVED]:
-        qb.status = QuestionBankStatus.DRAFT
-        qb.rejection_reason = None
 
     # Regenerate Excel
     try:
@@ -534,52 +509,6 @@ async def get_question_bank(
         raise HTTPException(status_code=404, detail="Question bank not found")
     return qb
 
-@router.put("/{qb_id}/status")
-async def update_status(
-    qb_id: str,
-    data: UpdateStatusRequest,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user)
-):
-    qb = db.query(QuestionBank).filter(QuestionBank.id == qb_id).first()
-    if not qb:
-        raise HTTPException(status_code=404, detail="Question bank not found")
-    
-    # Check permission for approval
-    if data.status in [QuestionBankStatus.APPROVED, QuestionBankStatus.REJECTED]:
-        # HOD cannot approve their own question banks
-        if user.role == UserRole.HOD and qb.generated_by == user.id:
-            raise HTTPException(status_code=403, detail="HOD cannot approve their own question banks")
-        
-        # Check if user has approval permission
-        has_approval_permission = False
-        
-        # Staff with can_approve permission can approve
-        if user.role == UserRole.FACULTY:
-            assignment = db.query(StaffAssignment).filter(
-                StaffAssignment.subject_id == qb.subject_id,
-                StaffAssignment.staff_email == user.email,
-                StaffAssignment.is_active == True,
-                StaffAssignment.can_approve == True
-            ).first()
-            if assignment:
-                has_approval_permission = True
-        # HOD can approve (except their own)
-        elif user.role == UserRole.HOD:
-            has_approval_permission = True
-        
-        if not has_approval_permission:
-            raise HTTPException(status_code=403, detail="You don't have permission to approve/reject question banks")
-        
-        qb.approved_by = user.id
-    
-    qb.status = data.status
-    if data.rejection_reason:
-        qb.rejection_reason = data.rejection_reason
-    
-    db.commit()
-    return {"message": "Status updated"}
-
 @router.get("/{qb_id}/download")
 async def download_excel(
     qb_id: str,
@@ -607,22 +536,21 @@ async def share_question_bank(
     user: User = Depends(get_current_user)
 ):
     """
-    Share a question bank with one or more staff members.
+    Share a question bank with one or more recipients.
 
     Body: { "recipient_emails": ["a@x.com", "b@x.com"] }
 
     Steps:
-      1. Verify the caller is the creator or HOD
-      2. Upload Excel to Google Drive (if configured) to get a shareable link
-      3. Send a styled email to each recipient with Drive link + Excel attached
-      4. Return { shared_with, drive_link, email_result }
+      1. Verify the caller is the creator, HOD, or Faculty
+      2. Send a styled email to each recipient with the Excel attached
+      3. Return { shared_with, email_result }
     """
     qb = db.query(QuestionBank).filter(QuestionBank.id == qb_id).first()
     if not qb:
         raise HTTPException(status_code=404, detail="Question bank not found")
 
-    # Only creator or HOD can share
-    if qb.generated_by != user.id and user.role != UserRole.HOD:
+    # Only creator, HOD, or Faculty can share
+    if qb.generated_by != user.id and user.role not in [UserRole.HOD, UserRole.FACULTY]:
         raise HTTPException(status_code=403, detail="Only the creator or HOD can share this question bank")
 
     recipient_emails: list = data.get("recipient_emails", [])
@@ -638,20 +566,13 @@ async def share_question_bank(
     sender = db.query(User).filter(User.id == user.id).first()
     sender_name = sender.name if sender else "A colleague"
 
-    # ── Step 1: Upload to Drive (optional) ────────────────────────────────────
-    drive_link = None
-    if qb.excel_path and os.path.exists(qb.excel_path):
-        filename = f"{subject_code}_{qb.title.replace(' ', '_')}.xlsx"
-        drive_link = upload_to_drive(qb.excel_path, filename)
-
-    # ── Step 2: Send email notifications ─────────────────────────────────────
+    # ── Step 1: Send email notifications ─────────────────────────────────────
     email_result = send_share_notification(
         recipients=recipient_emails,
         bank_title=qb.title,
         subject_name=subject_name,
         subject_code=subject_code,
         sender_name=sender_name,
-        drive_link=drive_link,
         excel_path=qb.excel_path if qb.excel_path and os.path.exists(qb.excel_path) else None,
     )
 
@@ -660,7 +581,6 @@ async def share_question_bank(
         "shared_with": email_result.get("sent", []),
         "failed": email_result.get("failed", []),
         "skipped_email": email_result.get("skipped", False),
-        "drive_link": drive_link,
         "bank_title": qb.title,
         "subject": f"{subject_code} — {subject_name}",
     }
@@ -677,8 +597,8 @@ async def delete_question_bank(
     if not qb:
         raise HTTPException(status_code=404, detail="Question bank not found")
     
-    # Only creator or HOD can delete
-    if qb.generated_by != user.id and user.role != UserRole.HOD:
+    # Only creator, HOD, or Faculty can delete
+    if qb.generated_by != user.id and user.role not in [UserRole.HOD, UserRole.FACULTY]:
         raise HTTPException(status_code=403, detail="No permission to delete")
     
     db.delete(qb)

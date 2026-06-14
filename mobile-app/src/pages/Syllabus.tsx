@@ -111,9 +111,15 @@ export default function SyllabusPage(): JSX.Element {
 
         setSubjects(subjectsFromAssignments);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('Failed to load data');
+      if (!err.response) {
+        setError('Server is unreachable. Please check your connection (Not fetchable).');
+      } else if (err.response.status === 404) {
+        setError('Data is currently empty or not found.');
+      } else {
+        setError(err.response?.data?.detail || err.message || 'Failed to load data.');
+      }
     } finally {
       setLoading(false);
     }
@@ -674,10 +680,10 @@ function SubjectDetailsModal({
                   Subject Details
                 </h2>
 
-                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full">
                   <button
                     onClick={() => setActiveTab('syllabus')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'syllabus'
+                    className={`flex-1 text-center py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'syllabus'
                       ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}
@@ -686,7 +692,7 @@ function SubjectDetailsModal({
                   </button>
                   <button
                     onClick={() => setActiveTab('cdap')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'cdap'
+                    className={`flex-1 text-center py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'cdap'
                       ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}

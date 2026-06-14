@@ -3,8 +3,8 @@ from sqlalchemy import text
 
 with engine.connect() as conn:
     try:
-        conn.execute(text('ALTER TABLE subjects ADD COLUMN nature VARCHAR(20) DEFAULT "THEORY"'))
-        conn.commit()
+        with conn.begin():
+            conn.execute(text("ALTER TABLE subjects ADD COLUMN nature VARCHAR(20) DEFAULT 'THEORY'"))
         print("Column 'nature' added to subjects table")
     except Exception as e:
         if "Duplicate column" in str(e) or "already exists" in str(e).lower():
@@ -13,8 +13,8 @@ with engine.connect() as conn:
             print(f"Error: {e}")
 
     try:
-        conn.execute(text("ALTER TABLE question_patterns ADD COLUMN unit_question_counts JSON"))
-        conn.commit()
+        with conn.begin():
+            conn.execute(text("ALTER TABLE question_patterns ADD COLUMN unit_question_counts JSON"))
         print("Column 'unit_question_counts' added to question_patterns table")
     except Exception as e:
         if "Duplicate column" in str(e) or "already exists" in str(e).lower():
@@ -23,8 +23,8 @@ with engine.connect() as conn:
             print(f"Error adding unit_question_counts: {e}")
 
     try:
-        conn.execute(text("ALTER TABLE question_patterns ADD COLUMN unit_configs JSON"))
-        conn.commit()
+        with conn.begin():
+            conn.execute(text("ALTER TABLE question_patterns ADD COLUMN unit_configs JSON"))
         print("Column 'unit_configs' added to question_patterns table")
     except Exception as e:
         if "Duplicate column" in str(e) or "already exists" in str(e).lower():

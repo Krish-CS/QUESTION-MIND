@@ -37,9 +37,14 @@ export interface ProviderStatus {
 }
 
 export interface AISettingsState {
-  // Custom API Key
+  // Custom API Key (Legacy - kept for compatibility)
   customAPIKey: string | null;
   customKeySettings: APIKeySettings | null;
+
+  // Key source selections per provider
+  providerKeys: Record<string, string>;
+  // Custom API Keys per provider
+  customKeys: Record<string, string>;
   
   // Preferences
   preferredProvider: 'backend' | 'custom' | 'local';
@@ -62,6 +67,9 @@ export interface AISettingsState {
   // Actions
   setCustomAPIKey: (key: string) => void;
   removeCustomAPIKey: () => void;
+  setProviderKey: (provider: string, keySource: string) => void;
+  setCustomKey: (provider: string, apiKey: string) => void;
+  removeCustomKey: (provider: string) => void;
   setPreferredProvider: (provider: 'backend' | 'custom' | 'local') => void;
   setUseLocalModels: (enabled: boolean) => void;
   setFallbackStrategy: (strategy: 'next_available' | 'manual_select') => void;
@@ -79,6 +87,8 @@ export const useAISettingsStore = create<AISettingsState>()(
     (set) => ({
       customAPIKey: null,
       customKeySettings: null,
+      providerKeys: { groq: 'system-1', cerebras: 'system-1', nvidia: 'system-1', openrouter: 'system-1' },
+      customKeys: { groq: '', cerebras: '', nvidia: '', openrouter: '' },
       preferredProvider: 'backend',
       useLocalModels: false,
       fallbackStrategy: 'next_available',
@@ -92,6 +102,12 @@ export const useAISettingsStore = create<AISettingsState>()(
 
       setCustomAPIKey: (key: string) => set({ customAPIKey: key }),
       removeCustomAPIKey: () => set({ customAPIKey: null, customKeySettings: null }),
+      setProviderKey: (provider: string, keySource: string) =>
+        set((state) => ({ providerKeys: { ...state.providerKeys, [provider]: keySource } })),
+      setCustomKey: (provider: string, apiKey: string) =>
+        set((state) => ({ customKeys: { ...state.customKeys, [provider]: apiKey } })),
+      removeCustomKey: (provider: string) =>
+        set((state) => ({ customKeys: { ...state.customKeys, [provider]: '' } })),
       setPreferredProvider: (provider: 'backend' | 'custom' | 'local') =>
         set({ preferredProvider: provider }),
       setUseLocalModels: (enabled: boolean) => set({ useLocalModels: enabled }),
@@ -114,7 +130,8 @@ export const useAISettingsStore = create<AISettingsState>()(
         preferredProvider: state.preferredProvider,
         useLocalModels: state.useLocalModels,
         fallbackStrategy: state.fallbackStrategy,
-        // Don't persist actual API key to localStorage
+        providerKeys: state.providerKeys,
+        customKeys: state.customKeys,
       }),
     }
   )

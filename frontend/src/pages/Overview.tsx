@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { subjectsApi, questionBankApi } from '../lib/api';
+import { useUiStore } from '../lib/store';
 import {
   Users,
   CheckCircle2,
@@ -40,6 +41,7 @@ interface SubjectOverview {
 }
 
 export default function Overview() {
+  const { setGlobalLoading } = useUiStore();
   const [subjects, setSubjects] = useState<SubjectOverview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -611,6 +613,7 @@ export default function Overview() {
             // I'll inline the logic or just pass a simple one.
             // Actually, let's just use the API directly here.
             (async () => {
+              setGlobalLoading(true, 'Downloading');
               try {
                 const response = await questionBankApi.download(viewingBank.id);
                 const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -622,6 +625,8 @@ export default function Overview() {
                 link.parentNode?.removeChild(link);
               } catch (e) {
                 alert('Download failed');
+              } finally {
+                setGlobalLoading(false);
               }
             })()
           }}
