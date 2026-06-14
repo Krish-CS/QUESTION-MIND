@@ -43,3 +43,4 @@ jobs:
           branch: main
           folder: frontend/dist
           clean: true
+          single-commit: true
