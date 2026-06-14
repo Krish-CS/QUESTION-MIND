@@ -6,6 +6,9 @@ import uuid
 import os
 import shutil
 import tempfile
+import logging
+
+logger = logging.getLogger(__name__)
 
 from ..database import get_db
 from ..models import QuestionBank, QuestionPattern, Subject, Syllabus, User, UserRole, StaffAssignment, CDAP
