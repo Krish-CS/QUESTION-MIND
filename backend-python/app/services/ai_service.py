@@ -370,9 +370,15 @@ class AIService:
                         "unit": ua["unit"],
                         "count": parts_counts[i],
                         "mcq": parts_mcqs[i],
+                        "part_index": i,
+                        "total_parts": num_parts,
                     })
             else:
-                split_assignments.append(ua)
+                split_assignments.append({
+                    **ua,
+                    "part_index": 0,
+                    "total_parts": 1,
+                })
         unit_assignments = split_assignments
 
         # Step 2: group into focused chunks — each chunk owns its own units
@@ -535,7 +541,21 @@ class AIService:
         for ua in unit_assignments:
             u      = ua["unit"]
             q_for  = ua["count"]
-            topics = ", ".join(self._extract_topics(u)[:8])
+            all_unit_topics = self._extract_topics(u)
+            
+            part_idx = ua.get("part_index")
+            total_parts = ua.get("total_parts")
+            if part_idx is not None and total_parts is not None and len(all_unit_topics) > 1:
+                n_topics = len(all_unit_topics)
+                start = (part_idx * n_topics) // total_parts
+                end = ((part_idx + 1) * n_topics) // total_parts
+                chunk_topics = all_unit_topics[start:end]
+                if not chunk_topics:
+                    chunk_topics = all_unit_topics[:4]
+                topics = ", ".join(chunk_topics[:8])
+            else:
+                topics = ", ".join(all_unit_topics[:8])
+                
             unit_lines.append(f"- {q_for}q from: {u.get('title', '')} | {topics}")
         unit_block = "\n".join(unit_lines)
 
@@ -545,22 +565,44 @@ class AIService:
             chunk_unit_nums = {ua["unit"].get("unitNumber") for ua in unit_assignments}
             cdap_lines = []
             for u in cdap_units:
-                if u.get("unit_number") not in chunk_unit_nums:
+                u_num = u.get("unit_number")
+                if u_num not in chunk_unit_nums:
                     continue
-                def _fmt(tlist):
+                
+                # Find corresponding assignment
+                ua = next((x for x in unit_assignments if x["unit"].get("unitNumber") == u_num), None)
+                part_idx = ua.get("part_index") if ua else None
+                total_parts = ua.get("total_parts") if ua else None
+                
+                def _fmt_and_partition(tlist):
+                    if part_idx is not None and total_parts is not None and len(tlist) > 1:
+                        n_topics = len(tlist)
+                        start = (part_idx * n_topics) // total_parts
+                        end = ((part_idx + 1) * n_topics) // total_parts
+                        chunk_t = tlist[start:end]
+                        if not chunk_t:
+                            chunk_t = tlist[:3]
+                    else:
+                        chunk_t = tlist[:6]
                     return ", ".join(
                         (t.get("topic", str(t)) if isinstance(t, dict) else str(t))
-                        for t in tlist[:6]
+                        for t in chunk_t
                     )
-                p1 = _fmt(u.get("part1_topics", []))
-                p2 = _fmt(u.get("part2_topics", []))
-                if p1: cdap_lines.append(f"Part1: {p1}")
-                if p2: cdap_lines.append(f"Part2: {p2}")
+                
+                p1 = _fmt_and_partition(u.get("part1_topics", []))
+                p2 = _fmt_and_partition(u.get("part2_topics", []))
+                if p1: cdap_lines.append(f"Part1 (CDAP Part 1): {p1}")
+                if p2: cdap_lines.append(f"Part2 (CDAP Part 2): {p2}")
             if cdap_lines:
-                cdap_text = "\nCDAP topics:\n" + "\n".join(cdap_lines)
+                cdap_text = "\nCDAP topics (Part1 vs Part2 list):\n" + "\n".join(cdap_lines)
 
         cdap_field = ', "cdap_part": 1_or_2' if has_cdap else ''
-        cdap_rule  = '- "cdap_part": alternate 1 and 2\n' if has_cdap else ''
+        
+        cdap_rule = (
+            '- "cdap_part": For each generated question, you MUST set "cdap_part" to 1 if the '
+            'question is based on a topic in the Part1 list above, and set it to 2 if the question '
+            'is based on a topic in the Part2 list above. This mapping must be 100% accurate.\n'
+        ) if has_cdap else ''
 
         # ── BTL / K-level keyword guide (only levels used in this part) ─
         _BTL_ORDER = ["BTL1", "BTL2", "BTL3", "BTL4", "BTL5", "BTL6"]
@@ -758,10 +800,11 @@ RULES:
         weights = [count for _, count in items]
         allocated = cls._allocate_exact_counts(weights, total)
         return {level: count for level, count in zip(levels, allocated) if count > 0}
-
     def _parse_questions(self, content: str, part: Dict, has_cdap: bool = False) -> List[Dict]:
         marks      = part.get("marksPerQuestion", 2)
         target_mcq = max(0, int(part.get("mcqCount", 0) or 0))
+        allowed_btls = part.get("allowedBTLLevels", ["BTL1", "BTL2"])
+        target_dist  = part.get("btlDistribution") or {}
 
         def _finalise(questions: list) -> list:
             # Filter out non-dict entries — json-repair can return strings for malformed objects
@@ -772,7 +815,16 @@ RULES:
                 if has_cdap and "cdap_part" not in q:
                     q["cdap_part"] = 1
 
-            # ── Enforce MCQ count without overwriting real AI-generated options ──
+            # ── 1. Standardise isMCQ based on fields present ──
+            for q in questions:
+                has_opts = isinstance(q.get("options"), dict) and any(str(v).strip() for v in q["options"].values() if v)
+                has_corr = q.get("correctOption") in {"A", "B", "C", "D"}
+                if q.get("isMCQ") is True or (q.get("isMCQ") is not False and (has_opts or has_corr)):
+                    q["isMCQ"] = True
+                else:
+                    q["isMCQ"] = False
+
+            # ── 2. Enforce MCQ count ──
             current_mcq = sum(1 for q in questions if q.get("isMCQ"))
             if current_mcq < target_mcq:
                 need = target_mcq - current_mcq
@@ -781,20 +833,6 @@ RULES:
                         break
                     if not q.get("isMCQ"):
                         q["isMCQ"] = True
-                        # Only add placeholder options if the AI didn't provide real ones
-                        opts = q.get("options")
-                        if not isinstance(opts, dict) or not any(
-                            str(v).strip() for v in opts.values() if v
-                        ):
-                            ans = q.get("answer", "")
-                            q["options"] = {
-                                "A": ans.strip() if isinstance(ans, str) and ans.strip() else "Option A",
-                                "B": "Option B",
-                                "C": "Option C",
-                                "D": "Option D",
-                            }
-                        if q.get("correctOption") not in {"A", "B", "C", "D"}:
-                            q["correctOption"] = "A"
                         need -= 1
             elif current_mcq > target_mcq:
                 extra = current_mcq - target_mcq
@@ -803,9 +841,73 @@ RULES:
                         break
                     if q.get("isMCQ"):
                         q["isMCQ"] = False
-                        q.pop("options", None)
-                        q.pop("correctOption", None)
                         extra -= 1
+
+            # ── 3. Clean up non-MCQs and fill template for MCQs ──
+            for q in questions:
+                if not q.get("isMCQ"):
+                    q["isMCQ"] = False
+                    q.pop("options", None)
+                    q.pop("correctOption", None)
+                else:
+                    q["isMCQ"] = True
+                    opts = q.get("options")
+                    if not isinstance(opts, dict) or not any(
+                        str(v).strip() for v in opts.values() if v
+                    ):
+                        ans = q.get("answer", "")
+                        q["options"] = {
+                            "A": ans.strip() if isinstance(ans, str) and ans.strip() else "Option A",
+                            "B": "Option B",
+                            "C": "Option C",
+                            "D": "Option D",
+                        }
+                    if q.get("correctOption") not in {"A", "B", "C", "D"}:
+                        q["correctOption"] = "A"
+
+            # ── 4. Enforce Allowed BTL and Custom Distributions ──
+            allowed_list = [b for b in allowed_btls if b]
+            if not allowed_list:
+                allowed_list = ["BTL1", "BTL2"]
+
+            # Filter target distribution to only allowed levels
+            clean_dist = {k: int(v) for k, v in target_dist.items() if k in allowed_list and v and int(v) > 0} if target_dist else {}
+            
+            if clean_dist:
+                btl_pool = []
+                for level, count in clean_dist.items():
+                    btl_pool.extend([level] * count)
+                
+                while len(btl_pool) < len(questions):
+                    btl_pool.append(allowed_list[0])
+                if len(btl_pool) > len(questions):
+                    btl_pool = btl_pool[:len(questions)]
+                
+                pool_counts = {}
+                for b in btl_pool:
+                    pool_counts[b] = pool_counts.get(b, 0) + 1
+                
+                for q in questions:
+                    q_btl = q.get("btl")
+                    if q_btl in pool_counts and pool_counts[q_btl] > 0:
+                        pool_counts[q_btl] -= 1
+                    else:
+                        q["btl"] = None
+                
+                remaining_btls = []
+                for b, count in pool_counts.items():
+                    remaining_btls.extend([b] * count)
+                
+                for q in questions:
+                    if q.get("btl") is None:
+                        if remaining_btls:
+                            q["btl"] = remaining_btls.pop(0)
+                        else:
+                            q["btl"] = allowed_list[0]
+            else:
+                for q in questions:
+                    if q.get("btl") not in allowed_list:
+                        q["btl"] = allowed_list[0]
 
             return self._clean_questions(questions)
 

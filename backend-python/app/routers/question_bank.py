@@ -239,17 +239,25 @@ async def generate_questions(
                     print(f"[QB]   Unit {unit_num_str}: excluded by user")
                     continue  # user deleted/excluded this unit
 
-                unit_parts = normalize_parts(unit_cfg[unit_num_str])
+                raw_unit_parts = unit_cfg[unit_num_str]
+                # Identify which parts in the raw unit config actually lack mcqCount (i.e. is undefined/None)
+                lacks_mcq = {}
+                for rp in raw_unit_parts:
+                    p_name = rp.get("partName")
+                    if p_name and rp.get("mcqCount") is None:
+                        lacks_mcq[p_name] = True
 
-                # Inherit mcqCount from global parts config when per-unit has mcqCount=0
-                # unit_configs stored in DB often lack mcqCount, so we pull from global parts_data
+                unit_parts = normalize_parts(raw_unit_parts)
+
+                # Inherit mcqCount from global parts config ONLY when per-unit config lacks it entirely
                 global_mcq_map = {p["partName"]: p.get("mcqCount", 0) for p in parts_data}
                 for up in unit_parts:
-                    if not up.get("mcqCount"):
-                        inherited = global_mcq_map.get(up["partName"], 0)
+                    p_name = up["partName"]
+                    if lacks_mcq.get(p_name):
+                        inherited = global_mcq_map.get(p_name, 0)
                         if inherited:
                             up["mcqCount"] = inherited
-                            print(f"[QB]   Inherited mcqCount={inherited} for {up['partName']} from global config")
+                            print(f"[QB]   Inherited mcqCount={inherited} for {p_name} from global config")
 
                 print(f"[QB]   Unit {unit_num_str}: {len(unit_parts)} parts")
                 for p in unit_parts:
