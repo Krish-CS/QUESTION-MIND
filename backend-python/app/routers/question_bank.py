@@ -528,7 +528,47 @@ async def download_excel(
         raise HTTPException(status_code=404, detail="Question bank not found")
     
     if not qb.excel_path or not os.path.exists(qb.excel_path):
-        raise HTTPException(status_code=404, detail="Excel file not found")
+        # Regenerate the Excel file on the fly if it was deleted from ephemeral disk
+        subject = db.query(Subject).filter(Subject.id == qb.subject_id).first()
+        cdap = db.query(CDAP).filter(CDAP.subject_id == qb.subject_id).first()
+        
+        parts_raw = []
+        if qb.pattern_id:
+            pattern = db.query(QuestionPattern).filter(QuestionPattern.id == qb.pattern_id).first()
+            if pattern and pattern.parts:
+                parts_raw = pattern.parts
+        
+        if not parts_raw and subject and subject.configuration:
+            parts_raw = subject.configuration.get('parts', [])
+            
+        parts_data = normalize_parts(parts_raw)
+        
+        questions_data = qb.questions or {}
+        parts_questions = {}
+        if isinstance(questions_data, dict):
+            parts_questions = questions_data.get("parts", {})
+            if not parts_questions:
+                parts_questions = questions_data
+                
+        try:
+            excel_path = excel_service.generate_question_bank_excel(
+                questions=parts_questions,
+                subject_name=subject.name if subject else "Unknown",
+                subject_code=subject.code if subject else "SUBJ",
+                parts_config=parts_data,
+                department=subject.department or "CSE" if subject else "CSE",
+                semester=subject.semester or 1 if subject else 1,
+                has_cdap=cdap is not None
+            )
+            qb.excel_path = excel_path
+            db.commit()
+            db.refresh(qb)
+        except Exception as e:
+            print(f"[QB Download] Error regenerating Excel: {e}")
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Excel file not found and could not be regenerated: {str(e)}"
+            )
     
     return FileResponse(
         qb.excel_path,

@@ -156,9 +156,9 @@ export default function QuestionBanks() {
     // Clamp mcqCount so it never exceeds questionCount (guards stale data)
     const loadedParts: PartConfiguration[] = copiedPattern?.parts
       ? copiedPattern.parts.map((p: any) => {
-          const mcq = p.mcqCount ?? 0;
-          return mcq > p.questionCount ? { ...p, mcqCount: 0 } : { ...p };
-        })
+        const mcq = p.mcqCount ?? 0;
+        return mcq > p.questionCount ? { ...p, mcqCount: 0 } : { ...p };
+      })
       : [];
     setLocalParts(loadedParts);
 
@@ -218,11 +218,11 @@ export default function QuestionBanks() {
     const mcq = String(p.mcqCount) === '' ? 0 : Number(p.mcqCount || 0);
     const dist = p.btlDistribution
       ? Object.fromEntries(
-          Object.entries(p.btlDistribution).map(([lvl, val]) => [
-            lvl,
-            String(val) === '' ? 0 : Number(val || 0),
-          ])
-        )
+        Object.entries(p.btlDistribution).map(([lvl, val]) => [
+          lvl,
+          String(val) === '' ? 0 : Number(val || 0),
+        ])
+      )
       : undefined;
     return {
       ...p,
@@ -240,7 +240,7 @@ export default function QuestionBanks() {
     try {
       const hasUnitCfgs = Object.keys(localUnitCfg).length > 0;
       const sanitizedParts = localParts.map(sanitizePartConfig);
-      
+
       let unitCfgsToSave: Record<string, any> | null = null;
       if (hasUnitCfgs) {
         if (qbMode === 'combined') {
@@ -256,10 +256,10 @@ export default function QuestionBanks() {
                 const mcq = Math.min(prevMcq, pQCount);
                 const dist = prev?.btlDistribution
                   ? Object.fromEntries(
-                      Object.entries(prev.btlDistribution).filter(([lvl]) =>
-                        (p.allowedBTLLevels ?? []).includes(lvl as any)
-                      )
+                    Object.entries(prev.btlDistribution).filter(([lvl]) =>
+                      (p.allowedBTLLevels ?? []).includes(lvl as any)
                     )
+                  )
                   : {};
                 return sanitizePartConfig({ ...p, mcqCount: mcq, btlDistribution: dist });
               })];
@@ -437,22 +437,22 @@ export default function QuestionBanks() {
 
     const unitCfg = qbMode === 'combined' ? undefined : (hasUnitCfg
       ? Object.fromEntries(
-          Object.entries(localUnitCfg)
-            .filter(([unitNum]) => selectedUnitIds.includes(Number(unitNum)))
-            .map(([unitNum, parts]) => [unitNum, parts.map(sanitizePartConfig)])
-        )
+        Object.entries(localUnitCfg)
+          .filter(([unitNum]) => selectedUnitIds.includes(Number(unitNum)))
+          .map(([unitNum, parts]) => [unitNum, parts.map(sanitizePartConfig)])
+      )
       : undefined);
 
     const uqc = !hasUnitCfg && qbMode === 'individual' && selectedSubjectPattern?.unit_question_counts
       && Object.keys(selectedSubjectPattern.unit_question_counts).length > 0
       ? Object.fromEntries(
-          Object.entries(selectedSubjectPattern.unit_question_counts).map(([partName, unitCounts]) => [
-            partName,
-            Object.fromEntries(
-              Object.entries(unitCounts as Record<string, number>).filter(([unitNum]) => selectedUnitIds.includes(Number(unitNum)))
-            ),
-          ])
-        )
+        Object.entries(selectedSubjectPattern.unit_question_counts).map(([partName, unitCounts]) => [
+          partName,
+          Object.fromEntries(
+            Object.entries(unitCounts as Record<string, number>).filter(([unitNum]) => selectedUnitIds.includes(Number(unitNum)))
+          ),
+        ])
+      )
       : undefined;
 
     try {
@@ -512,14 +512,14 @@ export default function QuestionBanks() {
   };
 
   const handleDirectShare = async (bank: QuestionBank) => {
-    setGlobalLoading(true, 'Downloading Excel to share...');
+    setGlobalLoading(true, 'Downloading Excel to share');
     try {
       const response = await questionBankApi.download(bank.id);
       const blob = new Blob([response.data], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
       const fileName = `${bank.title || 'question_bank'}.xlsx`;
-      
+
       const file = new File([blob], fileName, {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
@@ -637,8 +637,8 @@ export default function QuestionBanks() {
                             key={s.id}
                             onClick={() => { setSelectedSubjectId(s.id); setIsDropdownOpen(false); }}
                             className={`px-4 py-3 cursor-pointer transition-colors flex items-center justify-between group ${selectedSubjectId === s.id
-                                ? 'bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300'
-                                : 'hover:bg-pink-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                              ? 'bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300'
+                              : 'hover:bg-pink-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                               }`}
                           >
                             <span className="font-medium">{s.name}</span>
@@ -680,21 +680,19 @@ export default function QuestionBanks() {
                 <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full">
                   <button
                     onClick={() => setQbMode('combined')}
-                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
-                      qbMode === 'combined'
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${qbMode === 'combined'
                         ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                    }`}
+                      }`}
                   >
                     🔀 Combined
                   </button>
                   <button
                     onClick={() => setQbMode('individual')}
-                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${
-                      qbMode === 'individual'
+                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${qbMode === 'individual'
                         ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                    }`}
+                      }`}
                   >
                     🎯 Individual
                   </button>
@@ -721,8 +719,8 @@ export default function QuestionBanks() {
                     <label
                       key={unit.unitNumber}
                       className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedUnitIds.includes(unit.unitNumber)
-                          ? 'bg-pink-50 border-pink-400 dark:bg-pink-900/20 dark:border-pink-500'
-                          : 'bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-600 hover:border-pink-200 dark:hover:border-pink-700'
+                        ? 'bg-pink-50 border-pink-400 dark:bg-pink-900/20 dark:border-pink-500'
+                        : 'bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-600 hover:border-pink-200 dark:hover:border-pink-700'
                         }`}
                     >
                       <input
@@ -782,11 +780,10 @@ export default function QuestionBanks() {
                         return (
                           <label
                             key={unit.unitNumber}
-                            className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                              isSelected
+                            className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected
                                 ? 'bg-pink-50 border-pink-400 dark:bg-pink-900/20 dark:border-pink-500'
                                 : 'bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-600 hover:border-pink-200 dark:hover:border-pink-700'
-                            }`}
+                              }`}
                           >
                             <input
                               type="checkbox"
@@ -794,9 +791,8 @@ export default function QuestionBanks() {
                               onChange={() => toggleUnit(unit.unitNumber)}
                               className="mt-0.5 accent-pink-600"
                             />
-                            <p className={`text-sm font-medium whitespace-normal break-words leading-snug ${
-                              isSelected ? 'text-pink-700 dark:text-pink-300' : 'text-slate-700 dark:text-slate-300'
-                            }`}>
+                            <p className={`text-sm font-medium whitespace-normal break-words leading-snug ${isSelected ? 'text-pink-700 dark:text-pink-300' : 'text-slate-700 dark:text-slate-300'
+                              }`}>
                               CO{unit.unitNumber}: {unit.title}
                             </p>
                           </label>
@@ -818,11 +814,10 @@ export default function QuestionBanks() {
                           <button
                             type="button"
                             onClick={() => setBtlCustomization(prev => !prev)}
-                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm ${
-                              btlCustomization
+                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm ${btlCustomization
                                 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/40 scale-105'
                                 : 'bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 hover:border-purple-300 dark:hover:border-purple-600 hover:text-purple-700 dark:hover:text-purple-300'
-                            }`}
+                              }`}
                           >
                             <Settings className="w-4 h-4" />
                             BTL Customization&nbsp;<span className={`px-1.5 py-0.5 rounded-md text-xs font-extrabold ${btlCustomization ? 'bg-white/20' : 'bg-slate-300/60 dark:bg-slate-600/60'}`}>{btlCustomization ? 'ON' : 'OFF'}</span>
@@ -870,271 +865,268 @@ export default function QuestionBanks() {
                       {visibleUnits.length === 0 ? (
                         <div className="p-6 text-center text-sm text-slate-400 dark:text-slate-500">Select units above to see the breakdown</div>
                       ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-                              <th className="text-left px-4 py-2.5 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Unit</th>
-                              {parts.map((p: any) => (
-                                <th key={p.partName} className="text-center px-3 py-2.5 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                                  {p.partName}
-                                  <span className="block text-xs font-normal text-slate-400">{p.marksPerQuestion} marks per question</span>
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {visibleUnits.map((unit: any, idx: number) => {
-                              const uStr = String(unit.unitNumber);
-                              const unitParts: PartConfiguration[] = localUnitCfg[uStr] || [];
-                              return (
-                                <tr key={unit.unitNumber} className={`border-b border-slate-100 dark:border-slate-800 ${idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/20'}`}>
-                                  <td className="px-2 py-2.5 align-top">
-                                    <div className="flex flex-col gap-0.5 min-w-[120px] max-w-[180px]">
-                                      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 text-xs font-bold whitespace-nowrap">
-                                        CO{unit.unitNumber}
-                                      </span>
-                                      <span className="text-slate-700 dark:text-slate-300 text-[10px] font-medium leading-tight whitespace-normal break-words">{unit.title}</span>
-                                    </div>
-                                  </td>
-                                  {parts.map((_p: any, pIdx: number) => {
-                                    const pc: any = unitParts[pIdx] || { partName: '', questionCount: 0, marksPerQuestion: 0, totalMarks: 0, allowedBTLLevels: [] };
-                                    const qCount = String(pc.questionCount) === '' ? 0 : Number(pc.questionCount);
-                                    const mcqVal = String(pc.mcqCount) === '' ? 0 : Number(pc.mcqCount);
-                                    const mcq = String(pc.mcqCount) === '' ? '' : (pc.mcqCount ?? 0);
-                                    const desc = Math.max(0, qCount - mcqVal);
-                                    const levels = pc.allowedBTLLevels || [];
-                                    const dist: Record<string, number> = (pc.btlDistribution as any) || {};
-                                    return (
-                                      <td key={pIdx} className="px-3 py-2 text-center align-top">
-                                        <div className="space-y-2">
-                                          {btlCustomization ? (
-                                            <>
-                                              {/* MCQ / Descriptive mini-table */}
-                                              <table className="w-full text-xs border border-pink-100 dark:border-pink-900/40 rounded-md overflow-hidden mb-1">
-                                                <thead>
-                                                  <tr className="bg-pink-50 dark:bg-pink-900/20">
-                                                    <th className="px-1.5 py-1 text-center font-semibold text-slate-500 dark:text-slate-400 text-[9px] uppercase tracking-wide">Total Questions</th>
-                                                    <th className="px-1.5 py-1 text-center font-semibold text-pink-500 dark:text-pink-400 text-[9px] uppercase tracking-wide">MCQ Count</th>
-                                                    <th className="px-1.5 py-1 text-center font-semibold text-slate-500 dark:text-slate-400 text-[9px] uppercase tracking-wide">Descriptive</th>
-                                                  </tr>
-                                                </thead>
-                                                <tbody>
-                                                  <tr className="bg-white dark:bg-slate-800/40">
-                                                    <td className="px-1.5 py-1.5 text-center">
-                                                      {isEditingPattern ? (
-                                                        <input
-                                                          type="number" min={0}
-                                                          value={pc.questionCount}
-                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'questionCount', e.target.value === '' ? '' : Number(e.target.value))}
-                                                          className="w-12 text-center text-sm font-bold text-slate-800 dark:text-white border border-pink-200 dark:border-pink-800 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
-                                                        />
-                                                      ) : pc.questionCount === 0 ? (
-                                                        <span className="text-xs italic text-slate-400 dark:text-slate-500">auto</span>
-                                                      ) : (
-                                                        <span className="text-sm font-bold text-slate-800 dark:text-white">{pc.questionCount}</span>
-                                                      )}
-                                                    </td>
-                                                    <td className="px-1.5 py-1.5 text-center">
-                                                      {isEditingPattern ? (
-                                                        <input
-                                                          type="number" min={0} max={pc.questionCount === '' ? undefined : Number(pc.questionCount)}
-                                                          value={mcq}
-                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'mcqCount', e.target.value === '' ? '' : Number(e.target.value))}
-                                                          className="w-12 text-center text-xs font-semibold border border-pink-200 dark:border-pink-800 rounded-md bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
-                                                        />
-                                                      ) : (
-                                                        <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{Number(mcq) > 0 ? mcq : '—'}</span>
-                                                      )}
-                                                    </td>
-                                                    <td className="px-1.5 py-1.5 text-center">
-                                                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{desc > 0 ? desc : '—'}</span>
-                                                    </td>
-                                                  </tr>
-                                                </tbody>
-                                              </table>
-                                              <div className="flex flex-wrap gap-1.5 justify-center">
-                                                {ALL_BTL_LEVELS.map((btl, i) => {
-                                                  const active = levels.includes(btl);
-                                                  const val = dist[btl] ?? 0;
-                                                  return (
-                                                    <div
-                                                      key={btl}
-                                                      onClick={() => { if (isEditingPattern) toggleLocalUnitBTL(uStr, pIdx, btl); }}
-                                                      title={isEditingPattern ? (active ? `Disable ${btl}` : `Enable ${btl}`) : undefined}
-                                                      className={`flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg font-bold border transition-all ${
-                                                        isEditingPattern ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
-                                                      } ${
-                                                        active
-                                                          ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-700'
-                                                          : `bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 ${isEditingPattern ? 'opacity-40 hover:opacity-70' : 'opacity-40'}`
-                                                      }`}
-                                                    >
-                                                      <span className={`text-xs font-bold ${active ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400'}`}>
-                                                        {btl}/K{i + 1}
-                                                      </span>
-                                                      {isEditingPattern && active ? (
-                                                        <input
-                                                          type="number" min={0}
-                                                          value={val}
-                                                          onClick={e => e.stopPropagation()}
-                                                          onChange={e => updateLocalUnitBTLDist(uStr, pIdx, btl, e.target.value === '' ? '' : Number(e.target.value))}
-                                                          className="w-12 text-center text-sm font-bold border border-purple-300 dark:border-purple-700 rounded bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400 py-0.5"
-                                                          placeholder="0"
-                                                        />
-                                                      ) : isEditingPattern && !active ? (
-                                                        <span className="text-xs text-slate-400 font-normal">+ add</span>
-                                                      ) : (
-                                                        <span className={`text-sm font-bold ${active ? 'text-purple-700 dark:text-purple-300' : 'text-slate-400'}`}>
-                                                          {active ? (val || '—') : '—'}
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                                <th className="text-left px-4 py-2.5 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Unit</th>
+                                {parts.map((p: any) => (
+                                  <th key={p.partName} className="text-center px-3 py-2.5 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                    {p.partName}
+                                    <span className="block text-xs font-normal text-slate-400">{p.marksPerQuestion} marks per question</span>
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {visibleUnits.map((unit: any, idx: number) => {
+                                const uStr = String(unit.unitNumber);
+                                const unitParts: PartConfiguration[] = localUnitCfg[uStr] || [];
+                                return (
+                                  <tr key={unit.unitNumber} className={`border-b border-slate-100 dark:border-slate-800 ${idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/20'}`}>
+                                    <td className="px-2 py-2.5 align-top">
+                                      <div className="flex flex-col gap-0.5 min-w-[120px] max-w-[180px]">
+                                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 text-xs font-bold whitespace-nowrap">
+                                          CO{unit.unitNumber}
+                                        </span>
+                                        <span className="text-slate-700 dark:text-slate-300 text-[10px] font-medium leading-tight whitespace-normal break-words">{unit.title}</span>
+                                      </div>
+                                    </td>
+                                    {parts.map((_p: any, pIdx: number) => {
+                                      const pc: any = unitParts[pIdx] || { partName: '', questionCount: 0, marksPerQuestion: 0, totalMarks: 0, allowedBTLLevels: [] };
+                                      const qCount = String(pc.questionCount) === '' ? 0 : Number(pc.questionCount);
+                                      const mcqVal = String(pc.mcqCount) === '' ? 0 : Number(pc.mcqCount);
+                                      const mcq = String(pc.mcqCount) === '' ? '' : (pc.mcqCount ?? 0);
+                                      const desc = Math.max(0, qCount - mcqVal);
+                                      const levels = pc.allowedBTLLevels || [];
+                                      const dist: Record<string, number> = (pc.btlDistribution as any) || {};
+                                      return (
+                                        <td key={pIdx} className="px-3 py-2 text-center align-top">
+                                          <div className="space-y-2">
+                                            {btlCustomization ? (
+                                              <>
+                                                {/* MCQ / Descriptive mini-table */}
+                                                <table className="w-full text-xs border border-pink-100 dark:border-pink-900/40 rounded-md overflow-hidden mb-1">
+                                                  <thead>
+                                                    <tr className="bg-pink-50 dark:bg-pink-900/20">
+                                                      <th className="px-1.5 py-1 text-center font-semibold text-slate-500 dark:text-slate-400 text-[9px] uppercase tracking-wide">Total Questions</th>
+                                                      <th className="px-1.5 py-1 text-center font-semibold text-pink-500 dark:text-pink-400 text-[9px] uppercase tracking-wide">MCQ Count</th>
+                                                      <th className="px-1.5 py-1 text-center font-semibold text-slate-500 dark:text-slate-400 text-[9px] uppercase tracking-wide">Descriptive</th>
+                                                    </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                    <tr className="bg-white dark:bg-slate-800/40">
+                                                      <td className="px-1.5 py-1.5 text-center">
+                                                        {isEditingPattern ? (
+                                                          <input
+                                                            type="number" min={0}
+                                                            value={pc.questionCount}
+                                                            onChange={e => updateLocalUnitPart(uStr, pIdx, 'questionCount', e.target.value === '' ? '' : Number(e.target.value))}
+                                                            className="w-12 text-center text-sm font-bold text-slate-800 dark:text-white border border-pink-200 dark:border-pink-800 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
+                                                          />
+                                                        ) : pc.questionCount === 0 ? (
+                                                          <span className="text-xs italic text-slate-400 dark:text-slate-500">auto</span>
+                                                        ) : (
+                                                          <span className="text-sm font-bold text-slate-800 dark:text-white">{pc.questionCount}</span>
+                                                        )}
+                                                      </td>
+                                                      <td className="px-1.5 py-1.5 text-center">
+                                                        {isEditingPattern ? (
+                                                          <input
+                                                            type="number" min={0} max={pc.questionCount === '' ? undefined : Number(pc.questionCount)}
+                                                            value={mcq}
+                                                            onChange={e => updateLocalUnitPart(uStr, pIdx, 'mcqCount', e.target.value === '' ? '' : Number(e.target.value))}
+                                                            className="w-12 text-center text-xs font-semibold border border-pink-200 dark:border-pink-800 rounded-md bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
+                                                          />
+                                                        ) : (
+                                                          <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{Number(mcq) > 0 ? mcq : '—'}</span>
+                                                        )}
+                                                      </td>
+                                                      <td className="px-1.5 py-1.5 text-center">
+                                                        <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{desc > 0 ? desc : '—'}</span>
+                                                      </td>
+                                                    </tr>
+                                                  </tbody>
+                                                </table>
+                                                <div className="flex flex-wrap gap-1.5 justify-center">
+                                                  {ALL_BTL_LEVELS.map((btl, i) => {
+                                                    const active = levels.includes(btl);
+                                                    const val = dist[btl] ?? 0;
+                                                    return (
+                                                      <div
+                                                        key={btl}
+                                                        onClick={() => { if (isEditingPattern) toggleLocalUnitBTL(uStr, pIdx, btl); }}
+                                                        title={isEditingPattern ? (active ? `Disable ${btl}` : `Enable ${btl}`) : undefined}
+                                                        className={`flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg font-bold border transition-all ${isEditingPattern ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
+                                                          } ${active
+                                                            ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-700'
+                                                            : `bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 ${isEditingPattern ? 'opacity-40 hover:opacity-70' : 'opacity-40'}`
+                                                          }`}
+                                                      >
+                                                        <span className={`text-xs font-bold ${active ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400'}`}>
+                                                          {btl}/K{i + 1}
                                                         </span>
-                                                      )}
+                                                        {isEditingPattern && active ? (
+                                                          <input
+                                                            type="number" min={0}
+                                                            value={val}
+                                                            onClick={e => e.stopPropagation()}
+                                                            onChange={e => updateLocalUnitBTLDist(uStr, pIdx, btl, e.target.value === '' ? '' : Number(e.target.value))}
+                                                            className="w-12 text-center text-sm font-bold border border-purple-300 dark:border-purple-700 rounded bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400 py-0.5"
+                                                            placeholder="0"
+                                                          />
+                                                        ) : isEditingPattern && !active ? (
+                                                          <span className="text-xs text-slate-400 font-normal">+ add</span>
+                                                        ) : (
+                                                          <span className={`text-sm font-bold ${active ? 'text-purple-700 dark:text-purple-300' : 'text-slate-400'}`}>
+                                                            {active ? (val || '—') : '—'}
+                                                          </span>
+                                                        )}
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </div>
+                                                {/* Sum validation — no warning triangles; just show count */}
+                                                {(() => {
+                                                  const sum = levels.reduce((s: number, btl: BloomLevel) => s + (String(dist[btl]) === '' ? 0 : Number(dist[btl] || 0)), 0);
+                                                  if (sum === 0) return null;
+                                                  const ok = qCount > 0 && sum === qCount;
+                                                  if (ok) return (
+                                                    <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-1">
+                                                      {sum}/{qCount} ✓
                                                     </div>
                                                   );
-                                                })}
-                                              </div>
-                                              {/* Sum validation — no warning triangles; just show count */}
-                                              {(() => {
-                                                const sum = levels.reduce((s: number, btl: BloomLevel) => s + (String(dist[btl]) === '' ? 0 : Number(dist[btl] || 0)), 0);
-                                                if (sum === 0) return null;
-                                                const ok = qCount > 0 && sum === qCount;
-                                                if (ok) return (
-                                                  <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-1">
-                                                    {sum}/{qCount} ✓
-                                                  </div>
-                                                );
-                                                return (
-                                                  <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
-                                                    {sum} specified{qCount > 0 ? ` / ${qCount} total` : ''}
-                                                  </div>
-                                                );
-                                              })()}
-                                            </>
-                                          ) : (
-                                            <>
-                                              {/* Standard inner stats table: Total Questions | MCQ Count | Descriptive */}
-                                              <table className="w-full text-xs border border-pink-100 dark:border-pink-900/40 rounded-md overflow-hidden">
-                                                <thead>
-                                                  <tr className="bg-pink-50 dark:bg-pink-900/20">
-                                                    <th className="px-1.5 py-1 text-center font-semibold text-slate-500 dark:text-slate-400 text-[9px] uppercase tracking-wide">Total Questions</th>
-                                                    <th className="px-1.5 py-1 text-center font-semibold text-pink-500 dark:text-pink-400 text-[9px] uppercase tracking-wide">MCQ Count</th>
-                                                    <th className="px-1.5 py-1 text-center font-semibold text-slate-500 dark:text-slate-400 text-[9px] uppercase tracking-wide">Descriptive</th>
-                                                  </tr>
-                                                </thead>
-                                                <tbody>
-                                                  <tr className="bg-white dark:bg-slate-800/40">
-                                                    <td className="px-1.5 py-1.5 text-center">
-                                                      {isEditingPattern ? (
-                                                        <input
-                                                          type="number" min={0}
-                                                          value={pc.questionCount}
-                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'questionCount', e.target.value === '' ? '' : Number(e.target.value))}
-                                                          className="w-12 text-center text-sm font-bold text-slate-800 dark:text-white border border-pink-200 dark:border-pink-800 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
-                                                        />
-                                                      ) : pc.questionCount === 0 ? (
-                                                        <span className="text-xs italic text-slate-400 dark:text-slate-500">auto</span>
-                                                      ) : (
-                                                        <span className="text-sm font-bold text-slate-800 dark:text-white">{pc.questionCount}</span>
-                                                      )}
-                                                    </td>
-                                                    <td className="px-1.5 py-1.5 text-center">
-                                                      {isEditingPattern ? (
-                                                        <input
-                                                          type="number" min={0} max={pc.questionCount === '' ? undefined : Number(pc.questionCount)}
-                                                          value={mcq}
-                                                          onChange={e => updateLocalUnitPart(uStr, pIdx, 'mcqCount', e.target.value === '' ? '' : Number(e.target.value))}
-                                                          className="w-12 text-center text-xs font-semibold border border-pink-200 dark:border-pink-800 rounded-md bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
-                                                        />
-                                                      ) : (
-                                                        <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{Number(mcq) > 0 ? mcq : '—'}</span>
-                                                      )}
-                                                    </td>
-                                                    <td className="px-1.5 py-1.5 text-center">
-                                                      <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{desc > 0 ? desc : '—'}</span>
-                                                    </td>
-                                                  </tr>
-                                                </tbody>
-                                              </table>
-                                              {/* BTL level flat toggle pills */}
-                                              <div className="flex flex-wrap gap-0.5 justify-center">
-                                                {ALL_BTL_LEVELS.map((btl, i) => {
-                                                  const active = levels.includes(btl);
                                                   return (
-                                                    <button
-                                                      key={btl}
-                                                      type="button"
-                                                      onClick={() => isEditingPattern && toggleLocalUnitBTL(uStr, pIdx, btl)}
-                                                      disabled={!isEditingPattern}
-                                                      className={`inline-flex items-center gap-0.5 px-2 py-1 rounded-full text-[10px] font-bold border transition-all ${
-                                                        active
-                                                          ? 'bg-purple-600 text-white border-transparent shadow-sm'
-                                                          : 'bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-600 opacity-50'
-                                                      } ${!isEditingPattern ? 'cursor-default' : 'cursor-pointer hover:opacity-90'}`}
-                                                    >
-                                                      {btl}<span className="opacity-70">/K{i + 1}</span>
-                                                    </button>
+                                                    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
+                                                      {sum} specified{qCount > 0 ? ` / ${qCount} total` : ''}
+                                                    </div>
                                                   );
-                                                })}
-                                              </div>
-                                            </>
-                                          )}
-                                        </div>
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                          <tfoot>
-                            <tr className="bg-pink-50 dark:bg-pink-900/20 border-t-2 border-pink-200 dark:border-pink-800">
-                              <td className="px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">Total (selected)</td>
-                              {parts.map((_p: any, pIdx: number) => {
-                                let total = 0, totalMcq = 0;
-                                visibleUnits.forEach((u: any) => {
-                                  const uCfg = localUnitCfg[String(u.unitNumber)];
-                                  if (uCfg) {
-                                    total += uCfg[pIdx]?.questionCount ?? 0;
-                                    totalMcq += uCfg[pIdx]?.mcqCount ?? 0;
-                                  }
-                                });
-                                const totalDesc = Math.max(0, total - totalMcq);
-                                const hasDataError = totalMcq > total;
-                                // Count how many visible units have an explicit (non-zero) questionCount for this part
-                                const autoCount = visibleUnits.filter((u: any) => {
-                                  const uCfg = localUnitCfg[String(u.unitNumber)];
-                                  return !uCfg || (uCfg[pIdx]?.questionCount ?? 0) === 0;
-                                }).length;
-                                const allAuto = autoCount === visibleUnits.length;
-                                return (
-                                  <td key={pIdx} className="px-3 py-2.5 text-center">
-                                    {allAuto ? (
-                                      <span className="text-sm italic text-slate-400 dark:text-slate-500">auto</span>
-                                    ) : (
-                                      <>
-                                        <span className="font-bold text-pink-700 dark:text-pink-300 text-base">{total}</span>
-                                        <span className="text-xs text-slate-400 ml-1">Questions</span>
-                                        {autoCount > 0 && (
-                                          <span className="text-xs text-slate-400 dark:text-slate-500 ml-1">+{autoCount} auto</span>
-                                        )}
-                                      </>
-                                    )}
-                                    {btlCustomization && !allAuto ? null : !btlCustomization && hasDataError ? (
-                                      <div className="text-xs text-amber-600 dark:text-amber-400 mt-0.5 font-medium">
-                                        MCQ count ({totalMcq}) exceeds total — edit to correct
-                                      </div>
-                                    ) : !btlCustomization && totalMcq > 0 && !allAuto ? (
-                                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                        {totalMcq} MCQ + {totalDesc} Descriptive
-                                      </div>
-                                    ) : null}
-                                  </td>
+                                                })()}
+                                              </>
+                                            ) : (
+                                              <>
+                                                {/* Standard inner stats table: Total Questions | MCQ Count | Descriptive */}
+                                                <table className="w-full text-xs border border-pink-100 dark:border-pink-900/40 rounded-md overflow-hidden">
+                                                  <thead>
+                                                    <tr className="bg-pink-50 dark:bg-pink-900/20">
+                                                      <th className="px-1.5 py-1 text-center font-semibold text-slate-500 dark:text-slate-400 text-[9px] uppercase tracking-wide">Total Questions</th>
+                                                      <th className="px-1.5 py-1 text-center font-semibold text-pink-500 dark:text-pink-400 text-[9px] uppercase tracking-wide">MCQ Count</th>
+                                                      <th className="px-1.5 py-1 text-center font-semibold text-slate-500 dark:text-slate-400 text-[9px] uppercase tracking-wide">Descriptive</th>
+                                                    </tr>
+                                                  </thead>
+                                                  <tbody>
+                                                    <tr className="bg-white dark:bg-slate-800/40">
+                                                      <td className="px-1.5 py-1.5 text-center">
+                                                        {isEditingPattern ? (
+                                                          <input
+                                                            type="number" min={0}
+                                                            value={pc.questionCount}
+                                                            onChange={e => updateLocalUnitPart(uStr, pIdx, 'questionCount', e.target.value === '' ? '' : Number(e.target.value))}
+                                                            className="w-12 text-center text-sm font-bold text-slate-800 dark:text-white border border-pink-200 dark:border-pink-800 rounded-md bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
+                                                          />
+                                                        ) : pc.questionCount === 0 ? (
+                                                          <span className="text-xs italic text-slate-400 dark:text-slate-500">auto</span>
+                                                        ) : (
+                                                          <span className="text-sm font-bold text-slate-800 dark:text-white">{pc.questionCount}</span>
+                                                        )}
+                                                      </td>
+                                                      <td className="px-1.5 py-1.5 text-center">
+                                                        {isEditingPattern ? (
+                                                          <input
+                                                            type="number" min={0} max={pc.questionCount === '' ? undefined : Number(pc.questionCount)}
+                                                            value={mcq}
+                                                            onChange={e => updateLocalUnitPart(uStr, pIdx, 'mcqCount', e.target.value === '' ? '' : Number(e.target.value))}
+                                                            className="w-12 text-center text-xs font-semibold border border-pink-200 dark:border-pink-800 rounded-md bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"
+                                                          />
+                                                        ) : (
+                                                          <span className="text-xs font-semibold text-pink-700 dark:text-pink-300">{Number(mcq) > 0 ? mcq : '—'}</span>
+                                                        )}
+                                                      </td>
+                                                      <td className="px-1.5 py-1.5 text-center">
+                                                        <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{desc > 0 ? desc : '—'}</span>
+                                                      </td>
+                                                    </tr>
+                                                  </tbody>
+                                                </table>
+                                                {/* BTL level flat toggle pills */}
+                                                <div className="flex flex-wrap gap-0.5 justify-center">
+                                                  {ALL_BTL_LEVELS.map((btl, i) => {
+                                                    const active = levels.includes(btl);
+                                                    return (
+                                                      <button
+                                                        key={btl}
+                                                        type="button"
+                                                        onClick={() => isEditingPattern && toggleLocalUnitBTL(uStr, pIdx, btl)}
+                                                        disabled={!isEditingPattern}
+                                                        className={`inline-flex items-center gap-0.5 px-2 py-1 rounded-full text-[10px] font-bold border transition-all ${active
+                                                            ? 'bg-purple-600 text-white border-transparent shadow-sm'
+                                                            : 'bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-600 opacity-50'
+                                                          } ${!isEditingPattern ? 'cursor-default' : 'cursor-pointer hover:opacity-90'}`}
+                                                      >
+                                                        {btl}<span className="opacity-70">/K{i + 1}</span>
+                                                      </button>
+                                                    );
+                                                  })}
+                                                </div>
+                                              </>
+                                            )}
+                                          </div>
+                                        </td>
+                                      );
+                                    })}
+                                  </tr>
                                 );
                               })}
-                            </tr>
-                          </tfoot>
-                        </table>
-                      </div>
+                            </tbody>
+                            <tfoot>
+                              <tr className="bg-pink-50 dark:bg-pink-900/20 border-t-2 border-pink-200 dark:border-pink-800">
+                                <td className="px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">Total (selected)</td>
+                                {parts.map((_p: any, pIdx: number) => {
+                                  let total = 0, totalMcq = 0;
+                                  visibleUnits.forEach((u: any) => {
+                                    const uCfg = localUnitCfg[String(u.unitNumber)];
+                                    if (uCfg) {
+                                      total += uCfg[pIdx]?.questionCount ?? 0;
+                                      totalMcq += uCfg[pIdx]?.mcqCount ?? 0;
+                                    }
+                                  });
+                                  const totalDesc = Math.max(0, total - totalMcq);
+                                  const hasDataError = totalMcq > total;
+                                  // Count how many visible units have an explicit (non-zero) questionCount for this part
+                                  const autoCount = visibleUnits.filter((u: any) => {
+                                    const uCfg = localUnitCfg[String(u.unitNumber)];
+                                    return !uCfg || (uCfg[pIdx]?.questionCount ?? 0) === 0;
+                                  }).length;
+                                  const allAuto = autoCount === visibleUnits.length;
+                                  return (
+                                    <td key={pIdx} className="px-3 py-2.5 text-center">
+                                      {allAuto ? (
+                                        <span className="text-sm italic text-slate-400 dark:text-slate-500">auto</span>
+                                      ) : (
+                                        <>
+                                          <span className="font-bold text-pink-700 dark:text-pink-300 text-base">{total}</span>
+                                          <span className="text-xs text-slate-400 ml-1">Questions</span>
+                                          {autoCount > 0 && (
+                                            <span className="text-xs text-slate-400 dark:text-slate-500 ml-1">+{autoCount} auto</span>
+                                          )}
+                                        </>
+                                      )}
+                                      {btlCustomization && !allAuto ? null : !btlCustomization && hasDataError ? (
+                                        <div className="text-xs text-amber-600 dark:text-amber-400 mt-0.5 font-medium">
+                                          MCQ count ({totalMcq}) exceeds total — edit to correct
+                                        </div>
+                                      ) : !btlCustomization && totalMcq > 0 && !allAuto ? (
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                          {totalMcq} MCQ + {totalDesc} Descriptive
+                                        </div>
+                                      ) : null}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
                       )}
                     </div>
                   ) : (
@@ -1278,11 +1270,10 @@ export default function QuestionBanks() {
                                       type="button"
                                       onClick={() => isEditingPattern && toggleLocalPartBTL(idx, btl)}
                                       disabled={!isEditingPattern}
-                                      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-semibold border transition-all ${
-                                        active
+                                      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-semibold border transition-all ${active
                                           ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-800'
                                           : 'bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-600 opacity-40'
-                                      } ${!isEditingPattern ? 'cursor-default' : 'cursor-pointer hover:opacity-80'}`}
+                                        } ${!isEditingPattern ? 'cursor-default' : 'cursor-pointer hover:opacity-80'}`}
                                     >
                                       {btl}<span className="opacity-60">/K{kNum}</span>
                                       {active && hasDist && (count || 0) > 0 && (
@@ -1353,11 +1344,10 @@ export default function QuestionBanks() {
               <div
                 key={bank.id}
                 onClick={() => setViewingBank(bank)}
-                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white dark:bg-slate-900 border-2 rounded-xl cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group ${
-                  bank.id === latestBankId
+                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white dark:bg-slate-900 border-2 rounded-xl cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group ${bank.id === latestBankId
                     ? 'border-pink-400 dark:border-pink-500 shadow-xl shadow-pink-200/50 dark:shadow-pink-900/50 ring-2 ring-pink-300 dark:ring-pink-700 ring-offset-2'
                     : 'border-pink-100 dark:border-pink-800/80 hover:border-pink-300 dark:hover:border-pink-700'
-                }`}
+                  }`}
               >
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
