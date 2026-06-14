@@ -22,15 +22,39 @@ from ..services.email_service import send_share_notification
 
 router = APIRouter(prefix="/question-bank", tags=["Question Bank"])
 
-def normalize_parts(parts_raw: list) -> list:
+def normalize_parts(parts_raw) -> list:
     """Ensure all part configs are plain dicts with correct types for the AI service."""
     normalized = []
+    if not parts_raw:
+        return normalized
+
+    import json
+    if isinstance(parts_raw, str):
+        try:
+            parts_raw = json.loads(parts_raw)
+        except Exception:
+            return normalized
+
+    if not isinstance(parts_raw, list):
+        return normalized
+
     for p in parts_raw:
-        # Convert Pydantic model → dict if needed
-        if hasattr(p, 'model_dump'):
-            p = p.model_dump()
-        elif hasattr(p, 'dict'):
-            p = p.dict()
+        if isinstance(p, str):
+            try:
+                p = json.loads(p)
+            except Exception:
+                continue
+
+        if not isinstance(p, dict):
+            if hasattr(p, 'model_dump'):
+                p = p.model_dump()
+            elif hasattr(p, 'dict'):
+                p = p.dict()
+            else:
+                try:
+                    p = dict(p)
+                except Exception:
+                    continue
         else:
             p = dict(p)  # copy
 
@@ -527,23 +551,37 @@ async def download_excel(
     if not qb:
         raise HTTPException(status_code=404, detail="Question bank not found")
     
-    if not qb.excel_path or not os.path.exists(qb.excel_path):
+    excel_path = qb.excel_path
+    if not excel_path or not os.path.exists(excel_path):
         # Regenerate the Excel file on the fly if it was deleted from ephemeral disk
         subject = db.query(Subject).filter(Subject.id == qb.subject_id).first()
         cdap = db.query(CDAP).filter(CDAP.subject_id == qb.subject_id).first()
         
+        # Determine parts_raw, fallback to subject pattern if qb.pattern_id is missing/empty
         parts_raw = []
+        pattern = None
         if qb.pattern_id:
             pattern = db.query(QuestionPattern).filter(QuestionPattern.id == qb.pattern_id).first()
-            if pattern and pattern.parts:
-                parts_raw = pattern.parts
+        if not pattern and qb.subject_id:
+            pattern = db.query(QuestionPattern).filter(QuestionPattern.subject_id == qb.subject_id).first()
+            
+        if pattern and pattern.parts:
+            parts_raw = pattern.parts
         
         if not parts_raw and subject and subject.configuration:
             parts_raw = subject.configuration.get('parts', [])
             
         parts_data = normalize_parts(parts_raw)
         
+        # Safely deserialize questions_data if it's a JSON string
         questions_data = qb.questions or {}
+        if isinstance(questions_data, str):
+            try:
+                import json
+                questions_data = json.loads(questions_data)
+            except Exception:
+                pass
+                
         parts_questions = {}
         if isinstance(questions_data, dict):
             parts_questions = questions_data.get("parts", {})
@@ -561,8 +599,8 @@ async def download_excel(
                 has_cdap=cdap is not None
             )
             qb.excel_path = excel_path
+            db.add(qb)
             db.commit()
-            db.refresh(qb)
         except Exception as e:
             print(f"[QB Download] Error regenerating Excel: {e}")
             raise HTTPException(
@@ -571,9 +609,9 @@ async def download_excel(
             )
     
     return FileResponse(
-        qb.excel_path,
+        excel_path,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        filename=os.path.basename(qb.excel_path)
+        filename=os.path.basename(excel_path)
     )
 
 @router.post("/{qb_id}/share")
