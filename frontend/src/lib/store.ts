@@ -10,10 +10,25 @@ interface AuthState {
   loadFromStorage: () => void;
 }
 
+const getInitialAuthState = () => {
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  if (token && userStr) {
+    try {
+      const user = JSON.parse(userStr);
+      return { user, token, isAuthenticated: true };
+    } catch {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+  }
+  return { user: null, token: null, isAuthenticated: false };
+};
+
+const initialAuthState = getInitialAuthState();
+
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
-  isAuthenticated: false,
+  ...initialAuthState,
 
   setAuth: (user, token) => {
     localStorage.setItem('token', token);

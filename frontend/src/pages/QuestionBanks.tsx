@@ -156,26 +156,29 @@ export default function QuestionBanks() {
   };
 
   const applyPatternToLocalState = (pattern: any, syllabusUnits: any[]) => {
+    // Deep copy pattern to prevent mutating selectedSubjectPattern by reference
+    const copiedPattern = pattern ? JSON.parse(JSON.stringify(pattern)) : null;
+
     // Clamp mcqCount so it never exceeds questionCount (guards stale data)
-    const loadedParts: PartConfiguration[] = pattern?.parts
-      ? pattern.parts.map((p: any) => {
+    const loadedParts: PartConfiguration[] = copiedPattern?.parts
+      ? copiedPattern.parts.map((p: any) => {
           const mcq = p.mcqCount ?? 0;
           return mcq > p.questionCount ? { ...p, mcqCount: 0 } : { ...p };
         })
       : [];
     setLocalParts(loadedParts);
 
-    if (pattern?.unit_configs && Object.keys(pattern.unit_configs).length > 0) {
+    if (copiedPattern?.unit_configs && Object.keys(copiedPattern.unit_configs).length > 0) {
       // Full per-unit configs saved — use directly, clamping stale mcqCount
       setLocalUnitCfg(Object.fromEntries(
-        Object.entries(pattern.unit_configs).map(([k, v]) => [k, (v as any[]).map((p: any) => {
+        Object.entries(copiedPattern.unit_configs).map(([k, v]) => [k, (v as any[]).map((p: any) => {
           const mcq = p.mcqCount ?? 0;
           return mcq > p.questionCount ? { ...p, mcqCount: 0 } : { ...p };
         })])
       ));
-    } else if (pattern?.unit_question_counts && Object.keys(pattern.unit_question_counts).length > 0 && syllabusUnits.length > 0) {
+    } else if (copiedPattern?.unit_question_counts && Object.keys(copiedPattern.unit_question_counts).length > 0 && syllabusUnits.length > 0) {
       // Legacy counts — migrate to full per-unit format
-      setLocalUnitCfg(migrateUqcToUnitCfg(syllabusUnits, loadedParts, pattern.unit_question_counts));
+      setLocalUnitCfg(migrateUqcToUnitCfg(syllabusUnits, loadedParts, copiedPattern.unit_question_counts));
     } else if (loadedParts.length > 0 && syllabusUnits.length > 0) {
       // Combined mode only — spread parts to every unit, zeroing per-unit mcq/btl
       setLocalUnitCfg(buildUnitCfgFromParts(syllabusUnits, loadedParts));
@@ -195,14 +198,14 @@ export default function QuestionBanks() {
     try {
       const response = await questionBankApi.getPattern(subjectId);
       pattern = response.data;
-      setSelectedSubjectPattern(pattern);
+      setSelectedSubjectPattern(JSON.parse(JSON.stringify(pattern)));
       applyPatternToLocalState(pattern, syllabusUnits);
     } catch (err) {
       console.error('Failed to fetch fresh pattern', err);
       const subject = subjects.find(s => s.id === subjectId);
       if (subject?.configuration) {
         pattern = subject.configuration;
-        setSelectedSubjectPattern(pattern);
+        setSelectedSubjectPattern(JSON.parse(JSON.stringify(pattern)));
         applyPatternToLocalState(pattern, syllabusUnits);
       }
     }
@@ -216,14 +219,14 @@ export default function QuestionBanks() {
   };
 
   const sanitizePartConfig = (p: PartConfiguration): any => {
-    const qCount = p.questionCount === '' ? 0 : Number(p.questionCount || 0);
-    const marks = p.marksPerQuestion === '' ? 0 : Number(p.marksPerQuestion || 0);
-    const mcq = p.mcqCount === '' ? 0 : Number(p.mcqCount || 0);
+    const qCount = String(p.questionCount) === '' ? 0 : Number(p.questionCount || 0);
+    const marks = String(p.marksPerQuestion) === '' ? 0 : Number(p.marksPerQuestion || 0);
+    const mcq = String(p.mcqCount) === '' ? 0 : Number(p.mcqCount || 0);
     const dist = p.btlDistribution
       ? Object.fromEntries(
           Object.entries(p.btlDistribution).map(([lvl, val]) => [
             lvl,
-            val === '' ? 0 : Number(val || 0),
+            String(val) === '' ? 0 : Number(val || 0),
           ])
         )
       : undefined;
@@ -254,8 +257,8 @@ export default function QuestionBanks() {
               const existingParts = localUnitCfg[key] || [];
               return [key, localParts.map((p, i) => {
                 const prev = existingParts[i];
-                const pQCount = p.questionCount === '' ? 0 : Number(p.questionCount);
-                const prevMcq = prev?.mcqCount === '' ? 0 : Number(prev?.mcqCount ?? 0);
+                const pQCount = String(p.questionCount) === '' ? 0 : Number(p.questionCount);
+                const prevMcq = String(prev?.mcqCount) === '' ? 0 : Number(prev?.mcqCount ?? 0);
                 const mcq = Math.min(prevMcq, pQCount);
                 const dist = prev?.btlDistribution
                   ? Object.fromEntries(
@@ -283,10 +286,9 @@ export default function QuestionBanks() {
         unit_configs: unitCfgsToSave,
         unit_question_counts: null,
       });
-      // Refresh pattern state so generate uses updated values and Patterns page stays in sync
       const refreshed = await questionBankApi.getPattern(selectedSubjectId);
       const refreshedPattern = refreshed.data;
-      setSelectedSubjectPattern(refreshedPattern);
+      setSelectedSubjectPattern(JSON.parse(JSON.stringify(refreshedPattern)));
       const syllabusUnits: any[] = syllabi[selectedSubjectId]?.units || [];
       applyPatternToLocalState(refreshedPattern, syllabusUnits);
       setPatternSaved(true);
@@ -299,13 +301,20 @@ export default function QuestionBanks() {
     }
   };
 
+  const handleCancelPatternEdit = () => {
+    const syllabusUnits: any[] = syllabi[selectedSubjectId]?.units || [];
+    applyPatternToLocalState(selectedSubjectPattern, syllabusUnits);
+    setIsEditingPattern(false);
+    setPatternDirty(false);
+  };
+
   const updateLocalPart = (idx: number, field: keyof PartConfiguration, value: any) => {
     setLocalParts(prev => {
       const next = [...prev];
       next[idx] = { ...next[idx], [field]: value };
       if (field === 'questionCount' || field === 'marksPerQuestion') {
-        const qVal = next[idx].questionCount === '' ? 0 : Number(next[idx].questionCount || 0);
-        const mVal = next[idx].marksPerQuestion === '' ? 0 : Number(next[idx].marksPerQuestion || 0);
+        const qVal = String(next[idx].questionCount) === '' ? 0 : Number(next[idx].questionCount || 0);
+        const mVal = String(next[idx].marksPerQuestion) === '' ? 0 : Number(next[idx].marksPerQuestion || 0);
         next[idx].totalMarks = qVal * mVal;
       }
       return next;
@@ -329,22 +338,22 @@ export default function QuestionBanks() {
     setLocalUnitCfg(prev => {
       const parts = [...(prev[unitNum] || [])];
       if (field === 'mcqCount') {
-        const total = parts[partIdx]?.questionCount === '' ? 0 : Number(parts[partIdx]?.questionCount ?? 0);
-        const valNum = value === '' ? 0 : Number(value);
+        const total = String(parts[partIdx]?.questionCount) === '' ? 0 : Number(parts[partIdx]?.questionCount ?? 0);
+        const valNum = String(value) === '' ? 0 : Number(value);
         if (valNum > total) return prev;
       }
       parts[partIdx] = { ...parts[partIdx], [field]: value };
       // Auto-clamp mcqCount when questionCount is reduced below it
       if (field === 'questionCount') {
-        const mcq = parts[partIdx].mcqCount === '' ? 0 : Number(parts[partIdx].mcqCount ?? 0);
-        const valNum = value === '' ? 0 : Number(value);
+        const mcq = String(parts[partIdx].mcqCount) === '' ? 0 : Number(parts[partIdx].mcqCount ?? 0);
+        const valNum = String(value) === '' ? 0 : Number(value);
         if (mcq > valNum) {
           parts[partIdx] = { ...parts[partIdx], mcqCount: value }; // Keep empty if it was empty, or clamp
         }
       }
       if (field === 'questionCount' || field === 'marksPerQuestion') {
-        const qVal = parts[partIdx].questionCount === '' ? 0 : Number(parts[partIdx].questionCount || 0);
-        const mVal = parts[partIdx].marksPerQuestion === '' ? 0 : Number(parts[partIdx].marksPerQuestion || 0);
+        const qVal = String(parts[partIdx].questionCount) === '' ? 0 : Number(parts[partIdx].questionCount || 0);
+        const mVal = String(parts[partIdx].marksPerQuestion) === '' ? 0 : Number(parts[partIdx].marksPerQuestion || 0);
         parts[partIdx].totalMarks = qVal * mVal;
       }
       return { ...prev, [unitNum]: parts };
@@ -359,11 +368,11 @@ export default function QuestionBanks() {
       const pc = parts[partIdx];
       const existing = pc.btlDistribution || {};
       const levels = pc.allowedBTLLevels || [];
-      const qCount = pc.questionCount === '' ? 0 : Number(pc.questionCount || 0);
-      const newCount = count === '' ? 0 : Number(count);
+      const qCount = String(pc.questionCount) === '' ? 0 : Number(pc.questionCount || 0);
+      const newCount = String(count) === '' ? 0 : Number(count);
       // Calculate sum with the new value replacing the old one for this level
       const newSum = levels.reduce((s, btl) => {
-        const val = btl === level ? newCount : (existing[btl] === '' ? 0 : Number(existing[btl] || 0));
+        const val = btl === level ? newCount : (String(existing[btl]) === '' ? 0 : Number(existing[btl] || 0));
         return s + val;
       }, 0);
       if (newSum > qCount) {
@@ -821,11 +830,12 @@ export default function QuestionBanks() {
                               )}
                               <button
                                 type="button"
-                                onClick={() => { setIsEditingPattern(false); setPatternDirty(false); }}
+                                onClick={handleCancelPatternEdit}
                                 className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                               >
                                 <X className="w-3.5 h-3.5" /> Cancel
                               </button>
+
                             </>
                           ) : (
                             <button
@@ -869,10 +879,10 @@ export default function QuestionBanks() {
                                     </div>
                                   </td>
                                   {parts.map((_p: any, pIdx: number) => {
-                                    const pc: PartConfiguration = unitParts[pIdx] || { partName: '', questionCount: 0, marksPerQuestion: 0, totalMarks: 0, allowedBTLLevels: [] };
-                                    const qCount = pc.questionCount === '' ? 0 : Number(pc.questionCount);
-                                    const mcqVal = pc.mcqCount === '' ? 0 : Number(pc.mcqCount);
-                                    const mcq = pc.mcqCount === '' ? '' : (pc.mcqCount ?? 0);
+                                    const pc: any = unitParts[pIdx] || { partName: '', questionCount: 0, marksPerQuestion: 0, totalMarks: 0, allowedBTLLevels: [] };
+                                    const qCount = String(pc.questionCount) === '' ? 0 : Number(pc.questionCount);
+                                    const mcqVal = String(pc.mcqCount) === '' ? 0 : Number(pc.mcqCount);
+                                    const mcq = String(pc.mcqCount) === '' ? '' : (pc.mcqCount ?? 0);
                                     const desc = Math.max(0, qCount - mcqVal);
                                     const levels = pc.allowedBTLLevels || [];
                                     const dist: Record<string, number> = (pc.btlDistribution as any) || {};
@@ -966,7 +976,7 @@ export default function QuestionBanks() {
                                               </div>
                                               {/* Sum validation — no warning triangles; just show count */}
                                               {(() => {
-                                                const sum = levels.reduce((s, btl) => s + (dist[btl] === '' ? 0 : Number(dist[btl] || 0)), 0);
+                                                const sum = levels.reduce((s: number, btl: BloomLevel) => s + (String(dist[btl]) === '' ? 0 : Number(dist[btl] || 0)), 0);
                                                 if (sum === 0) return null;
                                                 const ok = qCount > 0 && sum === qCount;
                                                 if (ok) return (
@@ -1152,7 +1162,7 @@ export default function QuestionBanks() {
                         )}
                         <button
                           type="button"
-                          onClick={() => { setIsEditingPattern(false); setPatternDirty(false); }}
+                          onClick={handleCancelPatternEdit}
                           className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
                           <X className="w-3.5 h-3.5" /> Cancel
@@ -1183,9 +1193,9 @@ export default function QuestionBanks() {
                     </thead>
                     <tbody>
                       {localParts.map((part: PartConfiguration, idx: number) => {
-                        const mcq = part.mcqCount === '' ? '' : (part.mcqCount ?? 0);
-                        const qCount = part.questionCount === '' ? 0 : Number(part.questionCount);
-                        const mcqVal = part.mcqCount === '' ? 0 : Number(part.mcqCount);
+                        const mcq = String(part.mcqCount) === '' ? '' : (part.mcqCount ?? 0);
+                        const qCount = String(part.questionCount) === '' ? 0 : Number(part.questionCount);
+                        const mcqVal = String(part.mcqCount) === '' ? 0 : Number(part.mcqCount);
                         const desc = Math.max(0, qCount - mcqVal);
                         const dist: Record<string, number> = (part.btlDistribution as any) || {};
                         const hasDist = Object.values(dist).some((v: any) => (v || 0) > 0);
@@ -1223,7 +1233,7 @@ export default function QuestionBanks() {
                             <td className="px-4 py-2 text-center">
                               {isEditingPattern ? (
                                 <input
-                                  type="number" min={0} max={part.questionCount === '' ? undefined : Number(part.questionCount)}
+                                  type="number" min={0} max={String(part.questionCount) === '' ? undefined : Number(part.questionCount)}
                                   value={mcq}
                                   onChange={e => updateLocalPart(idx, 'mcqCount', e.target.value === '' ? '' : Number(e.target.value))}
                                   className="w-14 text-center text-xs font-semibold border border-pink-200 dark:border-pink-800 rounded-md bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 focus:outline-none focus:ring-2 focus:ring-pink-400 py-0.5"

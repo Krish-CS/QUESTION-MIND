@@ -31,11 +31,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const isLoginRequest = error.config?.url?.includes('/auth/login');
-    const isLoginPage = window.location.pathname === '/login';
+    const isLoginPage = 
+      window.location.pathname === '/login' || 
+      window.location.hash === '#/login' || 
+      window.location.hash.startsWith('#/login');
     if (error.response?.status === 401 && !isLoginRequest && !isLoginPage) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.location.href = '/#/login';
     }
     return Promise.reject(error);
   }
@@ -161,4 +164,3 @@ export const staffApi = {
 };
 
 export default api;
-
