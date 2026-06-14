@@ -16,6 +16,7 @@ app = FastAPI(
 # ── CORS — allow website, mobile app (Capacitor), and local dev ──────────
 allowed_origins = [
     settings.FRONTEND_URL,
+    "https://krish-cs.github.io",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5173",
