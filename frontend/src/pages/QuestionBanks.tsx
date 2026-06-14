@@ -18,9 +18,6 @@ import {
   Pencil,
   X,
   Share2,
-  Users,
-  Link,
-  Mail,
 } from 'lucide-react';
 import { Subject, Syllabus, QuestionBank, MySubjectAssignment, PartConfiguration, BloomLevel, ALL_BTL_LEVELS } from '../types';
 import QuestionBankViewModal from '../components/QuestionBankViewModal';
@@ -58,10 +55,7 @@ export default function QuestionBanks() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successBank, setSuccessBank] = useState<QuestionBank | null>(null);
 
-  // Share state
-  const [shareBankId, setShareBankId] = useState<string | null>(null);
-  const [shareLoading, setShareLoading] = useState(false);
-  const [shareResult, setShareResult] = useState<{ shared_with: string[]; failed: string[]; drive_link?: string } | null>(null);
+
 
 
   useEffect(() => {
@@ -517,17 +511,42 @@ export default function QuestionBanks() {
     }
   };
 
-  const handleShare = async (bankId: string, recipientEmails: string[]) => {
-    setShareLoading(true);
-    setShareResult(null);
+  const handleDirectShare = async (bank: QuestionBank) => {
+    setGlobalLoading(true, 'Downloading Excel to share...');
     try {
-      const res = await questionBankApi.share(bankId, { recipient_emails: recipientEmails });
-      setShareResult(res.data);
+      const response = await questionBankApi.download(bank.id);
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const fileName = `${bank.title || 'question_bank'}.xlsx`;
+      
+      const file = new File([blob], fileName, {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: bank.title || 'Question Bank',
+          text: `Here is the Question Bank Excel file for: ${bank.title || 'Subject'}`
+        });
+      } else {
+        // Fallback for browsers that don't support file sharing
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        alert("Excel file downloaded!\n\nYour browser doesn't support direct file sharing. Please share the downloaded file manually via WhatsApp or Email.");
+      }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to share question bank');
-      setShareBankId(null);
+      if (err.name !== 'AbortError') {
+        console.error('Sharing failed:', err);
+        setError('Failed to share Question Bank.');
+      }
     } finally {
-      setShareLoading(false);
+      setGlobalLoading(false);
     }
   };
 
@@ -1334,45 +1353,47 @@ export default function QuestionBanks() {
               <div
                 key={bank.id}
                 onClick={() => setViewingBank(bank)}
-                className={`flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-2 rounded-lg cursor-pointer transition-all group ${
+                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-white dark:bg-slate-900 border-2 rounded-xl cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group ${
                   bank.id === latestBankId
-                    ? 'border-pink-400 dark:border-pink-500 shadow-xl shadow-pink-200/70 dark:shadow-pink-900/60 ring-2 ring-pink-300 dark:ring-pink-700 ring-offset-2'
-                    : 'border-pink-200 dark:border-pink-700 hover:border-pink-300 dark:hover:border-pink-600'
+                    ? 'border-pink-400 dark:border-pink-500 shadow-xl shadow-pink-200/50 dark:shadow-pink-900/50 ring-2 ring-pink-300 dark:ring-pink-700 ring-offset-2'
+                    : 'border-pink-100 dark:border-pink-800/80 hover:border-pink-300 dark:hover:border-pink-700'
                 }`}
               >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-slate-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
+                <div className="min-w-0 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-semibold text-slate-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors break-words">
                       {bank.title || 'Untitled'}
                     </p>
                     {bank.id === latestBankId && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-500 text-white animate-pulse">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white animate-pulse shadow-sm shadow-pink-500/20">
                         ✓ Generated
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
-                    {getSubjectName(bank.subject_id)} • {new Date(bank.created_at).toLocaleDateString()}
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{getSubjectName(bank.subject_id)}</span>
+                    <span className="mx-2 text-slate-300 dark:text-slate-700">•</span>
+                    <span>{new Date(bank.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}</span>
                   </p>
                 </div>
-                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                  <button onClick={() => setViewingBank(bank)} className="btn btn-secondary p-2" title="View">
+                <div className="flex flex-wrap items-center gap-2 mt-3 sm:mt-0" onClick={e => e.stopPropagation()}>
+                  <button onClick={() => setViewingBank(bank)} className="btn btn-secondary p-2.5 rounded-xl hover:text-pink-600 dark:hover:text-pink-400 transition-colors" title="View">
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button onClick={() => { setEditingBankId(bank.id); setViewingBank(bank); }} className="btn btn-secondary p-2" title="Edit Questions">
+                  <button onClick={() => { setEditingBankId(bank.id); setViewingBank(bank); }} className="btn btn-secondary p-2.5 rounded-xl hover:text-pink-600 dark:hover:text-pink-400 transition-colors" title="Edit Questions">
                     <Pencil className="w-4 h-4" />
                   </button>
-                   <button onClick={() => handleDownload(bank)} className="btn btn-secondary p-2" title="Download Excel">
+                  <button onClick={() => handleDownload(bank)} className="btn btn-secondary p-2.5 rounded-xl hover:text-pink-600 dark:hover:text-pink-400 transition-colors" title="Download Excel">
                     <Download className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => { setShareBankId(bank.id); setShareResult(null); }}
-                    className="btn btn-secondary p-2"
-                    title="Share Question Bank"
+                    onClick={() => handleDirectShare(bank)}
+                    className="btn btn-secondary p-2.5 rounded-xl hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                    title="Share Excel directly via WhatsApp/Mail"
                   >
                     <Share2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                   </button>
-                  <button onClick={() => handleDelete(bank.id)} className="btn btn-danger p-2" title="Delete">
+                  <button onClick={() => handleDelete(bank.id)} className="btn btn-danger p-2.5 rounded-xl transition-colors" title="Delete">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -1430,172 +1451,6 @@ export default function QuestionBanks() {
         </div>
       )}
 
-      {/* Share Modal */}
-      {shareBankId && (
-        <ShareModal
-          bank={questionBanks.find(b => b.id === shareBankId)!}
-          subjects={subjects}
-          onClose={() => { setShareBankId(null); setShareResult(null); }}
-          onShare={handleShare}
-          sharing={shareLoading}
-          shareResult={shareResult}
-        />
-      )}
-    </div>
-  );
-}
-
-
-
-// ── Share Modal ──────────────────────────────────────────────────────────────
-function ShareModal({
-  bank,
-  subjects,
-  onClose,
-  onShare,
-  sharing,
-  shareResult,
-}: {
-  bank: QuestionBank;
-  subjects: any[];
-  onClose: () => void;
-  onShare: (bankId: string, emails: string[]) => void;
-  sharing: boolean;
-  shareResult: { shared_with: string[]; failed: string[]; drive_link?: string } | null;
-}) {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [customEmail, setCustomEmail] = useState('');
-
-  const toggle = (email: string) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      next.has(email) ? next.delete(email) : next.add(email);
-      return next;
-    });
-  };
-
-  const addCustom = () => {
-    const e = customEmail.trim();
-    if (e && e.includes('@')) {
-      setSelected(prev => new Set([...prev, e]));
-      setCustomEmail('');
-    }
-  };
-
-  if (!bank) return null;
-  const subjectName = subjects.find(s => s.id === bank.subject_id)?.name || 'Unknown';
-
-  return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl border border-purple-200 dark:border-purple-700 overflow-hidden" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-purple-100 dark:border-purple-800 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <Share2 className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 dark:text-white">Share Question Bank</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subjectName}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="p-5 space-y-4 max-h-[65vh] overflow-y-auto">
-          {/* Result state */}
-          {shareResult && (
-            <div className="space-y-3">
-              {shareResult.shared_with.length > 0 && (
-                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-                  <p className="font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
-                    <Check className="w-4 h-4" />
-                    Shared with {shareResult.shared_with.length} recipient(s)
-                  </p>
-                  <ul className="mt-2 space-y-1">
-                    {shareResult.shared_with.map(e => (
-                      <li key={e} className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                        <Mail className="w-3.5 h-3.5" /> {e}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {shareResult.failed.length > 0 && (
-                <div className="p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl">
-                  <p className="font-semibold text-rose-700 dark:text-rose-300">Failed to deliver to:</p>
-                  {shareResult.failed.map(e => <p key={e} className="text-sm text-rose-600 dark:text-rose-400">{e}</p>)}
-                </div>
-              )}
-              {shareResult.drive_link && (
-                <a
-                  href={shareResult.drive_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-                >
-                  <Link className="w-4 h-4" /> Open in Google Drive
-                </a>
-              )}
-              <button onClick={onClose} className="btn btn-primary w-full">Done</button>
-            </div>
-          )}
-
-          {!shareResult && (
-            <>
-              <div>
-                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-purple-500" />
-                  Share with Recipients
-                </p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  Enter email addresses below. The question bank will be shared through email, and the same file can be forwarded manually through WhatsApp or any other app if you want.
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Add recipient</p>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    value={customEmail}
-                    onChange={e => setCustomEmail(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && addCustom()}
-                    placeholder="Enter email address..."
-                    className="input flex-1 text-sm"
-                  />
-                  <button onClick={addCustom} className="btn btn-secondary px-3 py-2 text-sm">Add</button>
-                </div>
-                {selected.size > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {[...selected].map(e => (
-                      <span key={e} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 rounded-full border border-purple-200 dark:border-purple-700">
-                        {e}
-                        <button onClick={() => toggle(e)} className="hover:text-rose-600 transition-colors ml-0.5">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button onClick={onClose} className="btn btn-secondary flex-1">Cancel</button>
-                  <button
-                    onClick={() => onShare(bank.id, [...selected])}
-                    disabled={selected.size === 0 || sharing}
-                    className="btn btn-primary flex-1 bg-gradient-to-r from-purple-600 to-pink-600 border-0 disabled:opacity-50"
-                  >
-                  {sharing ? <><Loader2 className="w-4 h-4 animate-spin" /> Sharing...</> : <><Share2 className="w-4 h-4" /> Share ({selected.size})</>}
-                  </button>
-                </div>
-            </>
-          )}
-        </div>
-      </div>
     </div>
   );
 }
