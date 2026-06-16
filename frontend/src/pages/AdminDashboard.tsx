@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Edit, RefreshCw, KeyRound, AlertCircle, Check, Upload, Loader2, Trash2, Plus, X } from 'lucide-react';
+import { Users, Edit, RefreshCw, KeyRound, AlertCircle, Check, Upload, Loader2, Trash2, Plus, X, Download } from 'lucide-react';
 import api, { authApi } from '../lib/api';
 import { Combobox } from '../components/Combobox';
 import toast from 'react-hot-toast';
@@ -210,6 +210,14 @@ export default function AdminDashboard() {
             ref={fileInputRef} 
             onChange={handleBulkUpload} 
           />
+          <a
+            href="/sample_users_template.xlsx"
+            download="sample_users_template.xlsx"
+            className="btn btn-secondary flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Template
+          </a>
           <button
             onClick={() => fileInputRef.current?.click()}
             className="btn btn-secondary flex items-center gap-2"
