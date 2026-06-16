@@ -28,15 +28,17 @@ async def reset_password_direct(data: PublicPasswordResetRequest, db: Session = 
     user = db.query(User).filter(User.email == data.email.lower()).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found with this email")
-    
+    user_email = user.email
+    user_name = user.name
+
     user.password = hash_password(data.new_password)
     db.commit()
     
     # Send email notification
     try:
         send_user_password_reset_email(
-            recipient_email=user.email,
-            name=user.name,
+            recipient_email=user_email,
+            name=user_name,
             new_password=data.new_password
         )
     except Exception as e:
@@ -143,16 +145,22 @@ async def update_user(
         changes["department"] = (user_to_update.department, data.department)
         user_to_update.department = data.department
 
+    user_email = user_to_update.email
+    user_name = user_to_update.name
+
     db.commit()
     db.refresh(user_to_update)
     
     # If there are changes, trigger the email notification
     if changes:
-        send_user_update_email(
-            recipient_email=user_to_update.email,
-            name=user_to_update.name,
-            changes=changes
-        )
+        try:
+            send_user_update_email(
+                recipient_email=user_email,
+                name=user_name,
+                changes=changes
+            )
+        except Exception as e:
+            print(f"[WARNING] Failed to send update email: {e}")
         
     return UserResponse.model_validate(user_to_update)
 
@@ -186,16 +194,21 @@ async def reset_password(
     user_to_update = db.query(User).filter(User.id == user_id).first()
     if not user_to_update:
         raise HTTPException(status_code=404, detail="User not found")
-    
+    user_email = user_to_update.email
+    user_name = user_to_update.name
+
     user_to_update.password = hash_password(data.new_password)
     db.commit()
     
     # Send email notification
-    send_user_password_reset_email(
-        recipient_email=user_to_update.email,
-        name=user_to_update.name,
-        new_password=data.new_password
-    )
+    try:
+        send_user_password_reset_email(
+            recipient_email=user_email,
+            name=user_name,
+            new_password=data.new_password
+        )
+    except Exception as e:
+        print(f"[WARNING] Failed to send password reset email: {e}")
     
     return {"message": "Password reset successfully"}
 
