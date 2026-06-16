@@ -43,8 +43,10 @@ def _get_smtp_server():
             logger.info(f"[EmailService] SMTP Local connect: {host}:{port}")
             return smtplib.SMTP(host, port, timeout=30)
         else:
-            logger.info(f"[EmailService] SMTP connect: {settings.SMTP_HOST}:{settings.SMTP_PORT}")
-            server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=30)
+            # Render blocks outbound port 587, use 2525 for Brevo which supports it
+            port = 2525 if (settings.SMTP_PORT == 587 and "brevo" in settings.SMTP_HOST.lower()) else settings.SMTP_PORT
+            logger.info(f"[EmailService] SMTP connect: {settings.SMTP_HOST}:{port}")
+            server = smtplib.SMTP(settings.SMTP_HOST, port, timeout=30)
             logger.info("[EmailService] Sending EHLO...")
             server.ehlo()
             logger.info("[EmailService] Starting TLS (STARTTLS)...")
