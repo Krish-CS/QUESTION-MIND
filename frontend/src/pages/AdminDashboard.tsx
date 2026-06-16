@@ -211,7 +211,7 @@ export default function AdminDashboard() {
             onChange={handleBulkUpload} 
           />
           <a
-            href="/sample_users_template.xlsx"
+            href={`${import.meta.env.BASE_URL}sample_users_template.xlsx`}
             download="sample_users_template.xlsx"
             className="btn btn-secondary flex items-center gap-2"
           >
