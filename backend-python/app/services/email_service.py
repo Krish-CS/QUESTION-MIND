@@ -7,6 +7,8 @@ Works with:
 """
 
 import smtplib
+import httpx
+import base64
 import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -33,34 +35,19 @@ def _smtp_configured() -> bool:
     return bool(settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASS and settings.FROM_EMAIL)
 
 def _get_smtp_server():
-    """Helper to get appropriate SMTP server based on EMAIL_PROVIDER."""
     provider = settings.EMAIL_PROVIDER.lower()
-    logger.info(f"[EmailService] Connecting to SMTP server via provider: {provider}")
-    try:
-        if provider == "local":
-            host = settings.SMTP_HOST or "localhost"
-            port = settings.SMTP_PORT if settings.SMTP_PORT != 587 else 1025
-            logger.info(f"[EmailService] SMTP Local connect: {host}:{port}")
-            return smtplib.SMTP(host, port, timeout=30)
-        else:
-            # Render blocks outbound port 587, use 2525 for Brevo which supports it
-            port = 2525 if (settings.SMTP_PORT == 587 and "brevo" in settings.SMTP_HOST.lower()) else settings.SMTP_PORT
-            logger.info(f"[EmailService] SMTP connect: {settings.SMTP_HOST}:{port}")
-            server = smtplib.SMTP(settings.SMTP_HOST, port, timeout=30)
-            logger.info("[EmailService] Sending EHLO...")
-            server.ehlo()
-            logger.info("[EmailService] Starting TLS (STARTTLS)...")
-            server.starttls()
-            if settings.SMTP_USER and settings.SMTP_PASS:
-                logger.info(f"[EmailService] Logging in as user: {settings.SMTP_USER}")
-                server.login(settings.SMTP_USER, settings.SMTP_PASS)
-                logger.info("[EmailService] SMTP Login successful!")
-            else:
-                logger.warning("[EmailService] SMTP user or pass missing, skipping login step.")
-            return server
-    except Exception as e:
-        logger.error(f"[EmailService] SMTP connection/login failed: {e}")
-        raise
+    if provider == "local":
+        host = settings.SMTP_HOST or "localhost"
+        port = settings.SMTP_PORT if settings.SMTP_PORT != 587 else 1025
+        return smtplib.SMTP(host, port, timeout=30)
+    else:
+        port = 2525 if (settings.SMTP_PORT == 587 and "brevo" in settings.SMTP_HOST.lower()) else settings.SMTP_PORT
+        server = smtplib.SMTP(settings.SMTP_HOST, port, timeout=30)
+        server.ehlo()
+        server.starttls()
+        if settings.SMTP_USER and settings.SMTP_PASS:
+            server.login(settings.SMTP_USER, settings.SMTP_PASS)
+        return server
 
 
 def send_share_notification(
@@ -71,59 +58,19 @@ def send_share_notification(
     sender_name: str,
     excel_path: Optional[str] = None
 ) -> dict:
-    """
-    Send a question bank share notification email.
-
-    Returns a dict:
-        { "sent": [...], "failed": [...], "skipped": bool }
-    """
     if not _smtp_configured():
         logger.warning("[EmailService] SMTP not configured — skipping email notifications.")
         return {"sent": [], "failed": recipients, "skipped": True}
 
     sent, failed = [], []
-
-    html_body = _build_html_email(
-        bank_title=bank_title,
-        subject_name=subject_name,
-        subject_code=subject_code,
-        sender_name=sender_name,
-    )
+    html_body = _build_html_email(bank_title, subject_name, subject_code, sender_name)
+    subject = f"📚 Question Bank Shared — {subject_code}: {bank_title}"
 
     for recipient in recipients:
-        try:
-            msg = MIMEMultipart("mixed")
-            msg["From"]    = f"{settings.FROM_NAME} <{settings.FROM_EMAIL}>"
-            msg["To"]      = recipient
-            msg["Subject"] = f"📚 Question Bank Shared — {subject_code}: {bank_title}"
-
-            # HTML body
-            alt = MIMEMultipart("alternative")
-            alt.attach(MIMEText(html_body, "html", "utf-8"))
-            msg.attach(alt)
-
-            # Attach the Excel file if available
-            if excel_path and os.path.exists(excel_path):
-                with open(excel_path, "rb") as f:
-                    part = MIMEBase("application",
-                                    "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    part.set_payload(f.read())
-                encoders.encode_base64(part)
-                part.add_header(
-                    "Content-Disposition",
-                    "attachment",
-                    filename=os.path.basename(excel_path),
-                )
-                msg.attach(part)
-
-            with _get_smtp_server() as server:
-                server.sendmail(settings.FROM_EMAIL, recipient, msg.as_string())
-
+        success = _send_email_core(recipient, subject, html_body, excel_path)
+        if success:
             sent.append(recipient)
-            logger.info(f"[EmailService] Sent share notification to {recipient}")
-
-        except Exception as e:
-            logger.error(f"[EmailService] Failed to send to {recipient}: {e}")
+        else:
             failed.append(recipient)
 
     return {"sent": sent, "failed": failed, "skipped": False}
@@ -216,9 +163,73 @@ def _build_html_email(
 
 
 def _send_html_email(recipient: str, subject: str, html_body: str) -> bool:
-    """Helper to send a single HTML email via SMTP."""
     if not _smtp_configured():
-        logger.warning(f"[EmailService] SMTP not configured — skipping email to {recipient}.")
+        return False
+    return _send_email_core(recipient, subject, html_body)
+
+def _send_email_core(recipient: str, subject: str, html_body: str, attachment_path: Optional[str] = None) -> bool:
+    provider = settings.EMAIL_PROVIDER.lower()
+    
+    # 1. Use Brevo HTTP API to bypass Render firewall blocks
+    if provider == 'brevo' and settings.SMTP_PASS:
+        try:
+            url = "https://api.brevo.com/v3/smtp/email"
+            headers = {
+                "accept": "application/json",
+                "api-key": settings.SMTP_PASS,
+                "content-type": "application/json"
+            }
+            payload = {
+                "sender": {"name": settings.FROM_NAME, "email": settings.FROM_EMAIL},
+                "to": [{"email": recipient}],
+                "subject": subject,
+                "htmlContent": html_body
+            }
+            
+            if attachment_path and os.path.exists(attachment_path):
+                with open(attachment_path, "rb") as f:
+                    file_content = base64.b64encode(f.read()).decode("utf-8")
+                payload["attachment"] = [{
+                    "content": file_content,
+                    "name": os.path.basename(attachment_path)
+                }]
+                
+            response = httpx.post(url, json=payload, headers=headers, timeout=30.0)
+            response.raise_for_status()
+            logger.info(f"[EmailService] HTTP API Sent email to {recipient}")
+            return True
+        except Exception as e:
+            logger.error(f"[EmailService] HTTP API failed for {recipient}: {e}")
+            if hasattr(e, 'response') and getattr(e, 'response') is not None:
+                logger.error(f"[EmailService] Brevo API Response: {getattr(e, 'response').text}")
+            return False
+
+    # 2. Fallback to standard SMTP
+    try:
+        msg = MIMEMultipart("mixed")
+        msg["From"] = f"{settings.FROM_NAME} <{settings.FROM_EMAIL}>"
+        msg["To"] = recipient
+        msg["Subject"] = subject
+        
+        alt = MIMEMultipart("alternative")
+        alt.attach(MIMEText(html_body, "html", "utf-8"))
+        msg.attach(alt)
+        
+        if attachment_path and os.path.exists(attachment_path):
+            with open(attachment_path, "rb") as f:
+                part = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                part.set_payload(f.read())
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", "attachment", filename=os.path.basename(attachment_path))
+            msg.attach(part)
+
+        with _get_smtp_server() as server:
+            server.sendmail(settings.FROM_EMAIL, recipient, msg.as_string())
+            
+        logger.info(f"[EmailService] SMTP Sent email to {recipient}")
+        return True
+    except Exception as e:
+        logger.error(f"[EmailService] SMTP failed for {recipient}: {e}")
         return False
     try:
         msg = MIMEMultipart("alternative")
