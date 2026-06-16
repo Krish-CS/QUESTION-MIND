@@ -13,12 +13,12 @@ interface User {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'users' | 'assignments'>('users');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [resettingUser, setResettingUser] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState('');
+  const [userSearch, setUserSearch] = useState('');
   
   // Edit form state
   const [editName, setEditName] = useState('');
@@ -38,26 +38,6 @@ export default function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Subject assignments state
-  const [subjects, setSubjects] = useState<any[]>([]);
-  const [facultyList, setFacultyList] = useState<any[]>([]);
-  const [loadingAssignments, setLoadingAssignments] = useState(false);
-  const [assignmentSearch, setAssignmentSearch] = useState('');
-  
-  // Modal state for assigning staff
-  const [assigningSubject, setAssigningSubject] = useState<any | null>(null);
-  const [selectedFaculty, setSelectedFaculty] = useState<any | null>(null);
-  const [facultySearch, setFacultySearch] = useState('');
-  const [showFacultyDropdown, setShowFacultyDropdown] = useState(false);
-  
-  const [canEditPattern, setCanEditPattern] = useState(false);
-  const [canGenerateQuestions, setCanGenerateQuestions] = useState(true);
-  const [canApprove, setCanApprove] = useState(false);
-  const [assigning, setAssigning] = useState(false);
-  
-  const [uploadingAssignments, setUploadingAssignments] = useState(false);
-  const assignmentFileInputRef = React.useRef<HTMLInputElement>(null);
-
   const loadUsers = async () => {
     setLoading(true);
     try {
@@ -70,30 +50,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadAssignmentsData = async () => {
-    setLoadingAssignments(true);
-    try {
-      const [subjectsRes, facultyRes] = await Promise.all([
-        api.get('/subjects'),
-        api.get('/staff/faculty-list')
-      ]);
-      setSubjects(subjectsRes.data);
-      setFacultyList(facultyRes.data);
-    } catch (err) {
-      console.error('Failed to load assignments data', err);
-      toast.error('Failed to load subjects or faculty list');
-    } finally {
-      setLoadingAssignments(false);
-    }
-  };
-
   useEffect(() => {
-    if (activeTab === 'assignments') {
-      loadAssignmentsData();
-    } else {
-      loadUsers();
-    }
-  }, [activeTab]);
+    loadUsers();
+  }, []);
 
   const handleEditClick = (user: User) => {
     setEditingUser(user);
@@ -336,109 +295,54 @@ export default function AdminDashboard() {
           <p className="text-purple-700 dark:text-purple-300 mt-1 font-medium">Manage user credentials and subject allocations</p>
         </div>
 
-        {/* Global Action Buttons based on Tab */}
+        {/* Global Action Buttons */}
         <div className="flex gap-3 flex-wrap">
-          {activeTab === 'users' ? (
-            <>
-              <button
-                onClick={() => setIsAddingUser(true)}
-                className="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-600 flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Add User
-              </button>
-              <input 
-                type="file" 
-                accept=".xlsx" 
-                className="hidden" 
-                ref={fileInputRef} 
-                onChange={handleBulkUpload} 
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="btn btn-secondary flex items-center gap-2"
-                disabled={uploading}
-              >
-                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                Bulk Upload Users
-              </button>
-              <button
-                onClick={loadUsers}
-                className="btn btn-secondary flex items-center gap-2"
-                disabled={loading}
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
-              </button>
-            </>
-          ) : (
-            <>
-              <input 
-                type="file" 
-                accept=".xlsx" 
-                className="hidden" 
-                ref={assignmentFileInputRef} 
-                onChange={handleBulkUploadAssignments} 
-              />
-              <button
-                onClick={() => assignmentFileInputRef.current?.click()}
-                className="btn btn-primary bg-gradient-to-r from-pink-500 to-purple-600 border-none text-white flex items-center gap-2 shadow-lg shadow-pink-500/20"
-                disabled={uploadingAssignments}
-              >
-                {uploadingAssignments ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                Import Staff Assignments
-              </button>
-              <button
-                onClick={loadAssignmentsData}
-                className="btn btn-secondary flex items-center gap-2"
-                disabled={loadingAssignments}
-              >
-                <RefreshCw className={`w-4 h-4 ${loadingAssignments ? 'animate-spin' : ''}`} />
-                Refresh
-              </button>
-            </>
-          )}
+          <button
+            onClick={() => setIsAddingUser(true)}
+            className="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-600 flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add User
+          </button>
+          <input 
+            type="file" 
+            accept=".xlsx" 
+            className="hidden" 
+            ref={fileInputRef} 
+            onChange={handleBulkUpload} 
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="btn btn-secondary flex items-center gap-2"
+            disabled={uploading}
+          >
+            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            Bulk Upload Users
+          </button>
+          <button
+            onClick={loadUsers}
+            className="btn btn-secondary flex items-center gap-2"
+            disabled={loading}
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
         </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-pink-200 dark:border-slate-800">
-        <button
-          onClick={() => { setActiveTab('users'); setAssignmentSearch(''); }}
-          className={`py-3 px-6 font-semibold border-b-4 text-sm transition-all flex items-center gap-2 ${
-            activeTab === 'users'
-              ? 'border-pink-500 text-pink-600 dark:text-pink-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
-        >
-          👤 User Accounts
-        </button>
-        <button
-          onClick={() => { setActiveTab('assignments'); setAssignmentSearch(''); }}
-          className={`py-3 px-6 font-semibold border-b-4 text-sm transition-all flex items-center gap-2 ${
-            activeTab === 'assignments'
-              ? 'border-pink-500 text-pink-600 dark:text-pink-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
-        >
-          📚 Subject Assignments
-        </button>
       </div>
 
       {/* Search Bar */}
       <div className="relative w-full md:w-96">
         <input
           type="text"
-          value={assignmentSearch}
-          onChange={(e) => setAssignmentSearch(e.target.value)}
-          placeholder={activeTab === 'users' ? "Search users by name or email..." : "Search subjects..."}
+          value={userSearch}
+          onChange={(e) => setUserSearch(e.target.value)}
+          placeholder="Search users by name or email..."
+
           className="input w-full dark:!bg-slate-950 dark:!text-white dark:!border-slate-800"
         />
       </div>
 
-      {/* activeTab === 'users' */}
-      {activeTab === 'users' && (
-        <div className="card overflow-hidden p-0 dark:!bg-slate-900 border-2 border-pink-200 dark:border-pink-900 shadow-xl shadow-pink-100/30 dark:shadow-black/40">
+      <div className="card overflow-hidden p-0 dark:!bg-slate-900 border-2 border-pink-200 dark:border-pink-900 shadow-xl shadow-pink-100/30 dark:shadow-black/40">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-slate-900 dark:to-slate-900 text-slate-700 dark:text-slate-300 font-semibold border-b border-pink-200 dark:border-slate-800">
@@ -494,104 +398,6 @@ export default function AdminDashboard() {
             </table>
           </div>
         </div>
-      )}
-
-      {/* activeTab === 'assignments' */}
-      {activeTab === 'assignments' && (
-        <div className="grid grid-cols-1 gap-6">
-          {loadingAssignments ? (
-            <div className="flex items-center justify-center h-64">
-              <Loader2 className="w-8 h-8 text-pink-600 dark:text-pink-400 animate-spin" />
-            </div>
-          ) : filteredSubjects.length === 0 ? (
-            <div className="card text-center p-12">
-              <BookOpen className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-              <p className="text-slate-600 dark:text-slate-300 font-semibold">No subjects found matching "{assignmentSearch}"</p>
-            </div>
-          ) : (
-            filteredSubjects.map((subject) => (
-              <div key={subject.id} className="card p-6 dark:!bg-slate-900 border-2 border-pink-200 dark:border-slate-800 shadow-lg hover:shadow-xl transition-all">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-pink-100 dark:border-slate-800 pb-4 mb-4 gap-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      {subject.name}
-                      <span className="text-xs px-2 py-0.5 font-mono font-bold bg-pink-100 text-pink-700 rounded-md dark:bg-pink-900/30 dark:text-pink-300">
-                        {subject.code}
-                      </span>
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Semester {subject.semester} • {subject.department || 'Gen'} Department • {subject.credits} Credits
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setAssigningSubject(subject)}
-                    className="btn btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Assign Faculty
-                  </button>
-                </div>
-
-                {/* Assigned staff list */}
-                {(!subject.assigned_staff || subject.assigned_staff.length === 0) ? (
-                  <p className="text-xs text-slate-500 italic py-2">No faculty assigned to this subject yet.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {subject.assigned_staff.map((staff: any) => (
-                      <div key={staff.id} className="flex flex-col md:flex-row md:items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-pink-100 dark:border-slate-800 gap-3">
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                            {staff.staff_name}
-                            <span className="text-xs font-normal text-slate-500 font-mono">({staff.staff_email})</span>
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-4 flex-wrap">
-                          {/* Permissions Checkboxes */}
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-300 select-none">
-                            <input
-                              type="checkbox"
-                              checked={staff.can_edit_pattern}
-                              onChange={() => handleTogglePermission(subject.id, staff.id, 'canEditPattern', staff.can_edit_pattern)}
-                              className="accent-pink-600"
-                            />
-                            Edit Pattern
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-300 select-none">
-                            <input
-                              type="checkbox"
-                              checked={staff.can_generate_questions}
-                              onChange={() => handleTogglePermission(subject.id, staff.id, 'canGenerateQuestions', staff.can_generate_questions)}
-                              className="accent-pink-600"
-                            />
-                            Generate
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-300 select-none">
-                            <input
-                              type="checkbox"
-                              checked={staff.can_approve}
-                              onChange={() => handleTogglePermission(subject.id, staff.id, 'canApprove', staff.can_approve)}
-                              className="accent-pink-600"
-                            />
-                            Approve
-                          </label>
-
-                          <button
-                            onClick={() => handleRemoveAssignment(staff.id, staff.staff_name, subject.code)}
-                            className="p-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition border-none bg-transparent ml-2"
-                            title="Remove assignment"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      )}
 
       {/* Add User Modal */}
       {isAddingUser && (
@@ -773,138 +579,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Assign Staff Modal */}
-      {assigningSubject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-pink-200 dark:border-slate-800 relative">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-pink-500" />
-                Assign Staff to {assigningSubject.code}
-              </h2>
-              <button
-                onClick={() => {
-                  setAssigningSubject(null);
-                  setSelectedFaculty(null);
-                  setFacultySearch('');
-                  setShowFacultyDropdown(false);
-                }}
-                className="text-slate-400 hover:text-slate-600 border-none bg-transparent"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAssignStaff} className="space-y-4">
-              {/* Autocomplete Search input */}
-              <div className="relative">
-                <label className="label">Select Faculty Member</label>
-                <input
-                  type="text"
-                  value={selectedFaculty ? `${selectedFaculty.name} (${selectedFaculty.email})` : facultySearch}
-                  onChange={(e) => {
-                    setFacultySearch(e.target.value);
-                    setSelectedFaculty(null);
-                    setShowFacultyDropdown(true);
-                  }}
-                  onFocus={() => setShowFacultyDropdown(true)}
-                  placeholder="Type to search faculty..."
-                  className="input w-full"
-                  required={!selectedFaculty}
-                />
-                
-                {showFacultyDropdown && facultySearch && !selectedFaculty && (
-                  <div className="absolute z-[60] w-full mt-1 bg-white dark:bg-slate-900 border-2 border-pink-100 dark:border-slate-800 rounded-lg shadow-xl max-h-48 overflow-y-auto">
-                    {filteredFaculty.map((f) => (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedFaculty(f);
-                          setFacultySearch('');
-                          setShowFacultyDropdown(false);
-                        }}
-                        className="w-full px-4 py-2.5 text-left hover:bg-pink-50 dark:hover:bg-slate-800 transition-colors text-sm border-none bg-transparent text-slate-800 dark:text-slate-200 flex flex-col"
-                      >
-                        <span className="font-semibold">{f.name}</span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{f.email}</span>
-                      </button>
-                    ))}
-                    {filteredFaculty.length === 0 && (
-                      <div className="p-3 text-center text-slate-500 text-sm">No faculty found</div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Permissions */}
-              <div className="space-y-3 pt-2">
-                <label className="label">Assigned Permissions</label>
-                
-                <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-pink-50 dark:border-slate-800 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={canEditPattern}
-                    onChange={(e) => setCanEditPattern(e.target.checked)}
-                    className="accent-pink-600"
-                  />
-                  <div>
-                    <p className="text-sm font-semibold">Edit Pattern</p>
-                    <p className="text-xs text-slate-500">Allows modifying exam mark structures and BTL distributions</p>
-                  </div>
-                </label>
-
-                <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-pink-50 dark:border-slate-800 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={canGenerateQuestions}
-                    onChange={(e) => setCanGenerateQuestions(e.target.checked)}
-                    className="accent-pink-600"
-                  />
-                  <div>
-                    <p className="text-sm font-semibold">Generate Questions</p>
-                    <p className="text-xs text-slate-500">Allows generating question banks from Syllabus and CDAP</p>
-                  </div>
-                </label>
-
-                <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-pink-50 dark:border-slate-800 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={canApprove}
-                    onChange={(e) => setCanApprove(e.target.checked)}
-                    className="accent-pink-600"
-                  />
-                  <div>
-                    <p className="text-sm font-semibold">Approve Banks</p>
-                    <p className="text-xs text-slate-500">Allows final signing and approving generated banks</p>
-                  </div>
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAssigningSubject(null);
-                    setSelectedFaculty(null);
-                    setFacultySearch('');
-                  }}
-                  className="btn btn-secondary text-xs"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!selectedFaculty || assigning}
-                  className="btn btn-primary bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs border-none shadow-md shadow-pink-500/20"
-                >
-                  {assigning ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Assign Faculty'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

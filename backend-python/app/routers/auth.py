@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 import uuid
 
@@ -24,7 +24,7 @@ async def login(data: UserLogin, db: Session = Depends(get_db)):
     )
 
 @router.post("/reset-password-direct")
-async def reset_password_direct(data: PublicPasswordResetRequest, db: Session = Depends(get_db)):
+async def reset_password_direct(data: PublicPasswordResetRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email.lower()).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found with this email")
@@ -35,14 +35,12 @@ async def reset_password_direct(data: PublicPasswordResetRequest, db: Session = 
     db.commit()
     
     # Send email notification
-    try:
-        send_user_password_reset_email(
-            recipient_email=user_email,
-            name=user_name,
-            new_password=data.new_password
-        )
-    except Exception as e:
-        print(f"[WARNING] Failed to send password reset email: {e}")
+    background_tasks.add_task(
+        send_user_password_reset_email,
+        recipient_email=user_email,
+        name=user_name,
+        new_password=data.new_password
+    )
         
     return {"message": "Password updated successfully"}
 
@@ -73,6 +71,7 @@ async def get_all_users(
 @router.post("/users", response_model=UserResponse)
 async def create_user(
     data: UserCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.ADMIN.value))
 ):
@@ -97,7 +96,8 @@ async def create_user(
     db.refresh(user)
     
     # Send welcome email notification
-    send_user_welcome_email(
+    background_tasks.add_task(
+        send_user_welcome_email,
         recipient_email=user.email,
         name=user.name,
         password=data.password,
@@ -111,6 +111,7 @@ async def create_user(
 async def update_user(
     user_id: str,
     data: UserUpdateRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.ADMIN.value))
 ):
@@ -153,14 +154,12 @@ async def update_user(
     
     # If there are changes, trigger the email notification
     if changes:
-        try:
-            send_user_update_email(
-                recipient_email=user_email,
-                name=user_name,
-                changes=changes
-            )
-        except Exception as e:
-            print(f"[WARNING] Failed to send update email: {e}")
+        background_tasks.add_task(
+            send_user_update_email,
+            recipient_email=user_email,
+            name=user_name,
+            changes=changes
+        )
         
     return UserResponse.model_validate(user_to_update)
 
@@ -187,6 +186,7 @@ async def delete_user(
 async def reset_password(
     user_id: str,
     data: PasswordResetRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.ADMIN.value))
 ):
@@ -201,14 +201,12 @@ async def reset_password(
     db.commit()
     
     # Send email notification
-    try:
-        send_user_password_reset_email(
-            recipient_email=user_email,
-            name=user_name,
-            new_password=data.new_password
-        )
-    except Exception as e:
-        print(f"[WARNING] Failed to send password reset email: {e}")
+    background_tasks.add_task(
+        send_user_password_reset_email,
+        recipient_email=user_email,
+        name=user_name,
+        new_password=data.new_password
+    )
     
     return {"message": "Password reset successfully"}
 
@@ -218,6 +216,7 @@ from fastapi import UploadFile, File
 
 @router.post("/users/bulk-upload")
 async def bulk_upload_users(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     admin: User = Depends(require_role(UserRole.ADMIN.value))
@@ -261,7 +260,8 @@ async def bulk_upload_users(
             created_count += 1
             
             # Send welcome email notification
-            send_user_welcome_email(
+            background_tasks.add_task(
+                send_user_welcome_email,
                 recipient_email=email,
                 name=name,
                 password=password,
