@@ -20,6 +20,10 @@ export default function AdminDashboard() {
   const [newPassword, setNewPassword] = useState('');
   const [userSearch, setUserSearch] = useState('');
   
+  // Password Reset Success Modal State
+  const [showResetSuccessPopup, setShowResetSuccessPopup] = useState(false);
+  const [successResetUser, setSuccessResetUser] = useState<User | null>(null);
+  
   // Edit form state
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
@@ -130,7 +134,8 @@ export default function AdminDashboard() {
       await api.put(`/auth/users/${resettingUser.id}/reset-password`, {
         new_password: newPassword
       });
-      toast.success('Password reset successfully and notification email sent.');
+      setSuccessResetUser(resettingUser);
+      setShowResetSuccessPopup(true);
       setResettingUser(null);
       setNewPassword('');
     } catch (err) {
@@ -491,6 +496,32 @@ export default function AdminDashboard() {
                 <button type="submit" className="btn btn-primary bg-amber-50 hover:bg-amber-600 border-amber-500">Reset Password</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Password Reset Success Popup */}
+      {showResetSuccessPopup && successResetUser && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setShowResetSuccessPopup(false)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center border-2 border-pink-300 dark:border-pink-700 animate-in zoom-in-95 duration-200"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-4">🔑</div>
+            <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400 mb-1">Password Reset Successfully!</h2>
+            <p className="text-slate-800 dark:text-slate-200 text-sm mb-1 font-bold">{successResetUser.name}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs mb-6">Notification email has been sent to {successResetUser.email}</p>
+            <div className="flex gap-3 justify-center">
+              <button
+                className="btn btn-primary px-5 py-2.5 w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold border-none"
+                onClick={() => setShowResetSuccessPopup(false)}
+              >
+                Okay
+              </button>
+            </div>
           </div>
         </div>
       )}
