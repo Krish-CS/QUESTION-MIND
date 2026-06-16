@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Edit, RefreshCw, KeyRound, AlertCircle, Check, Upload, Loader2, Trash2, Plus, X, BookOpen, ShieldCheck } from 'lucide-react';
+import { Users, Edit, RefreshCw, KeyRound, AlertCircle, Check, Upload, Loader2, Trash2, Plus, X } from 'lucide-react';
 import api, { authApi } from '../lib/api';
 import { Combobox } from '../components/Combobox';
 import toast from 'react-hot-toast';
@@ -164,36 +164,6 @@ export default function AdminDashboard() {
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  // Subject Assignment methods
-  const handleAssignStaff = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!assigningSubject || !selectedFaculty) return;
-    setAssigning(true);
-    try {
-      await api.post(`/staff/assign/${assigningSubject.id}`, {
-        staff_email: selectedFaculty.email,
-        staff_name: selectedFaculty.name,
-        permissions: {
-          canEditPattern,
-          canGenerateQuestions,
-          canApprove
-        }
-      });
-      toast.success(`Assigned ${selectedFaculty.name} to ${assigningSubject.code}`);
-      setAssigningSubject(null);
-      setSelectedFaculty(null);
-      setCanEditPattern(false);
-      setCanGenerateQuestions(true);
-      setCanApprove(false);
-      loadAssignmentsData();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.detail || 'Failed to assign staff');
-    } finally {
-      setAssigning(false);
     }
   };
 
