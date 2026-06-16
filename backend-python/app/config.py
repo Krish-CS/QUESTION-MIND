@@ -32,9 +32,13 @@ class Settings(BaseSettings):
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
-    SMTP_PASS: str = ""
+    SMTP_PASS: str = ""          # Brevo SMTP key ('xsmtpsib-...') — used for the SMTP fallback only
     FROM_EMAIL: str = ""
     FROM_NAME: str = "Question Mind"
+    # Brevo REST API key ('xkeysib-...') — required for the HTTP API path used on
+    # Render (which blocks outbound SMTP ports). This is a DIFFERENT credential
+    # from the SMTP key above. Get it from Brevo → SMTP & API → API Keys.
+    BREVO_API_KEY: str = ""
 
 
 

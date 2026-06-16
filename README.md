@@ -38,7 +38,7 @@ The platform distinguishes three primary roles to balance management with operat
 
 ### 1. Admin (System Monitor & Creator)
 * **Role**: The Admin controls account creation, subject allocation, and system monitoring.
-* **Account Provisioning & Auto-Emailing**: The Admin manually creates HOD and Faculty user accounts. Upon creation, the backend **instantly sends an automated HTML welcome email** containing the username, temporary password, department, and direct system access link via SMTP.
+* **Account Provisioning & Auto-Emailing**: The Admin manually creates HOD and Faculty user accounts. Upon creation, the backend **instantly sends an automated HTML welcome email** containing the username, temporary password, department, and direct system access link via the Brevo transactional email API.
 * **Permissions Control**: Admin assigns staff members to specific subjects, configuring flags like `canEditPattern`, `canGenerateQuestions`, and `canApprove`.
 * **System Monitoring**: Admin monitors overall activities and staff statuses across departments.
 
@@ -53,6 +53,13 @@ The platform distinguishes three primary roles to balance management with operat
 > [!NOTE]  
 > HOD and Faculty are independent user profiles. They run their workflows separately. The Admin role exists to configure their initial access rights, assign subjects, and monitor overall utilization.
 
+### 🔒 Per-User Data Isolation
+
+Every login is fully sandboxed to the content it created. Subjects, syllabi, CDAPs, question patterns, and generated question banks are scoped server-side to their owner (`created_by` / `generated_by`):
+
+* A user only ever **sees, edits, downloads, shares, or deletes their own** records — list endpoints filter by owner and every detail/mutation endpoint enforces an ownership check (returning `404` to non-owners so existence is never leaked).
+* One user's data can never appear in or interfere with another user's workspace, even though they share a single database.
+
 ---
 
 ## 📧 Emailing & Communications
@@ -60,8 +67,26 @@ The platform distinguishes three primary roles to balance management with operat
 The emailing system is highly critical for onboarding and sharing. All transactional emails are styled with custom HTML layouts:
 
 1. **User Welcome Email (`send_user_welcome_email`)**: Triggered immediately when the Admin creates a user. Delivers secure credentials and login pointers.
-2. **Question Bank Sharing (`send_share_email`)**: Allows sharing generated question banks and answer keys directly to other staff members' emails, automatically attaching the formatted Excel spreadsheet dynamically.
+2. **Question Bank Sharing (`send_share_notification`)**: Allows sharing generated question banks and answer keys directly to other staff members' emails, automatically attaching the formatted Excel spreadsheet dynamically.
 3. **Password Resets & Updates**: Sends immediate alerts and new credentials on request.
+
+### Delivery via Brevo (HTTP API)
+
+Production deployments (e.g. Render) **block outbound SMTP ports** (587/2525), so email is delivered through **Brevo's HTTP REST API** (`https://api.brevo.com/v3/smtp/email`) rather than SMTP.
+
+> [!IMPORTANT]
+> The REST API authenticates with the Brevo **API key** (`BREVO_API_KEY`, starts with `xkeysib-`), which is a **different credential** from the SMTP key (`SMTP_PASS`, starts with `xsmtpsib-`). The API key is found under **Brevo → SMTP & API → API Keys**.
+
+Required environment variables for production email:
+
+| Variable | Example | Purpose |
+|----------|---------|---------|
+| `EMAIL_PROVIDER` | `brevo` | Selects the Brevo HTTP API path (`local` uses dev SMTP) |
+| `BREVO_API_KEY` | `xkeysib-...` | REST API key — **required on Render** |
+| `FROM_EMAIL` | `you@domain.com` | Must be a **verified sender** in Brevo |
+| `FROM_NAME` | `Question Mind` | Display name on outgoing mail |
+
+`SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` remain only as a local SMTP fallback and are not used on Render.
 
 ---
 

@@ -28,10 +28,16 @@ def _smtp_configured() -> bool:
         f"[EmailService] Checking configuration — Provider: {provider} | "
         f"Host: {settings.SMTP_HOST} | Port: {settings.SMTP_PORT} | "
         f"User: {settings.SMTP_USER} | FromEmail: {settings.FROM_EMAIL} | "
-        f"HasPassword: {bool(settings.SMTP_PASS)}"
+        f"HasSmtpPass: {bool(settings.SMTP_PASS)} | HasBrevoApiKey: {bool(settings.BREVO_API_KEY)}"
     )
     if provider == "local":
         return True
+    if provider == "brevo":
+        # The Brevo HTTP API path only needs the REST API key + a verified sender.
+        if settings.BREVO_API_KEY and settings.FROM_EMAIL:
+            return True
+        # Otherwise fall back to SMTP credentials (works locally; blocked on Render).
+        return bool(settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASS and settings.FROM_EMAIL)
     return bool(settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASS and settings.FROM_EMAIL)
 
 def _get_smtp_server():
@@ -169,14 +175,25 @@ def _send_html_email(recipient: str, subject: str, html_body: str) -> bool:
 
 def _send_email_core(recipient: str, subject: str, html_body: str, attachment_path: Optional[str] = None) -> bool:
     provider = settings.EMAIL_PROVIDER.lower()
-    
-    # 1. Use Brevo HTTP API to bypass Render firewall blocks
-    if provider == 'brevo' and settings.SMTP_PASS:
+
+    # 1. Use Brevo HTTP API to bypass Render firewall blocks.
+    #    IMPORTANT: the REST API authenticates with the Brevo *API key*
+    #    ('xkeysib-...'), which is NOT the same as the SMTP key in SMTP_PASS
+    #    ('xsmtpsib-...'). Passing the SMTP key here returns HTTP 401.
+    if provider == 'brevo' and not settings.BREVO_API_KEY:
+        logger.error(
+            "[EmailService] EMAIL_PROVIDER=brevo but BREVO_API_KEY is not set. "
+            "The Brevo REST API needs an API key starting with 'xkeysib-' "
+            "(Brevo dashboard → SMTP & API → API Keys) — this is different from the "
+            "SMTP key in SMTP_PASS ('xsmtpsib-'). Set BREVO_API_KEY in your environment. "
+            "Falling back to SMTP, which is blocked on Render."
+        )
+    if provider == 'brevo' and settings.BREVO_API_KEY:
         try:
             url = "https://api.brevo.com/v3/smtp/email"
             headers = {
                 "accept": "application/json",
-                "api-key": settings.SMTP_PASS,
+                "api-key": settings.BREVO_API_KEY,
                 "content-type": "application/json"
             }
             payload = {
@@ -230,21 +247,6 @@ def _send_email_core(recipient: str, subject: str, html_body: str, attachment_pa
         return True
     except Exception as e:
         logger.error(f"[EmailService] SMTP failed for {recipient}: {e}")
-        return False
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["From"] = f"{settings.FROM_NAME} <{settings.FROM_EMAIL}>"
-        msg["To"] = recipient
-        msg["Subject"] = subject
-        msg.attach(MIMEText(html_body, "html", "utf-8"))
-
-        with _get_smtp_server() as server:
-            server.sendmail(settings.FROM_EMAIL, recipient, msg.as_string())
-        
-        logger.info(f"[EmailService] Sent email to {recipient} with subject '{subject}'")
-        return True
-    except Exception as e:
-        logger.error(f"[EmailService] Failed to send email to {recipient}: {e}")
         return False
 
 
