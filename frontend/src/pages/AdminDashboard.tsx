@@ -192,95 +192,11 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleTogglePermission = async (
-    subjectId: string,
-    assignmentId: string, 
-    permission: 'canEditPattern' | 'canGenerateQuestions' | 'canApprove', 
-    currentValue: boolean
-  ) => {
-    try {
-      const subject = subjects.find(s => s.id === subjectId);
-      if (!subject) return;
-
-      const assignment = subject.assigned_staff?.find((a: any) => a.id === assignmentId);
-      if (!assignment) return;
-
-      const permissions = {
-        canEditPattern: permission === 'canEditPattern' ? !currentValue : assignment.can_edit_pattern,
-        canGenerateQuestions: permission === 'canGenerateQuestions' ? !currentValue : assignment.can_generate_questions,
-        canApprove: permission === 'canApprove' ? !currentValue : assignment.can_approve
-      };
-
-      await api.put(`/staff/assignment/${assignmentId}`, {
-        permissions
-      });
-      toast.success('Permissions updated successfully');
-      loadAssignmentsData();
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to update permissions');
-    }
-  };
-
-  const handleRemoveAssignment = async (assignmentId: string, staffName: string, subjectCode: string) => {
-    if (!window.confirm(`Are you sure you want to remove ${staffName} from ${subjectCode}?`)) {
-      return;
-    }
-    try {
-      await api.delete(`/staff/assignment/${assignmentId}`);
-      toast.success('Staff assignment removed successfully');
-      loadAssignmentsData();
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to remove staff assignment');
-    }
-  };
-
-  const handleBulkUploadAssignments = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.name.endsWith('.xlsx')) {
-      toast.error('Please select a valid .xlsx file.');
-      return;
-    }
-
-    setUploadingAssignments(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const response = await api.post('/staff/import-excel', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      toast.success(`Success! Created ${response.data.created} accounts, updated ${response.data.updated}, added ${response.data.assignments_added} assignments. Errors: ${response.data.errors.length}`);
-      loadAssignmentsData();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.detail || 'Failed to upload staff assignments.');
-    } finally {
-      setUploadingAssignments(false);
-      if (assignmentFileInputRef.current) assignmentFileInputRef.current.value = '';
-    }
-  };
-
   // Filtered lists
   const filteredUsers = users.filter(
     (u) =>
-      u.name.toLowerCase().includes(assignmentSearch.toLowerCase()) ||
-      u.email.toLowerCase().includes(assignmentSearch.toLowerCase())
-  );
-
-  const filteredSubjects = subjects.filter(
-    (s) =>
-      s.name.toLowerCase().includes(assignmentSearch.toLowerCase()) ||
-      s.code.toLowerCase().includes(assignmentSearch.toLowerCase())
-  );
-
-  const filteredFaculty = facultyList.filter(
-    (f) =>
-      !assigningSubject?.assigned_staff?.some((a: any) => a.staff_email === f.email) &&
-      (f.name.toLowerCase().includes(facultySearch.toLowerCase()) ||
-        f.email.toLowerCase().includes(facultySearch.toLowerCase()))
+      u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+      u.email.toLowerCase().includes(userSearch.toLowerCase())
   );
 
   return (
