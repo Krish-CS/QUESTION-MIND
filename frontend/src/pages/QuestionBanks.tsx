@@ -72,7 +72,7 @@ export default function QuestionBanks() {
     try {
       const promises: Promise<any>[] = [
         syllabusApi.getAll(),
-        questionBankApi.getAll({ own_only: false }),
+        questionBankApi.getAll({ own_only: true }),
         subjectsApi.getAll(),
       ];
 
@@ -212,11 +212,11 @@ export default function QuestionBanks() {
     }
   };
 
-  const sanitizePartConfig = (p: PartConfiguration): any => {
+  const sanitizePartConfig = (p: PartConfiguration, includeBTLDist: boolean = true): any => {
     const qCount = String(p.questionCount) === '' ? 0 : Number(p.questionCount || 0);
     const marks = String(p.marksPerQuestion) === '' ? 0 : Number(p.marksPerQuestion || 0);
     const mcq = String(p.mcqCount) === '' ? 0 : Number(p.mcqCount || 0);
-    const dist = p.btlDistribution
+    const dist = (includeBTLDist && p.btlDistribution)
       ? Object.fromEntries(
         Object.entries(p.btlDistribution).map(([lvl, val]) => [
           lvl,
@@ -239,7 +239,7 @@ export default function QuestionBanks() {
     setPatternSaving(true);
     try {
       const hasUnitCfgs = Object.keys(localUnitCfg).length > 0;
-      const sanitizedParts = localParts.map(sanitizePartConfig);
+      const sanitizedParts = localParts.map(p => sanitizePartConfig(p, btlCustomization));
 
       let unitCfgsToSave: Record<string, any> | null = null;
       if (hasUnitCfgs) {
@@ -261,7 +261,7 @@ export default function QuestionBanks() {
                     )
                   )
                   : {};
-                return sanitizePartConfig({ ...p, mcqCount: mcq, btlDistribution: dist });
+                return sanitizePartConfig({ ...p, mcqCount: mcq, btlDistribution: dist }, btlCustomization);
               })];
             })
           );
@@ -269,7 +269,7 @@ export default function QuestionBanks() {
           unitCfgsToSave = Object.fromEntries(
             Object.entries(localUnitCfg).map(([unitNum, parts]) => [
               unitNum,
-              parts.map(sanitizePartConfig)
+              parts.map(p => sanitizePartConfig(p, btlCustomization))
             ])
           );
         }
@@ -321,7 +321,43 @@ export default function QuestionBanks() {
     setLocalParts(prev => {
       const next = [...prev];
       const cur = next[idx].allowedBTLLevels || [];
-      next[idx] = { ...next[idx], allowedBTLLevels: cur.includes(level) ? cur.filter(l => l !== level) : [...cur, level] };
+      if (cur.includes(level)) {
+        const dist = { ...(next[idx].btlDistribution || {}) };
+        delete dist[level];
+        next[idx] = { ...next[idx], allowedBTLLevels: cur.filter(l => l !== level), btlDistribution: dist };
+      } else {
+        next[idx] = { ...next[idx], allowedBTLLevels: [...cur, level] };
+      }
+      return next;
+    });
+    setPatternDirty(true);
+    setPatternSaved(false);
+  };
+
+  const updateLocalPartBTLDist = (idx: number, level: BloomLevel, count: any) => {
+    setLocalParts(prev => {
+      const next = [...prev];
+      const pc = next[idx];
+      const existing = pc.btlDistribution || {};
+      const levels = pc.allowedBTLLevels || [];
+      const qCount = String(pc.questionCount) === '' ? 0 : Number(pc.questionCount || 0);
+      const newCount = String(count) === '' ? 0 : Number(count);
+      
+      const newSum = levels.reduce((s, btl) => {
+        const val = btl === level ? newCount : (String(existing[btl]) === '' ? 0 : Number(existing[btl] || 0));
+        return s + val;
+      }, 0);
+      
+      if (newSum > qCount) {
+        setBtlWarning(`Cannot exceed ${qCount} questions. Adjust other values first.`);
+        setTimeout(() => setBtlWarning(''), 4000);
+        return prev;
+      }
+      
+      next[idx] = {
+        ...next[idx],
+        btlDistribution: { ...existing, [level]: count },
+      };
       return next;
     });
     setPatternDirty(true);
@@ -433,13 +469,13 @@ export default function QuestionBanks() {
     const hasUnitCfg = qbMode === 'individual' && localUnitCfg
       && Object.keys(localUnitCfg).length > 0;
 
-    const sanitizedParts = localParts.map(sanitizePartConfig);
+    const sanitizedParts = localParts.map(p => sanitizePartConfig(p, btlCustomization));
 
     const unitCfg = qbMode === 'combined' ? undefined : (hasUnitCfg
       ? Object.fromEntries(
         Object.entries(localUnitCfg)
           .filter(([unitNum]) => selectedUnitIds.includes(Number(unitNum)))
-          .map(([unitNum, parts]) => [unitNum, parts.map(sanitizePartConfig)])
+          .map(([unitNum, parts]) => [unitNum, parts.map(p => sanitizePartConfig(p, btlCustomization))])
       )
       : undefined);
 
@@ -512,34 +548,47 @@ export default function QuestionBanks() {
   };
 
   const handleDirectShare = async (bank: QuestionBank) => {
-    setGlobalLoading(true, 'Downloading Excel to share');
+    setGlobalLoading(true, 'Preparing to share...');
     try {
       const response = await questionBankApi.download(bank.id);
       const blob = new Blob([response.data], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
       const fileName = `${bank.title || 'question_bank'}.xlsx`;
-
       const file = new File([blob], fileName, {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: bank.title || 'Question Bank',
-          text: `Here is the Question Bank Excel file for: ${bank.title || 'Subject'}`
-        });
-      } else {
-        // Fallback for browsers that don't support file sharing
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        window.URL.revokeObjectURL(url);
-        alert("Excel file downloaded!\n\nYour browser doesn't support direct file sharing. Please share the downloaded file manually via WhatsApp or Email.");
+      // Try native file sharing (works on Android Chrome, iOS Safari, some desktop browsers)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: bank.title || 'Question Bank',
+            text: `Question Bank: ${bank.title || 'Question Bank'}`,
+          });
+          // Shared successfully — nothing else needed
+          return;
+        } catch (shareErr: any) {
+          if (shareErr.name === 'AbortError') {
+            // User cancelled — that's fine
+            return;
+          }
+          // Share failed for another reason — fall through to download fallback
+          console.warn('navigator.share failed, falling back to download:', shareErr);
+        }
       }
+
+      // Fallback: trigger a download (desktop browsers, unsupported mobile browsers)
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      alert("Excel file downloaded!\n\nYour browser doesn't support direct file sharing. Please share the downloaded file manually via WhatsApp or Email.");
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error('Sharing failed:', err);
@@ -1150,9 +1199,22 @@ export default function QuestionBanks() {
             {/* ── Pattern Summary Table (Combined mode only) ── */}
             {qbMode === 'combined' && selectedSubject && localParts.length > 0 && (
               <div className="bg-white rounded-lg border-2 border-pink-200 dark:bg-slate-900 dark:border-pink-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="flex items-center justify-between px-4 py-3 bg-pink-50 dark:bg-pink-900/20 border-b border-pink-100 dark:border-pink-900">
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">📊 Questions to be Generated</h3>
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col md:flex-row md:items-center justify-between px-4 py-3 bg-pink-50 dark:bg-pink-900/20 border-b border-pink-100 dark:border-pink-900 gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">📊 Questions to be Generated</h3>
+                    <button
+                      type="button"
+                      onClick={() => setBtlCustomization(prev => !prev)}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm ${btlCustomization
+                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/40 scale-105'
+                          : 'bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 hover:border-purple-300 dark:hover:border-purple-600 hover:text-purple-700 dark:hover:text-purple-300'
+                        }`}
+                    >
+                      <Settings className="w-4 h-4" />
+                      BTL Customization&nbsp;<span className={`px-1.5 py-0.5 rounded-md text-xs font-extrabold ${btlCustomization ? 'bg-white/20' : 'bg-slate-300/60 dark:bg-slate-600/60'}`}>{btlCustomization ? 'ON' : 'OFF'}</span>
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
                     {patternSaved && (
                       <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                         <Check className="w-3.5 h-3.5" /> Saved
@@ -1264,7 +1326,38 @@ export default function QuestionBanks() {
                                   const active = levels.includes(btl);
                                   const kNum = btl.replace('BTL', '');
                                   const count = dist[btl];
-                                  return (
+                                  return btlCustomization ? (
+                                    <div
+                                      key={btl}
+                                      onClick={() => { if (isEditingPattern) toggleLocalPartBTL(idx, btl); }}
+                                      title={isEditingPattern ? (active ? `Disable ${btl}` : `Enable ${btl}`) : undefined}
+                                      className={`flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg font-bold border transition-all ${isEditingPattern ? 'cursor-pointer hover:scale-105 active:scale-95' : ''
+                                        } ${active
+                                          ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-700'
+                                          : `bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 ${isEditingPattern ? 'opacity-40 hover:opacity-70' : 'opacity-40'}`
+                                        }`}
+                                    >
+                                      <span className={`text-xs font-bold ${active ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400'}`}>
+                                        {btl}/K{kNum}
+                                      </span>
+                                      {isEditingPattern && active ? (
+                                        <input
+                                          type="number" min={0}
+                                          value={count ?? ''}
+                                          onClick={e => e.stopPropagation()}
+                                          onChange={e => updateLocalPartBTLDist(idx, btl, e.target.value === '' ? '' : Number(e.target.value))}
+                                          className="w-12 text-center text-sm font-bold border border-purple-300 dark:border-purple-700 rounded bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400 py-0.5"
+                                          placeholder="0"
+                                        />
+                                      ) : isEditingPattern && !active ? (
+                                        <span className="text-xs text-slate-400 font-normal">+ add</span>
+                                      ) : (
+                                        <span className={`text-sm font-bold ${active ? 'text-purple-700 dark:text-purple-300' : 'text-slate-400'}`}>
+                                          {active ? (count || '—') : '—'}
+                                        </span>
+                                      )}
+                                    </div>
+                                  ) : (
                                     <button
                                       key={btl}
                                       type="button"
@@ -1276,7 +1369,7 @@ export default function QuestionBanks() {
                                         } ${!isEditingPattern ? 'cursor-default' : 'cursor-pointer hover:opacity-80'}`}
                                     >
                                       {btl}<span className="opacity-60">/K{kNum}</span>
-                                      {active && hasDist && (count || 0) > 0 && (
+                                      {btlCustomization && active && hasDist && (count || 0) > 0 && (
                                         <span className="ml-0.5 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-full px-1 font-bold text-[10px]">{count}</span>
                                       )}
                                     </button>
@@ -1440,6 +1533,7 @@ export default function QuestionBanks() {
           </div>
         </div>
       )}
+
 
     </div>
   );

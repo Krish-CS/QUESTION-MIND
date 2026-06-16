@@ -9,34 +9,6 @@ from ..services.auth import hash_password, verify_password, create_access_token,
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/register", response_model=TokenResponse)
-async def register(data: UserCreate, db: Session = Depends(get_db)):
-    # Check if user exists
-    existing = db.query(User).filter(User.email == data.email).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Create user
-    user = User(
-        id=str(uuid.uuid4()),
-        email=data.email,
-        password=hash_password(data.password),
-        name=data.name,
-        role=UserRole(data.role.value),
-        department=data.department
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    
-    # Generate token
-    token = create_access_token({"sub": user.id, "email": user.email, "role": user.role})
-    
-    return TokenResponse(
-        access_token=token,
-        user=UserResponse.model_validate(user)
-    )
-
 @router.post("/login", response_model=TokenResponse)
 async def login(data: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
@@ -103,6 +75,9 @@ async def create_user(
     admin: User = Depends(require_role(UserRole.ADMIN.value))
 ):
     """Admin only: create a single user manually"""
+    if data.role.value == UserRole.ADMIN.value:
+        raise HTTPException(status_code=400, detail="Cannot assign or create ADMIN role")
+
     existing = db.query(User).filter(User.email == data.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -157,6 +132,10 @@ async def update_user(
         user_to_update.email = data.email
         
     if data.role is not None and data.role.value != user_to_update.role:
+        if data.role.value == UserRole.ADMIN.value:
+            raise HTTPException(status_code=400, detail="Cannot assign or create ADMIN role")
+        if user_to_update.role == UserRole.ADMIN.value:
+            raise HTTPException(status_code=400, detail="The single admin role cannot be changed")
         changes["role"] = (user_to_update.role, data.role.value)
         user_to_update.role = data.role.value
         

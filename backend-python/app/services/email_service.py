@@ -301,6 +301,11 @@ def send_user_welcome_email(recipient_email: str, name: str, password: str, role
                 </table>
               </div>
 
+              <!-- Login Button -->
+              <div style="text-align:center; margin-bottom: 24px;">
+                <a href="https://krish-cs.github.io/QUESTION-MIND-FRONTEND/" style="display:inline-block; background-color:#8b5cf6; color:#ffffff; font-weight:600; font-size:15px; text-decoration:none; padding:12px 24px; border-radius:8px; box-shadow:0 4px 6px rgba(139, 92, 246, 0.25);">Login to Krish Academia</a>
+              </div>
+
               <!-- Security Warning -->
               <div style="margin-top: 24px; padding: 16px; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px;">
                 <p style="margin:0;font-size:13px;color:#1e40af;line-height:1.5;">
@@ -399,6 +404,11 @@ def send_user_update_email(recipient_email: str, name: str, changes: dict) -> bo
                 </table>
               </div>
 
+              <!-- Login Button -->
+              <div style="text-align:center; margin-bottom: 24px;">
+                <a href="https://krish-cs.github.io/QUESTION-MIND-FRONTEND/" style="display:inline-block; background-color:#8b5cf6; color:#ffffff; font-weight:600; font-size:15px; text-decoration:none; padding:12px 24px; border-radius:8px; box-shadow:0 4px 6px rgba(139, 92, 246, 0.25);">Review Your Account</a>
+              </div>
+
               <!-- Admin Contact Warning -->
               <div style="margin-top:24px;padding:16px;background-color:#fef2f2;border-left:4px solid #ef4444;border-radius:8px;">
                 <p style="margin:0;font-size:13px;color:#991b1b;line-height:1.5;">
@@ -480,6 +490,11 @@ def send_user_password_reset_email(recipient_email: str, name: str, new_password
               <p style="margin:0 0 24px;color:#334155;font-size:15px;line-height:1.6;">
                 For security reasons, we strongly recommend logging in and changing this temporary password immediately.
               </p>
+
+              <!-- Login Button -->
+              <div style="text-align:center; margin-bottom: 24px;">
+                <a href="https://krish-cs.github.io/QUESTION-MIND-FRONTEND/" style="display:inline-block; background-color:#8b5cf6; color:#ffffff; font-weight:600; font-size:15px; text-decoration:none; padding:12px 24px; border-radius:8px; box-shadow:0 4px 6px rgba(139, 92, 246, 0.25);">Login Now</a>
+              </div>
             </td>
           </tr>
 

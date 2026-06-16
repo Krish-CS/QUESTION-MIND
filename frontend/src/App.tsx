@@ -5,7 +5,7 @@ import { WifiOff } from 'lucide-react';
 import { useAuthStore } from './lib/store';
 import Layout from './components/Layout';
 import Login from './pages/Login';
-import Register from './pages/Register';
+
 import Dashboard from './pages/Dashboard';
 import Overview from './pages/Overview';
 import Subjects from './pages/Subjects';
@@ -83,7 +83,7 @@ export default function App() {
       <GlobalLoader />
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+
         <Route
           path="/*"
           element={

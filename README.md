@@ -1,79 +1,119 @@
-# Question Mind 🧠
+# Question Mind 🧠 — AI-Powered Question Bank Generator
 
-Question Mind is an AI-powered Question Bank generation system. It automatically parses Syllabus and CDAP documents (PDF, Excel, Docx) and generates categorized question banks using advanced LLMs (Groq, Cerebras, NVIDIA NIM, OpenRouter). 
-
-The platform supports **two** distinct deployment environments with a shared unified database and Google Drive storage mechanism.
+Question Mind is an advanced, academic-focused Question Bank generation platform. It automatically parses course Syllabus and CDAP (Course Delivery Action Plan) documents to generate structurally verified, high-quality question papers and answer keys mapped directly to Bloom's Taxonomy Levels (BTL1–BTL6).
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Project Architecture & Components
 
-### 1. Website Version (`/frontend`)
-- **Frontend**: Built with React, Vite, TailwindCSS, and Zustand.
-- **Backend (`/backend-python`)**: FastAPI server designed to be deployed to Render or Railway.
-- **Connection**: The web frontend communicates with the remote FastAPI server via standard HTTP requests (Axios).
+The system is structured as a decoupled web application with a shared PostgreSQL database, and includes a mobile app wrapper:
+
+```mermaid
+graph TD
+    A[Web Frontend: React + Vite] -->|HTTP / Axios| B[Web Backend: FastAPI]
+    C[Mobile App: Capacitor + React] -->|Chaquopy Java Bridge| D[Local Python Runtime: FastAPI TestClient]
+    B -->|SQLAlchemy| E[Centralized PostgreSQL Instance]
+    D -->|SQLAlchemy| E
+    B -->|OAuth / Requests| F[Google Drive Storage]
+    D -->|OAuth / Requests| F
+```
+
+### 1. Web Version
+* **Frontend (`/frontend`)**: Built with React 18, TypeScript, TailwindCSS, and Zustand. Exposes responsive dashboard layouts, course configurations, pattern blueprints, and question bank viewers.
+* **Backend (`/backend-python`)**: Powered by FastAPI, SQLAlchemy (PostgreSQL), and Uvicorn. Exposes REST endpoints for authentication, subject configuration, document parsing, and AI question generation.
 
 ### 2. Mobile App Version (`/mobile-app`)
-- **Frontend**: A mirrored React frontend packaged into a native Android app using **Capacitor**.
-- **Backend (Native Python)**: Uses **Chaquopy** to bundle the Python backend directly inside the Android app (`android/app/src/main/python`). 
-- **Connection**: The mobile React frontend communicates with the native Python runtime synchronously via a custom Java Bridge (`chaquopyBridge`) calling FastAPI's `TestClient`. No external backend server is required! All Python logic runs directly on the user's phone.
+* **Mirror Frontend**: The React frontend is bundled into a native Android application using **Capacitor**.
+* **Offline-Capable Local Backend**: Uses **Chaquopy** to host the Python runtime inside the Android package. Backend routing is handled locally on the device via FastAPI's `TestClient` bridge, preventing server-unreachable errors while communicating directly with the remote database.
 
-### Shared Infrastructure
-- **Database**: Both the web backend and the mobile native backend connect to a shared, centralized **PostgreSQL** instance hosted on Aiven.
-- **Storage**: File uploads (Excel documents, CDAP PDFs, Images) bypass local filesystem constraints by uploading directly to **Google Drive** using a custom pure-python implementation (`requests` + `rsa`).
-
----
-
-## 🚀 Recent Implementations & Fixes
-
-1. **Native Python Mobile Backend**: Successfully packaged the backend inside the Android app. Solved critical "Server Unreachable" errors by rewriting the native Java bridge to route requests cleanly through FastAPI's `TestClient` object.
-2. **Offline Mode Block**: Integrated `@capacitor/network` into the mobile app to actively monitor internet connectivity. If the device loses internet access, the app immediately blocks navigation and displays a "No Internet Connection" screen, preventing broken database calls.
-3. **Google Drive Integration**: Rewrote the Google Drive Service API so that it relies purely on the standard Python `requests` library and `rsa`. This was done to bypass Android build errors caused by the standard `cryptography` library requiring a Rust compiler.
-4. **Android Build Dependencies**: Configured `build.gradle` to automatically install essential backend packages like `fastapi`, `pydantic-settings`, and `python-jose`. Replaced C-based `bcrypt` with a pure-python `passlib` fallback to guarantee smooth mobile compilation.
-5. **UI Polish**: Cleaned up the `Settings.tsx` interface and removed the confusing "Connection Settings" block, as the Mobile App natively routes to its internal server and does not need a URL.
-6. **Question Bank MCQ Generation**: Resolved an inheritance bug in `INDIVIDUAL FULL CONFIG` mode where the router failed to pass through the correct `mcqCount` to per-unit generators. Added fallback inheritance from global parts data.
-7. **AI LLM Provider Upgrades**: Switched the primary Groq model to `llama-3.3-70b-versatile` to scale past the low 8,000 TPM limit of previous models. Configured HTTP 413 errors to trigger automatic LLM provider fallback.
-8. **Email Branding & Logo Layout**: Standardized the visual logo across all HTML transactional email templates so the gradient pill fully covers the entire "Krish Academia" text. Removed the redundant word "System" from automated email share notifications.
+### 3. Unified Infrastructure
+* **Database**: High-performance PostgreSQL database containing tables for users, subjects, syllabus units, question banks, and staff assignments.
+* **Google Drive Storage**: Uploaded files (Syllabi PDFs, CDAP Excel documents, and Question Bank spreadsheets) are securely uploaded directly to Google Drive via service accounts, bypassing local file persistence limitations on ephemeral deployments (like Render or Android packages).
 
 ---
 
-## 🛠️ How to Run and Test
+## 👥 Roles & Access System
 
-### 📱 Mobile App
-Please refer to the dedicated [MOBILE_APP_GUIDE.md](MOBILE_APP_GUIDE.md) for full instructions on building, running, and syncing the native Android app using Capacitor and Chaquopy.
+The platform distinguishes three primary roles to balance management with operational independence:
 
-### 🌐 Web Application
-To run the Web Application locally:
+### 1. Admin (System Monitor & Creator)
+* **Role**: The Admin controls account creation, subject allocation, and system monitoring.
+* **Account Provisioning & Auto-Emailing**: The Admin manually creates HOD and Faculty user accounts. Upon creation, the backend **instantly sends an automated HTML welcome email** containing the username, temporary password, department, and direct system access link via SMTP.
+* **Permissions Control**: Admin assigns staff members to specific subjects, configuring flags like `canEditPattern`, `canGenerateQuestions`, and `canApprove`.
+* **System Monitoring**: Admin monitors overall activities and staff statuses across departments.
 
-1. **Start the Backend:**
+### 2. Head of Department (HOD)
+* **Role**: Independent operator.
+* **Operations**: HODs function independently without depending on Admin intervention or staff hierarchy. They manage their assigned subjects, upload syllabi, configure question patterns, and generate/approve question banks freely.
+
+### 3. Faculty
+* **Role**: Independent operator.
+* **Operations**: Faculty members have equal independence for their assigned subjects. They can configure course plans, create blueprint patterns, generate question banks, and export answers without hierarchical bottlenecks.
+
+> [!NOTE]  
+> HOD and Faculty are independent user profiles. They run their workflows separately. The Admin role exists to configure their initial access rights, assign subjects, and monitor overall utilization.
+
+---
+
+## 📧 Emailing & Communications
+
+The emailing system is highly critical for onboarding and sharing. All transactional emails are styled with custom HTML layouts:
+
+1. **User Welcome Email (`send_user_welcome_email`)**: Triggered immediately when the Admin creates a user. Delivers secure credentials and login pointers.
+2. **Question Bank Sharing (`send_share_email`)**: Allows sharing generated question banks and answer keys directly to other staff members' emails, automatically attaching the formatted Excel spreadsheet dynamically.
+3. **Password Resets & Updates**: Sends immediate alerts and new credentials on request.
+
+---
+
+## 🎯 Bloom's Taxonomy (BTL) & AI Generation
+
+Rather than applying post-generation metadata tagging (which leads to mismatches between a question's content and its label), Question Mind employs a **Slot-Based Pre-Allocation Strategy**:
+
+1. **Blueprint Slots**: The user configures a target BTL distribution (e.g. 3 x BTL2, 2 x BTL3, 1 x BTL6). The backend maps these to a list of exact question slots.
+2. **Prompt Verb Injection**: Each slot dynamically requests Bloom's Taxonomy cognitive action verbs matching that level (e.g., *explain/describe* for BTL2; *calculate/apply* for BTL3; *design/formulate* for BTL6).
+3. **Pre-Stamping**: Parsed questions are automatically aligned with slot parameters by index inside `_finalise`, ensuring 100% taxonomy-content alignment.
+4. **LLM Provider Fallback Chain**: Generation operates with an automatic fallback chain to ensure maximum uptime:
+   ```
+   Groq (Llama-3.3-70b) ──> Cerebras (gpt-oss-120b) ──> NVIDIA NIM ──> Gemini 2.5 Flash
+   ```
+
+---
+
+## 🧹 Cleaned-Up Features
+To maximize server-side security and streamline the code, we removed the client-side API key and preference stores:
+* **Files Deleted**: `ApiKeyInput.tsx`, `ProviderSelector.tsx`, `aiSettingsApi.ts`, `settingsStore.ts`, and `ai_settings.py`.
+* **Rationale**: Custom client-supplied keys are bypassed in favor of centrally managed, secure environment keys loaded on the backend (Groq, Cerebras, NVIDIA, Gemini, OpenRouter), preventing potential key exposure and ensuring consistent configuration.
+
+To further enforce security and adhere to the strict Admin-provisioning model, open registration features were entirely removed:
+* **Files Deleted**: `Register.tsx`
+* **Code Cleaned**: Removed open `/register` routes from the frontend router (`App.tsx`) and client API layers (`api.ts`).
+* **Rationale**: The system dictates that only the Admin creates new accounts. Removing self-registration endpoints prevents unauthorized account creation and guarantees the integrity of the role-based system.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+* Python 3.11+
+* Node.js 18+
+* PostgreSQL instance
+* Google Drive Service Account credentials (.json file)
+
+### 2. Running Web Backend
 ```bash
 cd backend-python
 python -m venv venv
-venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-2. **Start the Frontend:**
+### 3. Running Web Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
----
-
-## 🔑 Environment Variables
-All secret keys and credentials (including Google Drive Service Account JSON) are securely tracked and loaded dynamically by Pydantic. If you need to update them, check the `.env` file located inside `mobile-app/android/app/src/main/python/`.
-
----
-
-## 📡 Supported AI Providers
-The platform supports real-time swapping and custom API key configuration for the following providers via the Settings tab:
-- **Cerebras**: Ultra-fast wafer-scale inference.
-- **Groq**: LPU architecture for near-instant Llama generation.
-- **NVIDIA NIM**: High-quality enterprise LLMs.
-- **OpenRouter**: Access to numerous open-source models dynamically.
 
 ---
 

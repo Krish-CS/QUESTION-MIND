@@ -71,10 +71,10 @@ export default function Overview() {
       setLoading(true);
       setError(null);
 
-      // Fetch subjects with staff assignments and all question banks (HOD view)
+      // Fetch the current user's own subjects and question banks
       const [subjectsRes, banksRes] = await Promise.all([
         subjectsApi.getAll(),
-        questionBankApi.getAll({ own_only: false }),
+        questionBankApi.getAll({ own_only: true }),
       ]);
 
       const subjectsData = subjectsRes.data;

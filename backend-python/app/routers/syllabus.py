@@ -21,20 +21,32 @@ CDAP_UPLOAD_DIR = "uploads/cdap"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(CDAP_UPLOAD_DIR, exist_ok=True)
 
+def _own_subject_or_404(db: Session, subject_id: str, user: User) -> Subject:
+    """Return the subject only if the current user owns it, else 404."""
+    subject = db.query(Subject).filter(Subject.id == subject_id).first()
+    if not subject or subject.created_by != user.id:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    return subject
+
 def can_upload_syllabus(db: Session, user: User, subject_id: str) -> bool:
-    """Check if user can upload syllabus for this subject"""
-    # HOD and Faculty can always upload
-    if user.role in [UserRole.HOD, UserRole.FACULTY]:
-        return True
-    
-    return False
+    """A user may only upload for a subject they created."""
+    subject = db.query(Subject).filter(
+        Subject.id == subject_id, Subject.created_by == user.id
+    ).first()
+    return subject is not None
 
 @router.get("", response_model=List[SyllabusResponse])
 async def get_all_syllabus(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    return db.query(Syllabus).all()
+    # Per-user isolation: only syllabi belonging to subjects the user created
+    return (
+        db.query(Syllabus)
+        .join(Subject, Syllabus.subject_id == Subject.id)
+        .filter(Subject.created_by == user.id)
+        .all()
+    )
 
 @router.get("/subject/{subject_id}", response_model=SyllabusResponse)
 async def get_syllabus_by_subject(
@@ -42,6 +54,7 @@ async def get_syllabus_by_subject(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
+    _own_subject_or_404(db, subject_id, user)
     syllabus = db.query(Syllabus).filter(Syllabus.subject_id == subject_id).first()
     if not syllabus:
         raise HTTPException(status_code=404, detail="Syllabus not found")
@@ -56,6 +69,7 @@ async def get_syllabus(
     syllabus = db.query(Syllabus).filter(Syllabus.id == syllabus_id).first()
     if not syllabus:
         raise HTTPException(status_code=404, detail="Syllabus not found")
+    _own_subject_or_404(db, syllabus.subject_id, user)
     return syllabus
 
 @router.post("/upload/{subject_id}", response_model=SyllabusResponse)
@@ -118,7 +132,8 @@ async def update_syllabus(
     syllabus = db.query(Syllabus).filter(Syllabus.id == syllabus_id).first()
     if not syllabus:
         raise HTTPException(status_code=404, detail="Syllabus not found")
-    
+    _own_subject_or_404(db, syllabus.subject_id, user)
+
     update_data = data.model_dump(exclude_unset=True)
     if 'units' in update_data:
         update_data['units'] = [u.model_dump() if hasattr(u, 'model_dump') else u for u in update_data['units']]
@@ -139,7 +154,8 @@ async def delete_syllabus(
     syllabus = db.query(Syllabus).filter(Syllabus.id == syllabus_id).first()
     if not syllabus:
         raise HTTPException(status_code=404, detail="Syllabus not found")
-    
+    _own_subject_or_404(db, syllabus.subject_id, user)
+
     # Delete associated question banks first (Cascade Delete manual)
     db.query(QuestionBank).filter(QuestionBank.syllabus_id == syllabus_id).delete()
     
@@ -200,6 +216,7 @@ async def get_cdap_by_subject(
     user: User = Depends(get_current_user)
 ):
     """Get CDAP for a subject"""
+    _own_subject_or_404(db, subject_id, user)
     cdap = db.query(CDAP).filter(CDAP.subject_id == subject_id).first()
     if not cdap:
         raise HTTPException(status_code=404, detail="CDAP not found for this subject")
@@ -283,6 +300,7 @@ async def delete_cdap(
     user: User = Depends(get_current_user)
 ):
     """Delete CDAP for a subject"""
+    _own_subject_or_404(db, subject_id, user)
     cdap = db.query(CDAP).filter(CDAP.subject_id == subject_id).first()
     if not cdap:
         raise HTTPException(status_code=404, detail="CDAP not found")
@@ -307,6 +325,7 @@ async def update_cdap(
     user: User = Depends(get_current_user)
 ):
     """Update CDAP for a subject"""
+    _own_subject_or_404(db, subject_id, user)
     try:
         cdap = db.query(CDAP).filter(CDAP.subject_id == subject_id).first()
         if not cdap:

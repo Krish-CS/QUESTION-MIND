@@ -16,7 +16,8 @@ async def get_all_subjects(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    query = db.query(Subject)
+    # Per-user isolation: a user only ever sees the subjects they created
+    query = db.query(Subject).filter(Subject.created_by == user.id)
     if department:
         query = query.filter(Subject.department == department)
     subjects = query.all()
@@ -51,7 +52,7 @@ async def get_subject(
     user: User = Depends(get_current_user)
 ):
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
-    if not subject:
+    if not subject or subject.created_by != user.id:
         raise HTTPException(status_code=404, detail="Subject not found")
     return subject
 
@@ -108,9 +109,9 @@ async def update_subject(
     user: User = Depends(get_current_user)
 ):
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
-    if not subject:
+    if not subject or subject.created_by != user.id:
         raise HTTPException(status_code=404, detail="Subject not found")
-    
+
     # Update fields - explicitly handle each field
     if data.code is not None:
         subject.code = data.code
@@ -150,10 +151,8 @@ async def delete_subject(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    # Any authenticated user can delete subjects now
-    
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
-    if not subject:
+    if not subject or subject.created_by != user.id:
         raise HTTPException(status_code=404, detail="Subject not found")
     
     db.delete(subject)

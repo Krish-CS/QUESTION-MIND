@@ -13,10 +13,13 @@ class Settings(BaseSettings):
     JWT_EXPIRATION_HOURS: int = 24
 
     # AI Services (set at least one)
+    GEMINI_API_KEY: str = ""
     NVIDIA_API_KEY: str = ""
     CEREBRAS_API_KEY: str = ""
     CEREBRAS_API_KEY_2: str = ""
     GROQ_API_KEY: str = ""
+    GROQ_API_KEY_2: str = ""
+    GROQ_API_KEY_3: str = ""
     OPENROUTER_API_KEY: str = ""
 
     # CORS — allowed frontend origins

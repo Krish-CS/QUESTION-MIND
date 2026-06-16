@@ -91,16 +91,16 @@ async def get_all_question_banks(
     user: User = Depends(get_current_user)
 ):
     query = db.query(QuestionBank).outerjoin(User, QuestionBank.generated_by == User.id)
-    
+
     if status:
         query = query.filter(QuestionBank.status == status)
     if subject_id:
         query = query.filter(QuestionBank.subject_id == subject_id)
-    
-    # Both HOD and Staff see their own question banks by default, unless own_only is False
-    if own_only:
-        query = query.filter(QuestionBank.generated_by == user.id)
-    
+
+    # Per-user isolation: a user only ever sees the question banks they generated.
+    # The own_only flag is intentionally ignored — scoping is always enforced.
+    query = query.filter(QuestionBank.generated_by == user.id)
+
     banks = query.order_by(QuestionBank.created_at.desc()).all()
     
     # Add staff names
@@ -121,11 +121,18 @@ async def get_pattern(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
+    # Ownership gate: the subject must belong to the current user
+    owned_subject = db.query(Subject).filter(
+        Subject.id == subject_id, Subject.created_by == user.id
+    ).first()
+    if not owned_subject:
+        raise HTTPException(status_code=404, detail="Subject not found")
+
     pattern = db.query(QuestionPattern).filter(QuestionPattern.subject_id == subject_id).first()
     if not pattern:
         # Fall back to subject.configuration so pages stay in sync even before
         # a dedicated pattern row has been created
-        subject = db.query(Subject).filter(Subject.id == subject_id).first()
+        subject = owned_subject
         if subject and subject.configuration and subject.configuration.get("parts"):
             # Synthesize a pattern-like response from the subject configuration
             return {
@@ -148,13 +155,9 @@ async def update_pattern(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    # Check permission - HOD and Faculty have full permissions
-    if user.role not in [UserRole.HOD, UserRole.FACULTY]:
-        raise HTTPException(status_code=403, detail="No permission to edit pattern")
-    
-    # Check subject exists
+    # Check subject exists AND belongs to the current user
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
-    if not subject:
+    if not subject or subject.created_by != user.id:
         raise HTTPException(status_code=404, detail="Subject not found")
     
     # Get or create pattern
@@ -199,14 +202,14 @@ async def generate_questions(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    # Get subject
+    # Get subject (must belong to the current user)
     subject = db.query(Subject).filter(Subject.id == data.subject_id).first()
-    if not subject:
+    if not subject or subject.created_by != user.id:
         raise HTTPException(status_code=404, detail="Subject not found")
-    
-    # Get syllabus
+
+    # Get syllabus (must belong to the same owned subject)
     syllabus = db.query(Syllabus).filter(Syllabus.id == data.syllabus_id).first()
-    if not syllabus:
+    if not syllabus or syllabus.subject_id != subject.id:
         raise HTTPException(status_code=404, detail="Syllabus not found")
     
     # Get CDAP for Part 1/Part 2 topic segregation
@@ -477,9 +480,9 @@ async def update_questions(
     if not qb:
         raise HTTPException(status_code=404, detail="Question bank not found")
 
-    # Only the creator, HOD, or Faculty can edit questions
-    if qb.generated_by != user.id and user.role not in [UserRole.HOD, UserRole.FACULTY]:
-        raise HTTPException(status_code=403, detail="You don't have permission to edit this question bank")
+    # Per-user isolation: only the creator may edit their question bank
+    if qb.generated_by != user.id:
+        raise HTTPException(status_code=404, detail="Question bank not found")
 
     # Save updated questions
     questions_dict = data.questions if isinstance(data.questions, dict) else dict(data.questions)
@@ -540,7 +543,7 @@ async def get_question_bank(
     user: User = Depends(get_current_user)
 ):
     qb = db.query(QuestionBank).filter(QuestionBank.id == qb_id).first()
-    if not qb:
+    if not qb or qb.generated_by != user.id:
         raise HTTPException(status_code=404, detail="Question bank not found")
     return qb
 
@@ -551,9 +554,9 @@ async def download_excel(
     user: User = Depends(get_current_user)
 ):
     qb = db.query(QuestionBank).filter(QuestionBank.id == qb_id).first()
-    if not qb:
+    if not qb or qb.generated_by != user.id:
         raise HTTPException(status_code=404, detail="Question bank not found")
-    
+
     excel_path = qb.excel_path
     if not excel_path or not os.path.exists(excel_path):
         # Regenerate the Excel file on the fly if it was deleted from ephemeral disk
@@ -638,9 +641,9 @@ async def share_question_bank(
     if not qb:
         raise HTTPException(status_code=404, detail="Question bank not found")
 
-    # Only creator, HOD, or Faculty can share
-    if qb.generated_by != user.id and user.role not in [UserRole.HOD, UserRole.FACULTY]:
-        raise HTTPException(status_code=403, detail="Only the creator or HOD can share this question bank")
+    # Per-user isolation: only the creator may share their question bank
+    if qb.generated_by != user.id:
+        raise HTTPException(status_code=404, detail="Question bank not found")
 
     recipient_emails: list = data.get("recipient_emails", [])
     if not recipient_emails:
@@ -686,9 +689,9 @@ async def delete_question_bank(
     if not qb:
         raise HTTPException(status_code=404, detail="Question bank not found")
     
-    # Only creator, HOD, or Faculty can delete
-    if qb.generated_by != user.id and user.role not in [UserRole.HOD, UserRole.FACULTY]:
-        raise HTTPException(status_code=403, detail="No permission to delete")
+    # Per-user isolation: only the creator may delete their question bank
+    if qb.generated_by != user.id:
+        raise HTTPException(status_code=404, detail="Question bank not found")
     
     db.delete(qb)
     db.commit()

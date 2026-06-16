@@ -639,8 +639,8 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <label className="label">Role</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['FACULTY', 'HOD', 'ADMIN'].map((role) => (
+                <div className="grid grid-cols-2 gap-2">
+                  {['FACULTY', 'HOD'].map((role) => (
                     <button
                       key={role}
                       type="button"
@@ -696,21 +696,27 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <label className="label">Role</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['FACULTY', 'HOD', 'ADMIN'].map((role) => (
-                    <button
-                      key={role}
-                      type="button"
-                      onClick={() => setEditRole(role)}
-                      className={`p-3 rounded-lg border text-sm transition-all font-medium ${editRole === role
-                        ? 'bg-pink-50 border-pink-300 text-pink-700 shadow-sm dark:bg-pink-900/30 dark:border-pink-700 dark:text-pink-300'
-                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
-                        }`}
-                    >
-                      {role}
-                    </button>
-                  ))}
-                </div>
+                {editingUser?.role === 'ADMIN' ? (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800 text-sm font-bold text-center">
+                    ADMIN (Cannot be modified)
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    {['FACULTY', 'HOD'].map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => setEditRole(role)}
+                        className={`p-3 rounded-lg border text-sm transition-all font-medium ${editRole === role
+                          ? 'bg-pink-50 border-pink-300 text-pink-700 shadow-sm dark:bg-pink-900/30 dark:border-pink-700 dark:text-pink-300'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
+                          }`}
+                      >
+                        {role}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="label">Department</label>

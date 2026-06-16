@@ -60,7 +60,7 @@ def _log(tag: str, msg: str):
 
 
 class AIService:
-    """AI Service with automatic provider fallback: Groq → Cerebras → NVIDIA → OpenRouter"""
+    """AI Service with automatic provider fallback: Groq → Cerebras → NVIDIA → Gemini (stable last resort)"""
 
     # HTTP codes that trigger provider fallback (rate limit, overload, model not found, payload too large)
     FALLBACK_STATUS_CODES = {404, 413, 429, 503, 529}
@@ -72,8 +72,7 @@ class AIService:
         # Build ordered provider chain from available API keys
         self.provider_chain: List[Dict] = []
 
-        # Priority 1: Groq — llama-3.3-70b-versatile (60K TPM, handles large prompts)
-        # NOTE: gpt-oss-20b only has 8K TPM limit which is too low for our prompts (~8500 tokens)
+        # Priority 1: Groq — llama-3.3-70b-versatile (60K TPM, handles large prompts, very fast)
         if settings.GROQ_API_KEY:
             self.provider_chain.append({
                 "name": "groq",
@@ -83,7 +82,25 @@ class AIService:
                 "max_tokens": 8000,
             })
 
-        # Priority 2: Cerebras key 1 — gpt-oss-120b (only GPT model on Cerebras)
+        if settings.GROQ_API_KEY_2:
+            self.provider_chain.append({
+                "name": "groq-2",
+                "api_key": settings.GROQ_API_KEY_2,
+                "base_url": "https://api.groq.com/openai/v1",
+                "model": "llama-3.3-70b-versatile",
+                "max_tokens": 8000,
+            })
+
+        if settings.GROQ_API_KEY_3:
+            self.provider_chain.append({
+                "name": "groq-3",
+                "api_key": settings.GROQ_API_KEY_3,
+                "base_url": "https://api.groq.com/openai/v1",
+                "model": "llama-3.3-70b-versatile",
+                "max_tokens": 8000,
+            })
+
+        # Priority 2: Cerebras key 1 — gpt-oss-120b (ultra-fast inference)
         if settings.CEREBRAS_API_KEY:
             self.provider_chain.append({
                 "name": "cerebras",
@@ -113,7 +130,7 @@ class AIService:
                 "max_tokens": 4096,
             })
 
-        # Priority 5: OpenRouter (last resort)
+        # Priority 5: OpenRouter (mid-range fallback)
         if settings.OPENROUTER_API_KEY:
             self.provider_chain.append({
                 "name": "openrouter",
@@ -121,6 +138,24 @@ class AIService:
                 "base_url": "https://openrouter.ai/api/v1",
                 "model": "openai/gpt-oss-20b",  # GPT-OSS 20B via OpenRouter
                 "max_tokens": 8000,
+            })
+
+        # Priority 6 & 7: Google Gemini (LAST — stable but slower, subject to rate limits)
+        # Reliable guarantee that generation succeeds even if all others are exhausted.
+        if settings.GEMINI_API_KEY:
+            self.provider_chain.append({
+                "name": "gemini",
+                "api_key": settings.GEMINI_API_KEY,
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "model": "gemini-2.5-flash",
+                "max_tokens": 8192,
+            })
+            self.provider_chain.append({
+                "name": "gemini-lite",
+                "api_key": settings.GEMINI_API_KEY,
+                "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+                "model": "gemini-2.5-flash-lite",
+                "max_tokens": 8192,
             })
 
         # Keep a convenience shortcut for the primary provider (first in chain)
@@ -304,9 +339,6 @@ class AIService:
 
                 return content   # ✅ success
 
-            except httpx.TimeoutException:
-                _log("AI", f"⏰  {p_name.upper()} timed out after 120s — trying next provider")
-                continue
             except Exception as e:
                 _log("AI", f"💥  {p_name.upper()} unexpected error: {type(e).__name__}: {e} — trying next provider")
                 continue
@@ -322,11 +354,13 @@ class AIService:
         cdap_units: Optional[List[Dict]] = None
     ) -> List[Dict]:
         """
-        Unit-assignment strategy for even topic coverage:
+        Unit-assignment strategy with Slot-based exact BTL mapping:
           1. Pre-assign questions to units deterministically (round-robin).
           2. Group units into focused chunks — no unit split across chunks.
-          3. Each AI call owns specific units with exact counts → guaranteed coverage.
-          4. After parsing, unit numbers are stamped from assignment (overrides AI field).
+          3. Within each chunk, create detailed Slots specifying which unit, topic,
+             isMCQ, and exact BTL target cognitive level is expected.
+          4. Prompt the AI slot-by-slot with direct verb prescriptions.
+          5. Force-stamp the slot properties on parsed questions in post-processing.
         """
         part_name  = part_config.get("partName", "Part")
         q_count    = part_config.get("questionCount", 5)
@@ -361,7 +395,6 @@ class AIService:
             u_count = ua["count"]
             u_mcq = ua["mcq"]
             if u_count > effective_chunk:
-                # Calculate how to distribute u_count into pieces of at most effective_chunk
                 num_parts = (u_count + effective_chunk - 1) // effective_chunk
                 parts_counts = [u_count // num_parts + (1 if i < (u_count % num_parts) else 0) for i in range(num_parts)]
                 parts_mcqs = self._allocate_exact_counts(parts_counts, u_mcq)
@@ -388,28 +421,103 @@ class AIService:
         _log("AI", f"🔀  Unit-assignment: {q_count} Qs → {num_chunks} chunk(s) | "
                    f"qs/chunk: {[sum(ua['count'] for ua in c) for c in chunks]}")
 
+        # ── BTL budget tracker: allocate exact BTL counts across chunks upfront ──
+        orig_dist    = part_config.get("btlDistribution") or {}
+        allowed_btls = set(part_config.get("allowedBTLLevels") or [])
+        btl_targets  = {
+            k: int(v) for k, v in orig_dist.items()
+            if k in allowed_btls and v and int(v) > 0
+        } if orig_dist else {}
+
+        chunk_btl_budgets: List[Dict[str, int]] = []
+        if btl_targets and num_chunks > 1:
+            chunk_sizes = [sum(ua["count"] for ua in c) for c in chunks]
+            for level, level_total in btl_targets.items():
+                per_chunk = self._allocate_exact_counts(chunk_sizes, level_total)
+                for ci, cnt in enumerate(per_chunk):
+                    if len(chunk_btl_budgets) <= ci:
+                        chunk_btl_budgets.append({})
+                    if cnt > 0:
+                        chunk_btl_budgets[ci][level] = cnt
+        elif btl_targets and num_chunks == 1:
+            chunk_btl_budgets = [dict(btl_targets)]
+        else:
+            chunk_btl_budgets = [{} for _ in chunks]
+
+        while len(chunk_btl_budgets) < num_chunks:
+            chunk_btl_budgets.append({})
+
+        _log("AI", f"🎯  BTL budget per chunk: {chunk_btl_budgets}")
+
         all_questions: List[Dict] = []
 
         for chunk_idx, chunk_units in enumerate(chunks):
             chunk_total = sum(ua["count"] for ua in chunk_units)
             chunk_mcq   = sum(ua["mcq"]   for ua in chunk_units)
             chunk_desc  = chunk_total - chunk_mcq
+            chunk_btl_dist = chunk_btl_budgets[chunk_idx] or None
 
-            # Scale btlDistribution to match this chunk's question count.
-            # Without scaling, the prompt would demand e.g. BTL1=4q, BTL2=6q but
-            # only need to generate chunk_total (e.g. 5) questions — contradictory.
-            orig_dist    = part_config.get("btlDistribution") or {}
-            allowed_btls = set(part_config.get("allowedBTLLevels") or [])
-            scaled_dist = self._scale_distribution_exact(orig_dist, chunk_total, list(allowed_btls)) if orig_dist else None
+            # ── Construct Slot-by-Slot Configurations for this Chunk ──
+            mcq_slots = []
+            desc_slots = []
+            for ua in chunk_units:
+                u_num = ua["unit"].get("unitNumber", 1)
+                u_title = ua["unit"].get("title", "")
+                all_topics = self._extract_topics(ua["unit"])
+                part_idx = ua.get("part_index")
+                total_parts = ua.get("total_parts")
+                if part_idx is not None and total_parts is not None and len(all_topics) > 1:
+                    n_topics = len(all_topics)
+                    start = (part_idx * n_topics) // total_parts
+                    end = ((part_idx + 1) * n_topics) // total_parts
+                    chunk_topics = all_topics[start:end]
+                    if not chunk_topics:
+                        chunk_topics = all_topics[:4]
+                    topics = ", ".join(chunk_topics[:8])
+                else:
+                    topics = ", ".join(all_topics[:8])
+
+                for _ in range(ua["mcq"]):
+                    mcq_slots.append({
+                        "unit_num": u_num,
+                        "unit_title": u_title,
+                        "topics": topics,
+                        "is_mcq": True
+                    })
+                for _ in range(ua["count"] - ua["mcq"]):
+                    desc_slots.append({
+                        "unit_num": u_num,
+                        "unit_title": u_title,
+                        "topics": topics,
+                        "is_mcq": False
+                    })
+            slots = mcq_slots + desc_slots
+
+            # Allocate target/allowed BTLs to slots
+            btl_pool = []
+            for level, lvl_cnt in (chunk_btl_dist or {}).items():
+                btl_pool.extend([level] * lvl_cnt)
+            
+            allowed_list = [b for b in btl_levels if b]
+            if not allowed_list:
+                allowed_list = ["BTL1", "BTL2"]
+            while len(btl_pool) < chunk_total:
+                btl_pool.append(allowed_list[len(btl_pool) % len(allowed_list)])
+            btl_pool = btl_pool[:chunk_total]
+            
+            _BTL_ORDER = ["BTL1", "BTL2", "BTL3", "BTL4", "BTL5", "BTL6"]
+            btl_pool.sort(key=lambda b: _BTL_ORDER.index(b) if b in _BTL_ORDER else 99)
+            
+            for idx, slot in enumerate(slots):
+                slot["btl"] = btl_pool[idx]
 
             chunk_config = {
                 **part_config,
                 "questionCount":   chunk_total,
                 "mcqCount":        chunk_mcq,
-                "btlDistribution": scaled_dist,
+                "btlDistribution": chunk_btl_dist,
             }
 
-            # Rotate providers across chunks for load balancing
             prov_idx  = chunk_idx % len(provider_chain)
             prov_name = provider_chain[prov_idx]["name"].upper()
 
@@ -417,14 +525,13 @@ class AIService:
                 f"U{ua['unit'].get('unitNumber','?')}({ua['count']}q)" for ua in chunk_units
             )
             _log("AI", f"📦  Chunk {chunk_idx+1}/{num_chunks} | {unit_summary} "
-                       f"| MCQ:{chunk_mcq} Desc:{chunk_desc} | Provider: {prov_name}")
+                       f"| MCQ:{chunk_mcq} Desc:{chunk_desc} | BTL budget:{chunk_btl_dist} | Provider: {prov_name}")
 
-            prompt = self._build_prompt(chunk_units, chunk_config, subject_name, cdap_units)
+            prompt = self._build_prompt(slots, chunk_config, subject_name, cdap_units)
             _log("AI", f"📝  Prompt length: {len(prompt):,} chars")
 
             content = await self._call_with_fallback(prompt, provider_chain=provider_chain, prov_start_idx=prov_idx)
 
-            # ── First attempt failed: wait briefly and retry with a different lead provider ──
             if content is None:
                 retry_start = (prov_idx + 1) % len(provider_chain) if len(provider_chain) > 1 else 0
                 _log("AI", f"🔄  Chunk {chunk_idx+1}: all providers failed — waiting 5s then retrying...")
@@ -437,11 +544,10 @@ class AIService:
                     "Please try again in a few minutes or try again tomorrow."
                 )
 
-            # ── Parse ─────────────────────────────────────────────────────────
+            # ── Parse and map directly to slots ────────────────────────────────
             try:
-                questions = self._parse_questions(content, chunk_config, cdap_units is not None)
+                questions = self._parse_questions(content, chunk_config, slots, cdap_units is not None)
             except AIServiceError:
-                # Parse failed after all repair attempts — retry the API call once more
                 _log("AI", f"🔄  Chunk {chunk_idx+1}: parse failed — retrying content generation (3s)...")
                 await asyncio.sleep(3)
                 retry_start = (prov_idx + 1) % len(provider_chain) if len(provider_chain) > 1 else 0
@@ -451,24 +557,55 @@ class AIService:
                         f"AI response could not be parsed and retry also failed ({part_name}, "
                         f"chunk {chunk_idx+1}/{num_chunks}). Please try again later."
                     )
-                questions = self._parse_questions(content2, chunk_config, cdap_units is not None)
+                questions = self._parse_questions(content2, chunk_config, slots, cdap_units is not None)
 
-            # Stamp each question with its correct unit number based on assignment
-            q_ptr = 0
-            for ua in chunk_units:
-                unit_num = ua["unit"].get("unitNumber", 1)
-                for _ in range(ua["count"]):
-                    if q_ptr < len(questions):
-                        questions[q_ptr]["unit"] = unit_num
-                        q_ptr += 1
-            _log("AI", f"✅  Chunk {chunk_idx+1}: {len(questions)} questions parsed")
+            _log("AI", f"✅  Chunk {chunk_idx+1}: {len(questions)} questions parsed and validated")
             all_questions.extend(questions)
 
         _log("AI", f"🏁  Assembled {len(all_questions)} questions across {num_chunks} chunk(s)")
+        actual_mcq = sum(1 for q in all_questions if q.get("isMCQ"))
+        _log("AI", f"✅  Final validated count: {len(all_questions)} questions (MCQ: {actual_mcq})")
         _log("AI", "-" * 56)
         return all_questions
 
-    
+    # ── BTL keyword-scoring helpers ───────────────────────────────────────────
+
+    @staticmethod
+    def _btl_keyword_score(text: str, btl_level: str) -> int:
+        """
+        Returns how many Bloom's Taxonomy action-verb matches the question text has
+        for the given BTL level. Uses an expanded set of verbs per level.
+        """
+        _VERB_MAP: Dict[str, List[str]] = {
+            "BTL1": ["define", "list", "state", "recall", "identify", "name", "label",
+                     "match", "recognize", "what is", "mention", "outline"],
+            "BTL2": ["explain", "describe", "summarize", "discuss", "classify", "interpret",
+                     "illustrate", "paraphrase", "translate", "give example", "how does"],
+            "BTL3": ["solve", "apply", "calculate", "demonstrate", "construct", "use",
+                     "implement", "show", "compute", "execute", "perform", "operate"],
+            "BTL4": ["analyze", "differentiate", "examine", "break down", "infer", "compare",
+                     "contrast", "distinguish", "inspect", "categorize", "decompose"],
+            "BTL5": ["evaluate", "assess", "justify", "judge", "defend", "critique",
+                     "argue", "recommend", "prioritize", "determine the best", "appraise"],
+            "BTL6": ["design", "create", "formulate", "develop", "build", "compose",
+                     "generate", "plan", "propose", "construct", "invent", "write a program"],
+        }
+        keywords = _VERB_MAP.get(btl_level, [])
+        lower = text.lower()
+        return sum(1 for kw in keywords if kw in lower)
+
+    def _infer_btl_from_text(self, text: str, allowed_levels: List[str]) -> str:
+        """
+        Infer the most likely BTL level for a question by scoring its text against
+        Bloom's Taxonomy action-verb lists. Falls back to the first allowed level
+        if no keywords are found.
+        """
+        if not allowed_levels:
+            return "BTL1"
+        scores = {level: self._btl_keyword_score(text, level) for level in allowed_levels}
+        best = max(scores, key=lambda k: scores[k])
+        return best if scores[best] > 0 else allowed_levels[0]
+
     # ── Unit-assignment helpers ─────────────────────────────────────────────
 
     @staticmethod
@@ -520,12 +657,12 @@ class AIService:
             chunks.append(current)
         return chunks
 
-    def _build_prompt(self, unit_assignments: List[Dict], part: Dict, subject: str, cdap_units: Optional[List[Dict]] = None) -> str:
+    def _build_prompt(self, slots: List[Dict], part: Dict, subject: str, cdap_units: Optional[List[Dict]] = None) -> str:
         part_name  = part.get("partName", "Part")
         marks      = part.get("marksPerQuestion", 2)
-        count      = part.get("questionCount", 5)
+        count      = len(slots)
         btl_levels = part.get("allowedBTLLevels", ["BTL1", "BTL2"])
-        mcq_count  = part.get("mcqCount", 0)
+        mcq_count  = sum(1 for s in slots if s["is_mcq"])
         desc_count = count - mcq_count
         has_cdap   = bool(cdap_units)
 
@@ -536,63 +673,35 @@ class AIService:
         else:
             answer_depth = "structured ~200-300 word explanation with steps/code/examples"
 
-        # Focused unit coverage — only the units this chunk owns, with exact counts
-        unit_lines = []
-        for ua in unit_assignments:
-            u      = ua["unit"]
-            q_for  = ua["count"]
-            all_unit_topics = self._extract_topics(u)
-            
-            part_idx = ua.get("part_index")
-            total_parts = ua.get("total_parts")
-            if part_idx is not None and total_parts is not None and len(all_unit_topics) > 1:
-                n_topics = len(all_unit_topics)
-                start = (part_idx * n_topics) // total_parts
-                end = ((part_idx + 1) * n_topics) // total_parts
-                chunk_topics = all_unit_topics[start:end]
-                if not chunk_topics:
-                    chunk_topics = all_unit_topics[:4]
-                topics = ", ".join(chunk_topics[:8])
-            else:
-                topics = ", ".join(all_unit_topics[:8])
-                
-            unit_lines.append(f"- {q_for}q from: {u.get('title', '')} | {topics}")
-        unit_block = "\n".join(unit_lines)
+        # Construct slot-by-slot specification
+        slot_lines = []
+        for idx, s in enumerate(slots):
+            q_type = "MCQ (with options A, B, C, D)" if s["is_mcq"] else "Descriptive"
+            verbs = _K_KEYWORDS.get(s["btl"], "")
+            slot_lines.append(
+                f"Question {idx+1} ({q_type}):\n"
+                f"  - Unit: Unit {s['unit_num']} ({s['unit_title']})\n"
+                f"  - Key topics: {s['topics']}\n"
+                f"  - Required Cognitive Level: {s['btl']} (MUST use Bloom's Taxonomy verbs: {verbs})\n"
+                f"  - Marks: {marks}"
+            )
+        slot_block = "\n\n".join(slot_lines)
 
         # CDAP: only the relevant units for this chunk
         cdap_text = ""
         if has_cdap:
-            chunk_unit_nums = {ua["unit"].get("unitNumber") for ua in unit_assignments}
+            chunk_unit_nums = {s["unit_num"] for s in slots}
             cdap_lines = []
             for u in cdap_units:
                 u_num = u.get("unit_number")
                 if u_num not in chunk_unit_nums:
                     continue
                 
-                # Find corresponding assignment
-                ua = next((x for x in unit_assignments if x["unit"].get("unitNumber") == u_num), None)
-                part_idx = ua.get("part_index") if ua else None
-                total_parts = ua.get("total_parts") if ua else None
-                
-                def _fmt_and_partition(tlist):
-                    if part_idx is not None and total_parts is not None and len(tlist) > 1:
-                        n_topics = len(tlist)
-                        start = (part_idx * n_topics) // total_parts
-                        end = ((part_idx + 1) * n_topics) // total_parts
-                        chunk_t = tlist[start:end]
-                        if not chunk_t:
-                            chunk_t = tlist[:3]
-                    else:
-                        chunk_t = tlist[:6]
-                    return ", ".join(
-                        (t.get("topic", str(t)) if isinstance(t, dict) else str(t))
-                        for t in chunk_t
-                    )
-                
-                p1 = _fmt_and_partition(u.get("part1_topics", []))
-                p2 = _fmt_and_partition(u.get("part2_topics", []))
-                if p1: cdap_lines.append(f"Part1 (CDAP Part 1): {p1}")
-                if p2: cdap_lines.append(f"Part2 (CDAP Part 2): {p2}")
+                # Find corresponding assignment/slot for info
+                p1 = ", ".join(t.get("topic", str(t)) if isinstance(t, dict) else str(t) for t in u.get("part1_topics", [])[:6])
+                p2 = ", ".join(t.get("topic", str(t)) if isinstance(t, dict) else str(t) for t in u.get("part2_topics", [])[:6])
+                if p1: cdap_lines.append(f"Unit {u_num} Part1 (CDAP Part 1): {p1}")
+                if p2: cdap_lines.append(f"Unit {u_num} Part2 (CDAP Part 2): {p2}")
             if cdap_lines:
                 cdap_text = "\nCDAP topics (Part1 vs Part2 list):\n" + "\n".join(cdap_lines)
 
@@ -604,52 +713,30 @@ class AIService:
             'is based on a topic in the Part2 list above. This mapping must be 100% accurate.\n'
         ) if has_cdap else ''
 
-        # ── BTL / K-level keyword guide (only levels used in this part) ─
-        _BTL_ORDER = ["BTL1", "BTL2", "BTL3", "BTL4", "BTL5", "BTL6"]
-        k_pairs = [
-            f"{btl}/K{_BTL_ORDER.index(btl)+1}: {_K_KEYWORDS[btl]}"
-            for btl in _BTL_ORDER if btl in btl_levels
-        ]
-        k_keywords_line = " | ".join(k_pairs)
-
-        # ── BTL distribution line (if the user set exact counts per level) ─
-        btl_dist_raw = part.get("btlDistribution") or {}
-        btl_dist = {k: v for k, v in btl_dist_raw.items() if k in btl_levels and v and int(v) > 0}
-        if btl_dist:
-            dist_parts = ", ".join(
-                f"{k}/K{_BTL_ORDER.index(k)+1}={v}q"
-                for k, v in btl_dist.items()
-            )
-            dist_rule = f"- EXACT BTL/K distribution required: {dist_parts} (counts are mandatory)\n"
-        elif len(btl_levels) > 1:
-            # No explicit distribution set — instruct AI to spread evenly across allowed levels
-            dist_rule = (
-                f"- Distribute the {count} questions as evenly as possible across "
-                f"these BTL levels: {', '.join(btl_levels)}\n"
-            )
-        else:
-            dist_rule = ""
-
         prompt = f"""Generate exactly {count} exam questions for "{subject}" ({part_name}).
 
-UNIT COVERAGE — generate EXACTLY the count specified from each topic set:
-{unit_block}{cdap_text}
+SPECIFIC QUESTIONS REQUIREMENT:
+You MUST generate exactly {count} questions matching the slot-by-slot specifications below:
+
+{slot_block}
+{cdap_text}
 
 RULES:
-- {mcq_count} MCQ + {desc_count} descriptive | {marks} marks each | BTL: {', '.join(btl_levels)}
-- K-level keywords: {k_keywords_line}
-{dist_rule}- Answer depth: {answer_depth}
+- Marks each: {marks} marks
+- Answer depth: {answer_depth}
 - For code/DB topics: include relevant SQL/pseudocode in answers
 - BTL3+: frame with real-world context ("Given a hospital system...", "For an e-commerce DB...")
 - NEVER mention unit names or numbers inside question or answer text
 {cdap_rule}"""
 
         if mcq_count > 0:
-            prompt += f"""OUTPUT — JSON array of EXACTLY {count} items. First {mcq_count} MCQ, rest descriptive:
+            prompt += f"""\n\nOUTPUT — JSON array of EXACTLY {count} items. First {mcq_count} MCQ, rest descriptive.
+The BTL levels in the output JSON array must match the slot specifications above exactly:
 [{{"question":"...","unit":1{cdap_field},"btl":"BTL1","marks":{marks},"isMCQ":true,"options":{{"A":"...","B":"...","C":"...","D":"..."}},"correctOption":"A","answer":"..."}},
  {{"question":"...","unit":1{cdap_field},"btl":"BTL2","marks":{marks},"isMCQ":false,"answer":"..."}}]"""
         else:
-            prompt += f"""OUTPUT — JSON array of EXACTLY {count} items:
+            prompt += f"""\n\nOUTPUT — JSON array of EXACTLY {count} items:
+The BTL levels in the output JSON array must match the slot specifications above exactly:
 [{{"question":"...","unit":1{cdap_field},"btl":"BTL2","marks":{marks},"answer":"..."}}]"""
 
         prompt += '\nReturn ONLY the JSON array. No markdown. Escape internal quotes as \\" and newlines as \\n.'
@@ -678,26 +765,20 @@ RULES:
                 result.append(t)
             elif isinstance(t, dict):
                 result.append(t.get("topicName", str(t)))
-        return result  # Send all topics
+        return result
     
     @staticmethod
     def _clean_markdown(text: str) -> str:
         """Strip AI markdown noise (**bold**, *italic*, ## headers) from answer text."""
         if not isinstance(text, str):
             return text
-        # Remove bold: **text** or __text__
         text = re.sub(r'\*\*(.+?)\*\*', r'\1', text, flags=re.DOTALL)
         text = re.sub(r'__(.+?)__', r'\1', text, flags=re.DOTALL)
-        # Remove italic: *text* or _text_  (single star/underscore)
         text = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'\1', text, flags=re.DOTALL)
         text = re.sub(r'(?<!_)_(?!_)(.+?)(?<!_)_(?!_)', r'\1', text, flags=re.DOTALL)
-        # Remove markdown headers (## Step 1  → Step 1)
         text = re.sub(r'^#{1,6}\s*', '', text, flags=re.MULTILINE)
-        # Remove horizontal rules
         text = re.sub(r'^[-*_]{3,}\s*$', '', text, flags=re.MULTILINE)
-        # Collapse 3+ consecutive blank lines to 2
         text = re.sub(r'\n{3,}', '\n\n', text)
-        # Decode any literal \uXXXX unicode escape sequences left by the AI (e.g. \u2192 → →)
         text = re.sub(r'\\u([0-9a-fA-F]{4})', lambda m: chr(int(m.group(1), 16)), text)
         return text.strip()
 
@@ -706,7 +787,6 @@ RULES:
         """Remove any phrases that reference unit numbers from question/answer text."""
         if not isinstance(text, str):
             return text
-        # Remove phrases like "In Unit 1,", "As discussed in Unit 2", "According to Unit 3", etc.
         patterns = [
             r'\b[Ii]n [Uu]nit\s*\d+[,:]?\s*',
             r'\b[Aa]s (discussed|covered|described|mentioned|stated|explained) in [Uu]nit\s*\d+[,:]?\s*',
@@ -718,7 +798,6 @@ RULES:
         ]
         for pattern in patterns:
             text = re.sub(pattern, '', text)
-        # Clean up any double spaces left behind
         text = re.sub(r'  +', ' ', text).strip()
         return text
 
@@ -738,12 +817,10 @@ RULES:
         Attempt to close a JSON array that was cut off mid-stream.
         Strips incomplete trailing object and closes the array.
         """
-        # Find the last complete object — look for the last '}' before any truncation
         last_brace = text.rfind('}')
         if last_brace == -1:
             return text
         truncated = text[:last_brace + 1]
-        # Strip trailing comma if present then close array
         truncated = truncated.rstrip().rstrip(',')
         return truncated + "\n]"
 
@@ -800,116 +877,138 @@ RULES:
         weights = [count for _, count in items]
         allocated = cls._allocate_exact_counts(weights, total)
         return {level: count for level, count in zip(levels, allocated) if count > 0}
-    def _parse_questions(self, content: str, part: Dict, has_cdap: bool = False) -> List[Dict]:
+
+    def _parse_questions(self, content: str, part: Dict, slots: List[Dict], has_cdap: bool = False) -> List[Dict]:
         marks      = part.get("marksPerQuestion", 2)
-        target_mcq = max(0, int(part.get("mcqCount", 0) or 0))
-        allowed_btls = part.get("allowedBTLLevels", ["BTL1", "BTL2"])
-        target_dist  = part.get("btlDistribution") or {}
 
         def _finalise(questions: list) -> list:
-            # Filter out non-dict entries — json-repair can return strings for malformed objects
             questions = [q for q in questions if isinstance(q, dict)]
-            for q in questions:
-                if "marks" not in q:
-                    q["marks"] = marks
-                if has_cdap and "cdap_part" not in q:
-                    q["cdap_part"] = 1
+            
+            # Align with slots
+            if len(questions) < len(slots):
+                shortfall = len(slots) - len(questions)
+                for i in range(shortfall):
+                    src = questions[i % len(questions)] if questions else {}
+                    questions.append(dict(src))
+            elif len(questions) > len(slots):
+                questions = questions[:len(slots)]
 
-            # ── 1. Standardise isMCQ based on fields present ──
+            # Analyze actual/inferred BTL and unit for each question
+            all_btl_list = ["BTL1", "BTL2", "BTL3", "BTL4", "BTL5", "BTL6"]
+            processed_qs = []
             for q in questions:
+                q_text = q.get("question", "")
+                
+                # Infer true BTL based on content verbs
+                inferred = self._infer_btl_from_text(q_text, all_btl_list)
+                ai_btl = q.get("btl")
+                actual_btl = ai_btl if ai_btl in all_btl_list else inferred
+                
+                # Verify unit number
+                try:
+                    actual_unit = int(q.get("unit", 0))
+                except Exception:
+                    actual_unit = 0
+                
+                # Verify MCQ status
                 has_opts = isinstance(q.get("options"), dict) and any(str(v).strip() for v in q["options"].values() if v)
                 has_corr = q.get("correctOption") in {"A", "B", "C", "D"}
-                if q.get("isMCQ") is True or (q.get("isMCQ") is not False and (has_opts or has_corr)):
-                    q["isMCQ"] = True
-                else:
-                    q["isMCQ"] = False
+                is_actually_mcq = q.get("isMCQ") is True or (q.get("isMCQ") is not False and (has_opts or has_corr))
 
-            # ── 2. Enforce MCQ count ──
-            current_mcq = sum(1 for q in questions if q.get("isMCQ"))
-            if current_mcq < target_mcq:
-                need = target_mcq - current_mcq
-                for q in questions:
-                    if need <= 0:
-                        break
-                    if not q.get("isMCQ"):
-                        q["isMCQ"] = True
-                        need -= 1
-            elif current_mcq > target_mcq:
-                extra = current_mcq - target_mcq
-                for q in reversed(questions):
-                    if extra <= 0:
-                        break
-                    if q.get("isMCQ"):
-                        q["isMCQ"] = False
-                        extra -= 1
+                processed_qs.append({
+                    "original": q,
+                    "btl": actual_btl,
+                    "unit": actual_unit,
+                    "is_mcq": is_actually_mcq
+                })
 
-            # ── 3. Clean up non-MCQs and fill template for MCQs ──
-            for q in questions:
-                if not q.get("isMCQ"):
-                    q["isMCQ"] = False
-                    q.pop("options", None)
-                    q.pop("correctOption", None)
-                else:
-                    q["isMCQ"] = True
-                    opts = q.get("options")
-                    if not isinstance(opts, dict) or not any(
-                        str(v).strip() for v in opts.values() if v
-                    ):
-                        ans = q.get("answer", "")
-                        q["options"] = {
-                            "A": ans.strip() if isinstance(ans, str) and ans.strip() else "Option A",
-                            "B": "Option B",
-                            "C": "Option C",
-                            "D": "Option D",
-                        }
-                    if q.get("correctOption") not in {"A", "B", "C", "D"}:
-                        q["correctOption"] = "A"
+            # Optimal slot matching
+            matched_questions = [None] * len(slots)
+            used_q_indices = set()
 
-            # ── 4. Enforce Allowed BTL and Custom Distributions ──
-            allowed_list = [b for b in allowed_btls if b]
-            if not allowed_list:
-                allowed_list = ["BTL1", "BTL2"]
-
-            # Filter target distribution to only allowed levels
-            clean_dist = {k: int(v) for k, v in target_dist.items() if k in allowed_list and v and int(v) > 0} if target_dist else {}
-            
-            if clean_dist:
-                btl_pool = []
-                for level, count in clean_dist.items():
-                    btl_pool.extend([level] * count)
+            for slot_idx, slot in enumerate(slots):
+                best_q_idx = -1
+                best_score = -1000000
                 
-                while len(btl_pool) < len(questions):
-                    btl_pool.append(allowed_list[0])
-                if len(btl_pool) > len(questions):
-                    btl_pool = btl_pool[:len(questions)]
-                
-                pool_counts = {}
-                for b in btl_pool:
-                    pool_counts[b] = pool_counts.get(b, 0) + 1
-                
-                for q in questions:
-                    q_btl = q.get("btl")
-                    if q_btl in pool_counts and pool_counts[q_btl] > 0:
-                        pool_counts[q_btl] -= 1
+                for q_idx, pq in enumerate(processed_qs):
+                    if q_idx in used_q_indices:
+                        continue
+                    
+                    score = 0
+                    # MCQ match is critical
+                    if pq["is_mcq"] == slot["is_mcq"]:
+                        score += 10000
                     else:
-                        q["btl"] = None
+                        score -= 10000
+                        
+                    # BTL level match
+                    if pq["btl"] == slot["btl"]:
+                        score += 1000
+                        
+                    # Unit match
+                    if pq["unit"] == slot["unit_num"]:
+                        score += 100
+                        
+                    if score > best_score:
+                        best_score = score
+                        best_q_idx = q_idx
                 
-                remaining_btls = []
-                for b, count in pool_counts.items():
-                    remaining_btls.extend([b] * count)
-                
-                for q in questions:
-                    if q.get("btl") is None:
-                        if remaining_btls:
-                            q["btl"] = remaining_btls.pop(0)
-                        else:
-                            q["btl"] = allowed_list[0]
-            else:
-                for q in questions:
-                    if q.get("btl") not in allowed_list:
-                        q["btl"] = allowed_list[0]
+                if best_q_idx != -1:
+                    used_q_indices.add(best_q_idx)
+                    q = dict(processed_qs[best_q_idx]["original"])
+                    
+                    # Stamp properties from slot
+                    q["unit"] = slot["unit_num"]
+                    
+                    # Stamp the actual verified/inferred BTL to prevent labeling mistakenly
+                    q["btl"] = processed_qs[best_q_idx]["btl"]
+                    
+                    if "marks" not in q:
+                        q["marks"] = marks
+                    if has_cdap and "cdap_part" not in q:
+                        q["cdap_part"] = 1
+                        
+                    # Clean options
+                    if not slot["is_mcq"]:
+                        q["isMCQ"] = False
+                        q.pop("options", None)
+                        q.pop("correctOption", None)
+                    else:
+                        q["isMCQ"] = True
+                        opts = q.get("options")
+                        if not isinstance(opts, dict) or not any(
+                            str(v).strip() for v in opts.values() if v
+                        ):
+                            ans = q.get("answer", "")
+                            q["options"] = {
+                                "A": ans.strip() if isinstance(ans, str) and ans.strip() else "Option A",
+                                "B": "Option B",
+                                "C": "Option C",
+                                "D": "Option D",
+                            }
+                        if q.get("correctOption") not in {"A", "B", "C", "D"}:
+                            q["correctOption"] = "A"
+                            
+                    matched_questions[slot_idx] = q
 
-            return self._clean_questions(questions)
+            # Fallback for unmatched slots
+            for idx in range(len(slots)):
+                if matched_questions[idx] is None:
+                    slot = slots[idx]
+                    q = {
+                        "question": f"Question about Unit {slot['unit_num']}",
+                        "unit": slot["unit_num"],
+                        "btl": slot["btl"],
+                        "isMCQ": slot["is_mcq"],
+                        "marks": marks,
+                        "answer": "Answer"
+                    }
+                    if slot["is_mcq"]:
+                        q["options"] = {"A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D"}
+                        q["correctOption"] = "A"
+                    matched_questions[idx] = q
+
+            return self._clean_questions(matched_questions)
 
         try:
             content = content.strip()

@@ -136,6 +136,26 @@ class EnhancedAIService:
                 "max_tokens": 8000,
             })
         
+        if settings.GROQ_API_KEY_2:
+            self.provider_chain.append({
+                "name": "groq-2",
+                "type": "api_key",
+                "api_key": settings.GROQ_API_KEY_2,
+                "base_url": "https://api.groq.com/openai/v1",
+                "model": "mixtral-8x7b-32768",
+                "max_tokens": 8000,
+            })
+        
+        if settings.GROQ_API_KEY_3:
+            self.provider_chain.append({
+                "name": "groq-3",
+                "type": "api_key",
+                "api_key": settings.GROQ_API_KEY_3,
+                "base_url": "https://api.groq.com/openai/v1",
+                "model": "mixtral-8x7b-32768",
+                "max_tokens": 8000,
+            })
+        
         if settings.NVIDIA_API_KEY:
             self.provider_chain.append({
                 "name": "nvidia",

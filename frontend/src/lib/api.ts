@@ -21,6 +21,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
+    config.headers = config.headers || {} as any;
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -48,8 +49,7 @@ api.interceptors.response.use(
 export const authApi = {
   login: (email: string, password: string) =>
     api.post('/auth/login', { email, password }),
-  register: (data: { email: string; password: string; name: string; role: string; department?: string }) =>
-    api.post('/auth/register', data),
+
   resetPasswordDirect: (email: string, newPassword: string) =>
     api.post('/auth/reset-password-direct', { email, new_password: newPassword }),
   getMe: () => api.get('/auth/me'),

@@ -22,7 +22,13 @@ def init_db():
     
     # Attempt to connect to PostgreSQL if configured
     if db_url and db_url.startswith("postgresql"):
-        connect_args = {"connect_timeout": 15}  # 15s timeout for Neon cold start
+        connect_args = {
+            "connect_timeout": 15,
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 5
+        }
         if sys.platform.startswith("win"):
             connect_args["sslrootcert"] = "NUL"
             # Solve Windows IPv6 dual-stack timeout bug by resolving hostname to IPv4 address dynamically.

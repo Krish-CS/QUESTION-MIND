@@ -36,7 +36,7 @@ export default function Dashboard() {
     try {
       const [subjectsRes, banksRes] = await Promise.all([
         subjectsApi.getAll(),
-        questionBankApi.getAll({ own_only: false }),
+        questionBankApi.getAll({ own_only: true }),
       ]);
 
       const subjectsList: Subject[] = subjectsRes.data;

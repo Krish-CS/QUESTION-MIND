@@ -4,6 +4,8 @@ import api, { authApi } from '../lib/api';
 import { useAuthStore } from '../lib/store';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import logo from '../assets/logo.png';
+import SaraswathiIntro from '../components/SaraswathiIntro';
+import AuroraBackground from '../components/AuroraBackground';
 
 type BackendStatus = 'checking' | 'connected' | 'offline';
 
@@ -16,6 +18,22 @@ export default function Login() {
   const [error, setError] = useState('');
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('checking');
   const [backendMessage, setBackendMessage] = useState('Checking backend connection...');
+  const [showIntro, setShowIntro] = useState(() => {
+    return localStorage.getItem('saraswathiIntroPlayed') !== 'true';
+  });
+  const [introVisualDone, setIntroVisualDone] = useState(false);
+  const [renderCanvas, setRenderCanvas] = useState(true);
+
+  useEffect(() => {
+    if (backendStatus === 'connected') {
+      const timer = setTimeout(() => {
+        setRenderCanvas(false);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setRenderCanvas(true);
+    }
+  }, [backendStatus]);
 
   // Forgot Password state
   const [showForgot, setShowForgot] = useState(false);
@@ -108,8 +126,38 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-orange-50 dark:from-slate-950 dark:via-slate-900 dark:to-black flex items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-6">
+    <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
+      {/* Saraswathi Splash Intro Overlay */}
+      {showIntro && (
+        <SaraswathiIntro
+          onVisualComplete={() => {
+            localStorage.setItem('saraswathiIntroPlayed', 'true');
+            setIntroVisualDone(true);
+          }}
+          onAudioComplete={() => {
+            setShowIntro(false);
+          }}
+        />
+      )}
+
+      {/* Render Login Page contents if not showing intro OR if visual animation is finished */}
+      {(!showIntro || introVisualDone) && (
+        <>
+          {/* Aurora Background Canvas */}
+          {renderCanvas && (
+            <div className="fixed inset-0 -z-10 animate-fade-in">
+              <AuroraBackground isConnected={backendStatus === 'connected'} />
+            </div>
+          )}
+
+          {/* Normal Gradient Background (shows when canvas is gone or fading out) */}
+          <div
+            className={`fixed inset-0 -z-20 bg-gradient-to-br from-pink-50 via-purple-50 to-orange-50 dark:from-slate-950 dark:via-slate-900 dark:to-black transition-opacity duration-1000 animate-fade-in ${
+              backendStatus === 'connected' ? 'opacity-100' : 'opacity-40'
+            }`}
+          />
+
+          <div className="w-full max-w-md space-y-6 relative z-10 animate-fade-in">
 
         {/* Logo */}
         <div className="text-center space-y-3">
@@ -288,6 +336,8 @@ export default function Login() {
           )}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
