@@ -23,6 +23,8 @@ export default function AdminDashboard() {
   // Password Reset Success Modal State
   const [showResetSuccessPopup, setShowResetSuccessPopup] = useState(false);
   const [successResetUser, setSuccessResetUser] = useState<User | null>(null);
+  const [resetStatus, setResetStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [resetError, setResetError] = useState('');
   
   // Edit form state
   const [editName, setEditName] = useState('');
@@ -130,17 +132,23 @@ export default function AdminDashboard() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resettingUser) return;
+    
+    const targetUser = resettingUser;
+    setSuccessResetUser(targetUser);
+    setResettingUser(null);
+    setResetStatus('loading');
+    setShowResetSuccessPopup(true);
+    
     try {
-      await api.put(`/auth/users/${resettingUser.id}/reset-password`, {
+      await api.put(`/auth/users/${targetUser.id}/reset-password`, {
         new_password: newPassword
       });
-      setSuccessResetUser(resettingUser);
-      setShowResetSuccessPopup(true);
-      setResettingUser(null);
+      setResetStatus('success');
       setNewPassword('');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error('Failed to reset password');
+      setResetStatus('error');
+      setResetError(err.response?.data?.detail || 'Failed to reset password');
     }
   };
 
@@ -470,223 +478,57 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Password Reset Success Popup */}
+      {/* Password Reset Status Popup */}
       {showResetSuccessPopup && successResetUser && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      {/* Add User Modal */}
-      {isAddingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-pink-200 dark:border-slate-800">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Add Manual User</h2>
-              <button onClick={() => setIsAddingUser(false)} className="text-slate-400 hover:text-slate-600 border-none bg-transparent">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div>
-                <label className="label">Name</label>
-                <input 
-                  type="text" 
-                  className="input" 
-                  value={addName} 
-                  onChange={e => setAddName(e.target.value)} 
-                  placeholder="John Doe"
-                  required 
-                />
-              </div>
-              <div>
-                <label className="label">Email</label>
-                <input 
-                  type="email" 
-                  className="input" 
-                  value={addEmail} 
-                  onChange={e => setAddEmail(e.target.value)} 
-                  placeholder="john@example.com"
-                  required 
-                />
-              </div>
-              <div>
-                <label className="label">Password</label>
-                <input 
-                  type="password" 
-                  className="input" 
-                  value={addPassword} 
-                  onChange={e => setAddPassword(e.target.value)} 
-                  placeholder="••••••••"
-                  required 
-                />
-              </div>
-              <div>
-                <label className="label">Role</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {['FACULTY', 'HOD'].map((role) => (
-                    <button
-                      key={role}
-                      type="button"
-                      onClick={() => setAddRole(role)}
-                      className={`p-3 rounded-lg border text-sm transition-all font-medium ${addRole === role
-                        ? 'bg-pink-50 border-pink-300 text-pink-700 shadow-sm dark:bg-pink-900/30 dark:border-pink-700 dark:text-pink-300'
-                        : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
-                        }`}
-                    >
-                      {role}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="label">Department</label>
-                <Combobox
-                  options={['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AI&DS', 'Admin Department']}
-                  value={addDepartment}
-                  onChange={(val) => setAddDepartment(val)}
-                  placeholder="Select or type department..."
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setIsAddingUser(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary bg-emerald-600 hover:bg-emerald-700 border-emerald-600" disabled={creating}>
-                  {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create User'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit User Modal */}
-      {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-pink-200 dark:border-slate-800">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Edit User</h2>
-              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-600 border-none bg-transparent">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleUpdateUser} className="space-y-4">
-              <div>
-                <label className="label">Name</label>
-                <input type="text" className="input" value={editName} onChange={e => setEditName(e.target.value)} required />
-              </div>
-              <div>
-                <label className="label">Email</label>
-                <input type="email" className="input" value={editEmail} onChange={e => setEditEmail(e.target.value)} required />
-              </div>
-              <div>
-                <label className="label">Role</label>
-                {editingUser?.role === 'ADMIN' ? (
-                  <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800 text-sm font-bold text-center">
-                    ADMIN (Cannot be modified)
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-2">
-                    {['FACULTY', 'HOD'].map((role) => (
-                      <button
-                        key={role}
-                        type="button"
-                        onClick={() => setEditRole(role)}
-                        className={`p-3 rounded-lg border text-sm transition-all font-medium ${editRole === role
-                          ? 'bg-pink-50 border-pink-300 text-pink-700 shadow-sm dark:bg-pink-900/30 dark:border-pink-700 dark:text-pink-300'
-                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300'
-                          }`}
-                      >
-                        {role}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="label">Department</label>
-                <Combobox
-                  options={['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AI&DS', 'Admin Department']}
-                  value={editDepartment}
-                  onChange={(val) => setEditDepartment(val)}
-                  placeholder="Select or type department..."
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setEditingUser(null)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Changes</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Reset Password Modal */}
-      {resettingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-pink-200 dark:border-slate-800">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <KeyRound className="w-5 h-5 text-amber-500" />
-                Reset Password
-              </h2>
-              <button onClick={() => setResettingUser(null)} className="text-slate-400 hover:text-slate-600 border-none bg-transparent">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <p className="text-sm text-slate-500 mb-4">
-              Set a new password for <strong>{resettingUser.name}</strong> ({resettingUser.email}).
-            </p>
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              <div>
-                <label className="label">New Password</label>
-                <input 
-                  type="text" 
-                  className="input" 
-                  value={newPassword} 
-                  onChange={e => setNewPassword(e.target.value)} 
-                  placeholder="Enter new password"
-                  required 
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setResettingUser(null)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary bg-amber-50 hover:bg-amber-600 border-amber-500">Reset Password</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Password Reset Success Popup */}
-      {showResetSuccessPopup && successResetUser && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
-          onClick={() => setShowResetSuccessPopup(false)}
+          onClick={() => { if (resetStatus !== 'loading') setShowResetSuccessPopup(false) }}
         >
           <div
-            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center border-2 border-pink-300 dark:border-pink-700 animate-in zoom-in-95 duration-200"
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center border-2 border-pink-300 dark:border-pink-700 animate-in zoom-in-95 duration-200 flex flex-col items-center"
             onClick={e => e.stopPropagation()}
           >
-            <div className="text-5xl mb-4">🔑</div>
-            <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400 mb-1">Password Reset Successfully!</h2>
-            <p className="text-slate-800 dark:text-slate-200 text-sm mb-1 font-bold">{successResetUser.name}</p>
-            <p className="text-slate-500 dark:text-slate-400 text-xs mb-6">Notification email has been sent to {successResetUser.email}</p>
-            <div className="flex gap-3 justify-center">
-              <button
-                className="btn btn-primary px-5 py-2.5 w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold border-none flex justify-center items-center text-center"
-                onClick={() => setShowResetSuccessPopup(false)}
-              >
-                Okay
-              </button>
-            </div>
+            {resetStatus === 'loading' && (
+              <>
+                <Loader2 className="w-16 h-16 text-pink-500 animate-spin mb-4" />
+                <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400 mb-1">Resetting Password...</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Please wait while we update credentials and notify {successResetUser.name}.</p>
+              </>
+            )}
+
+            {resetStatus === 'success' && (
+              <>
+                <div className="text-5xl mb-4">🔑</div>
+                <h2 className="text-xl font-bold text-pink-600 dark:text-pink-400 mb-1">Password Reset Successfully!</h2>
+                <p className="text-slate-800 dark:text-slate-200 text-sm mb-1 font-bold">{successResetUser.name}</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs mb-6">Notification email has been sent to {successResetUser.email}</p>
+                <div className="flex gap-3 w-full justify-center">
+                  <button
+                    className="btn btn-primary px-5 py-2.5 w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold border-none"
+                    onClick={() => setShowResetSuccessPopup(false)}
+                  >
+                    Okay
+                  </button>
+                </div>
+              </>
+            )}
+
+            {resetStatus === 'error' && (
+              <>
+                <div className="text-5xl mb-4">❌</div>
+                <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-1">Reset Failed</h2>
+                <p className="text-slate-800 dark:text-slate-200 text-sm mb-1 font-bold">{successResetUser.name}</p>
+                <p className="text-red-500 dark:text-red-400 text-sm mb-6">{resetError}</p>
+                <div className="flex gap-3 w-full justify-center">
+                  <button
+                    className="btn btn-danger px-5 py-2.5 w-full text-white font-bold border-none"
+                    onClick={() => setShowResetSuccessPopup(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
