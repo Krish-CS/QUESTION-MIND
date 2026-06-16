@@ -78,7 +78,31 @@ export default function App() {
 
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Toaster position="top-center" toastOptions={{ duration: 4000, style: { background: '#333', color: '#fff' } }} />
+      <Toaster 
+        position="top-center" 
+        toastOptions={{ 
+          duration: 4000, 
+          style: { 
+            background: 'linear-gradient(to right, #4c1d95, #701a75)', // Deep purple to dark pink gradient
+            color: '#fff',
+            border: '1px solid #d946ef', // Fuchsia border
+            boxShadow: '0 4px 14px 0 rgba(217, 70, 239, 0.39)',
+            fontWeight: '600'
+          },
+          success: {
+            iconTheme: {
+              primary: '#fdf4ff', // Light fuchsia
+              secondary: '#d946ef', // Fuchsia
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#fff1f2', // Light rose
+              secondary: '#f43f5e', // Rose
+            },
+          }
+        }} 
+      />
       <OfflineOverlay />
       <GlobalLoader />
       <Routes>
