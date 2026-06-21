@@ -106,7 +106,7 @@ def _build_html_email(
           <tr>
             <td style="background:linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);padding:40px 32px;text-align:center;">
               <!-- LOGO -->
-              <img src="{settings.LOGO_URL}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
+              <img src="{settings.LOGO_URL}?v={int(time.time())}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;">
                 📚 Question Bank Shared With You
               </h1>
@@ -269,7 +269,7 @@ def send_user_welcome_email(recipient_email: str, name: str, password: str, role
           <tr>
             <td style="background:linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);padding:40px 32px;text-align:center;">
               <!-- LOGO -->
-              <img src="{settings.LOGO_URL}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
+              <img src="{settings.LOGO_URL}?v={int(time.time())}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;">
                 🎉 Account Created
               </h1>
@@ -380,7 +380,7 @@ def send_user_update_email(recipient_email: str, name: str, changes: dict) -> bo
           <tr>
             <td style="background:linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);padding:40px 32px;text-align:center;">
               <!-- LOGO -->
-              <img src="{settings.LOGO_URL}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
+              <img src="{settings.LOGO_URL}?v={int(time.time())}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;">
                 🔒 Details Updated
               </h1>
@@ -470,7 +470,7 @@ def send_user_password_reset_email(recipient_email: str, name: str, new_password
           <tr>
             <td style="background:linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);padding:40px 32px;text-align:center;">
               <!-- LOGO -->
-              <img src="{settings.LOGO_URL}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
+              <img src="{settings.LOGO_URL}?v={int(time.time())}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;">
                 🔑 Password Reset
               </h1>
