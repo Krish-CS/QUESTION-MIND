@@ -121,8 +121,14 @@ export const questionBankApi = {
   getPattern: (subjectId: string) => api.get(`/question-bank/pattern/${subjectId}`),
   updatePattern: (subjectId: string, data: any) =>
     api.put(`/question-bank/pattern/${subjectId}`, data),
-  generate: (data: { subject_id: string; syllabus_id: string; pattern_id?: string; custom_parts?: any[]; selected_unit_ids?: number[]; unit_question_counts?: Record<string, Record<number, number>>; unit_configs?: Record<string, any[]> }) =>
+  generate: (data: { subject_id: string; syllabus_id: string; pattern_id?: string; custom_parts?: any[]; selected_unit_ids?: number[]; unit_question_counts?: Record<string, Record<number, number>>; unit_configs?: Record<string, any[]>; include_answers?: boolean }) =>
     api.post('/question-bank/generate', data),
+  /** Prompt Mode: build a copy-paste prompt for any external AI (no provider call) */
+  generatePrompt: (data: { subject_id: string; syllabus_id: string; pattern_id?: string; custom_parts?: any[]; selected_unit_ids?: number[]; unit_question_counts?: Record<string, Record<number, number>>; unit_configs?: Record<string, any[]>; include_answers?: boolean; split_by_unit?: boolean }) =>
+    api.post<{ prompt?: string; total_questions: number; num_parts: number; split_by_unit?: boolean; unit_prompts?: { unit_number: number; unit_title: string; prompt: string; total_questions: number }[] }>('/question-bank/generate-prompt', data),
+  /** Prompt Mode: turn a pasted-back AI response into an Excel question bank */
+  generateFromResponse: (data: { subject_id: string; syllabus_id: string; pattern_id?: string; custom_parts?: any[]; selected_unit_ids?: number[]; unit_question_counts?: Record<string, Record<number, number>>; unit_configs?: Record<string, any[]>; response_text?: string; unit_responses?: Record<string, string>; include_answers?: boolean }) =>
+    api.post('/question-bank/generate-from-response', data),
   updateQuestions: (id: string, data: { questions: { parts: Record<string, any[]> } }) =>
     api.put(`/question-bank/${id}/questions`, data),
   uploadImage: (file: File) => {

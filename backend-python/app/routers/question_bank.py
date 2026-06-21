@@ -14,7 +14,7 @@ from ..database import get_db
 from ..models import QuestionBank, QuestionPattern, Subject, Syllabus, User, UserRole, StaffAssignment, CDAP
 from ..models.question_bank import QuestionBankStatus
 from ..schemas import (
-    GenerateQuestionsRequest, UpdatePatternRequest, UpdateStatusRequest, UpdateQuestionsRequest,
+    GenerateQuestionsRequest, GenerateFromResponseRequest, UpdatePatternRequest, UpdateStatusRequest, UpdateQuestionsRequest,
     QuestionPatternResponse, QuestionBankResponse
 )
 from ..services.auth import get_current_user
@@ -81,6 +81,234 @@ def normalize_parts(parts_raw) -> list:
 
         normalized.append(p)
     return normalized
+
+
+def _get_subject_descriptions(subject) -> dict:
+    """Extract mapping of partName -> description from subject configuration."""
+    if not subject or not subject.configuration:
+        return {}
+    
+    cfg = subject.configuration
+    if hasattr(cfg, 'model_dump'):
+        cfg = cfg.model_dump()
+    elif hasattr(cfg, 'dict'):
+        cfg = cfg.dict()
+        
+    if not isinstance(cfg, dict):
+        return {}
+        
+    parts = cfg.get('parts', [])
+    if not isinstance(parts, list):
+        return {}
+    
+    mapping = {}
+    for p in parts:
+        if hasattr(p, 'model_dump'):
+            p_dict = p.model_dump()
+        elif hasattr(p, 'dict'):
+            p_dict = p.dict()
+        elif isinstance(p, dict):
+            p_dict = p
+        else:
+            try:
+                p_dict = dict(p)
+            except Exception:
+                continue
+                
+        name = p_dict.get('partName')
+        desc = p_dict.get('description')
+        if name and desc:
+            mapping[name] = desc
+    return mapping
+
+
+def _merge_subject_descriptions(subject, parts_data: list):
+    """Merge descriptions from subject configuration into a list of normalized parts."""
+    desc_map = _get_subject_descriptions(subject)
+    if not desc_map:
+        return
+    
+    for p in parts_data:
+        p_name = p.get("partName")
+        if p_name in desc_map:
+            p["description"] = desc_map[p_name]
+
+
+def _part_value(part, field, default=None):
+    """Read a part field from either a validated Pydantic model or a plain dict."""
+    if isinstance(part, dict):
+        return part.get(field, default)
+    return getattr(part, field, default)
+
+
+def _resolve_owned_context(db: Session, user: User, data):
+    """Fetch subject/syllabus/cdap/pattern with per-user ownership enforced.
+    Shared by the Prompt Mode endpoints. Raises HTTPException on any access failure."""
+    subject = db.query(Subject).filter(Subject.id == data.subject_id).first()
+    if not subject or subject.created_by != user.id:
+        raise HTTPException(status_code=404, detail="Subject not found")
+
+    syllabus = db.query(Syllabus).filter(Syllabus.id == data.syllabus_id).first()
+    if not syllabus or syllabus.subject_id != subject.id:
+        raise HTTPException(status_code=404, detail="Syllabus not found")
+
+    cdap = db.query(CDAP).filter(CDAP.subject_id == data.subject_id).first()
+    pattern = db.query(QuestionPattern).filter(QuestionPattern.subject_id == data.subject_id).first()
+    return subject, syllabus, cdap, pattern
+
+
+def build_generation_plan(data, subject, syllabus, cdap, pattern):
+    """
+    Resolve parts/units/modes (read-only, deterministic) and build a Prompt-Mode plan.
+    Returns (plan, parts_data) where plan = {part_name: {"part_config": {...}, "slots": [...]}}.
+    Mirrors the 3-mode resolution in generate_questions() but builds slots via
+    ai_service._build_part_slots instead of calling the AI — so both Prompt-Mode endpoints
+    rebuild the identical plan from the same selection params (the plan never has to be trusted
+    from the client).
+    """
+    parts = data.custom_parts or (
+        pattern.parts if pattern else subject.configuration.get('parts', []) if subject.configuration else []
+    )
+    if not parts:
+        raise HTTPException(status_code=400, detail="No question pattern defined")
+    parts_data = normalize_parts(parts)
+    _merge_subject_descriptions(subject, parts_data)
+
+    all_units = syllabus.units or []
+    if data.selected_unit_ids:
+        selected_units = [u for u in all_units if u.get('unitNumber') in data.selected_unit_ids]
+        if not selected_units:
+            raise HTTPException(status_code=400, detail="None of the selected units found in syllabus")
+    else:
+        selected_units = all_units
+
+    unit_q_counts = data.unit_question_counts
+    if not unit_q_counts and pattern and getattr(pattern, 'unit_question_counts', None):
+        unit_q_counts = pattern.unit_question_counts
+    unit_q_counts = unit_q_counts or {}
+
+    unit_cfg = data.unit_configs
+    if not unit_cfg and pattern and getattr(pattern, 'unit_configs', None):
+        unit_cfg = pattern.unit_configs
+
+    plan: dict = {}
+
+    def _add(part_name, part_config, slots):
+        if part_name not in plan:
+            plan[part_name] = {"part_config": part_config, "slots": []}
+        plan[part_name]["slots"].extend(slots)
+
+    if unit_cfg:
+        # ── INDIVIDUAL FULL CONFIG: each unit has its own PartConfiguration[] ──
+        for unit in selected_units:
+            unit_num_str = str(unit.get("unitNumber"))
+            if unit_num_str not in unit_cfg:
+                continue
+            raw_unit_parts = unit_cfg[unit_num_str]
+            lacks_mcq = {
+                _part_value(rp, "partName"): True
+                for rp in raw_unit_parts
+                if _part_value(rp, "partName") and _part_value(rp, "mcqCount") is None
+            }
+            unit_parts = normalize_parts(raw_unit_parts)
+            _merge_subject_descriptions(subject, unit_parts)
+            global_mcq_map = {p["partName"]: p.get("mcqCount", 0) for p in parts_data}
+            for up in unit_parts:
+                if lacks_mcq.get(up["partName"]):
+                    inherited = global_mcq_map.get(up["partName"], 0)
+                    if inherited:
+                        up["mcqCount"] = inherited
+                _add(up["partName"], up, ai_service._build_part_slots(up, [unit]))
+
+    elif unit_q_counts:
+        # ── INDIVIDUAL MODE: per-unit per-part counts ──
+        for part in parts_data:
+            part_name = part["partName"]
+            part_counts = unit_q_counts.get(part_name, {})
+
+            unit_rows = []
+            for unit in selected_units:
+                unit_num = unit.get("unitNumber")
+                count = part_counts.get(unit_num, part_counts.get(str(unit_num), 0)) if isinstance(part_counts, dict) else 0
+                if count > 0:
+                    unit_rows.append((unit, count))
+            if not unit_rows:
+                continue
+
+            q_counts = [c for _, c in unit_rows]
+            mcq_total = min(sum(q_counts), max(0, int(part.get("mcqCount", 0) or 0)))
+            mcq_allocations = AIService._allocate_exact_counts(q_counts, mcq_total)
+
+            orig_dist = part.get("btlDistribution") or {}
+            allowed_levels = [lvl for lvl in (part.get("allowedBTLLevels") or []) if lvl in orig_dist]
+            per_level_allocations = {}
+            for level, level_count in orig_dist.items():
+                if level_count and int(level_count) > 0 and (not allowed_levels or level in allowed_levels):
+                    per_level_allocations[level] = AIService._allocate_exact_counts(q_counts, int(level_count))
+
+            for idx, (unit, count) in enumerate(unit_rows):
+                unit_btl_dist = {
+                    level: alloc[idx] for level, alloc in per_level_allocations.items() if alloc[idx] > 0
+                } or None
+                unit_part_config = {
+                    **part,
+                    "questionCount": count,
+                    "mcqCount": mcq_allocations[idx],
+                    "btlDistribution": unit_btl_dist,
+                }
+                _add(part_name, part, ai_service._build_part_slots(unit_part_config, [unit]))
+
+    else:
+        # ── COMBINED MODE: even distribution across selected units ──
+        for part in parts_data:
+            _add(part["partName"], part, ai_service._build_part_slots(part, selected_units))
+
+    return plan, parts_data
+
+
+def _finalize_question_bank(db, user, subject, syllabus, pattern, cdap, parts_data, questions, include_answers=True):
+    """Generate the Excel, persist the QuestionBank (auto-approved), and auto-email it.
+    Shared by /generate and /generate-from-response."""
+    excel_path = excel_service.generate_question_bank_excel(
+        questions=questions,
+        subject_name=subject.name,
+        subject_code=subject.code,
+        parts_config=parts_data,
+        department=subject.department or "CSE",
+        semester=subject.semester or 1,
+        has_cdap=cdap is not None,
+        include_answers=include_answers
+    )
+
+    qb = QuestionBank(
+        id=str(uuid.uuid4()),
+        subject_id=subject.id,
+        syllabus_id=syllabus.id,
+        pattern_id=pattern.id if pattern else None,
+        title=f"{subject.code} Question Bank",
+        # Persist include_answers so re-download / edit regenerate the Excel in the same mode
+        questions={"parts": questions, "include_answers": include_answers},
+        status=QuestionBankStatus.APPROVED,
+        generated_by=user.id,
+        excel_path=excel_path
+    )
+    db.add(qb)
+    db.commit()
+    db.refresh(qb)
+
+    try:
+        send_share_notification(
+            recipients=[user.email],
+            bank_title=f"{subject.code} Question Bank",
+            subject_name=subject.name,
+            subject_code=subject.code,
+            sender_name="Krish Academia",
+            excel_path=excel_path
+        )
+    except Exception as e:
+        print(f"[QB] ⚠️ Failed to auto-email generated question bank to {user.email}: {e}")
+
+    return qb
 
 @router.get("", response_model=List[QuestionBankResponse])
 async def get_all_question_banks(
@@ -224,6 +452,7 @@ async def generate_questions(
         raise HTTPException(status_code=400, detail="No question pattern defined")
     
     parts_data = normalize_parts(parts)
+    _merge_subject_descriptions(subject, parts_data)
 
     # Log normalized parts for debugging
     print("[QB] Normalized parts config:")
@@ -273,11 +502,12 @@ async def generate_questions(
                 # Identify which parts in the raw unit config actually lack mcqCount (i.e. is undefined/None)
                 lacks_mcq = {}
                 for rp in raw_unit_parts:
-                    p_name = rp.get("partName")
-                    if p_name and rp.get("mcqCount") is None:
+                    p_name = _part_value(rp, "partName")
+                    if p_name and _part_value(rp, "mcqCount") is None:
                         lacks_mcq[p_name] = True
 
                 unit_parts = normalize_parts(raw_unit_parts)
+                _merge_subject_descriptions(subject, unit_parts)
 
                 # Inherit mcqCount from global parts config ONLY when per-unit config lacks it entirely
                 global_mcq_map = {p["partName"]: p.get("mcqCount", 0) for p in parts_data}
@@ -299,6 +529,7 @@ async def generate_questions(
                     parts=unit_parts,
                     subject_name=subject.name,
                     cdap_units=cdap_units,
+                    include_answers=data.include_answers,
                 )
                 for part_name, qs in unit_questions.items():
                     for q in qs:
@@ -363,6 +594,7 @@ async def generate_questions(
                         part_config=unit_part_config,
                         subject_name=subject.name,
                         cdap_units=cdap_units,
+                        include_answers=data.include_answers,
                     )
                     for q in unit_questions:
                         q.setdefault("unit", unit_num)
@@ -378,6 +610,7 @@ async def generate_questions(
                 parts=parts_data,
                 subject_name=subject.name,
                 cdap_units=cdap_units,
+                include_answers=data.include_answers,
             )
 
     except AIServiceError as e:
@@ -391,48 +624,139 @@ async def generate_questions(
             ),
         )
 
-    
-    # Generate Excel with subject info and CDAP Part column
-    excel_path = excel_service.generate_question_bank_excel(
-        questions=questions,
-        subject_name=subject.name,
-        subject_code=subject.code,
-        parts_config=parts_data,
-        department=subject.department or "CSE",
-        semester=subject.semester or 1,
-        has_cdap=cdap is not None  # Flag to enable CDAP Part column
-    )
-    
-    # Save question bank — automatically approved
-    initial_status = QuestionBankStatus.APPROVED
-    qb = QuestionBank(
-        id=str(uuid.uuid4()),
-        subject_id=subject.id,
-        syllabus_id=syllabus.id,
-        pattern_id=pattern.id if pattern else None,
-        title=f"{subject.code} Question Bank",
-        questions={"parts": questions},
-        status=initial_status,
-        generated_by=user.id,
-        excel_path=excel_path
-    )
-    db.add(qb)
-    db.commit()
-    db.refresh(qb)
-    
-    # Auto-email the generated question bank to the user
-    try:
-        send_share_notification(
-            recipients=[user.email],
-            bank_title=f"{subject.code} Question Bank",
-            subject_name=subject.name,
-            subject_code=subject.code,
-            sender_name="Krish Academia",
-            excel_path=excel_path
+    # Generate Excel, persist, and auto-email (shared with Prompt Mode)
+    qb = _finalize_question_bank(db, user, subject, syllabus, pattern, cdap, parts_data, questions,
+                                 include_answers=data.include_answers)
+    return qb
+
+
+# ── Prompt Mode (copy-paste fallback for API limits) ────────────────────────────
+
+@router.post("/generate-prompt")
+async def generate_prompt(
+    data: GenerateQuestionsRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """
+    Build a prompt the user can copy into any external AI. No AI provider is called.
+    - Default: ONE consolidated prompt for the whole bank.
+    - split_by_unit=True: one prompt PER UNIT so web AIs don't truncate large replies.
+    """
+    subject, syllabus, cdap, pattern = _resolve_owned_context(db, user, data)
+    plan, _parts_data = build_generation_plan(data, subject, syllabus, cdap, pattern)
+
+    total_questions = sum(len(e["slots"]) for e in plan.values())
+    if total_questions == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No questions to generate. Check your pattern counts and selected units."
         )
-    except Exception as e:
-        print(f"[QB] ⚠️ Failed to auto-email generated question bank to {user.email}: {e}")
-    
+
+    cdap_units = cdap.units if cdap else None
+    num_parts = sum(1 for e in plan.values() if e["slots"])
+
+    if data.split_by_unit:
+        # Build a per-unit prompt. Unit titles come from the syllabus.
+        unit_titles = {u.get("unitNumber"): u.get("title", "") for u in (syllabus.units or [])}
+        per_unit = ai_service.split_plan_by_unit(plan)
+        unit_prompts = []
+        for unit_num, sub_plan in per_unit.items():
+            u_total = sum(len(e["slots"]) for e in sub_plan.values())
+            title = unit_titles.get(unit_num, "")
+            label = f"Unit {unit_num}" + (f": {title}" if title else "")
+            sub_cdap = [u for u in cdap_units if u.get("unit_number") == unit_num] if cdap_units else None
+            unit_prompts.append({
+                "unit_number": unit_num,
+                "unit_title": title,
+                "total_questions": u_total,
+                "prompt": ai_service.build_manual_prompt(
+                    sub_plan, subject.name, sub_cdap,
+                    include_answers=data.include_answers, scope_label=label
+                ),
+            })
+        return {
+            "split_by_unit": True,
+            "total_questions": total_questions,
+            "num_parts": num_parts,
+            "unit_prompts": unit_prompts,
+        }
+
+    prompt = ai_service.build_manual_prompt(plan, subject.name, cdap_units,
+                                            include_answers=data.include_answers)
+    return {
+        "split_by_unit": False,
+        "prompt": prompt,
+        "total_questions": total_questions,
+        "num_parts": num_parts,
+    }
+
+
+@router.post("/generate-from-response", response_model=QuestionBankResponse)
+async def generate_from_response(
+    data: GenerateFromResponseRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    """
+    Parse responses the user pasted back from an external AI (Prompt Mode) and produce
+    the Excel + question bank. The plan is rebuilt server-side from the same selection params,
+    so the pasted text is the only untrusted input.
+    - Single flow: response_text (one JSON object for the whole bank).
+    - Split flow: unit_responses ({ unitNumber -> JSON for that unit }), merged by part.
+    """
+    subject, syllabus, cdap, pattern = _resolve_owned_context(db, user, data)
+    plan, parts_data = build_generation_plan(data, subject, syllabus, cdap, pattern)
+
+    if sum(len(e["slots"]) for e in plan.values()) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No questions to generate. Check your pattern counts and selected units."
+        )
+
+    has_cdap = cdap is not None
+
+    if data.unit_responses:
+        # ── Split flow: parse each unit's response against its sub-plan, then merge by part ──
+        per_unit = ai_service.split_plan_by_unit(plan)
+        merged: dict = {}
+        missing = []
+        parsed_any = False
+        for unit_num, sub_plan in per_unit.items():
+            resp = data.unit_responses.get(str(unit_num)) or data.unit_responses.get(unit_num)
+            if not resp or not resp.strip():
+                missing.append(unit_num)
+                continue
+            try:
+                unit_questions = ai_service.parse_manual_response(resp, sub_plan, has_cdap=has_cdap)
+            except AIServiceError as e:
+                raise HTTPException(status_code=422, detail=f"Unit {unit_num}: {e}")
+            parsed_any = True
+            for part_name, qs in unit_questions.items():
+                merged.setdefault(part_name, []).extend(qs)
+
+        if missing:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Missing pasted response for unit(s): {', '.join('Unit ' + str(m) for m in missing)}. "
+                       "Paste each unit's AI response before generating."
+            )
+        if not parsed_any:
+            raise HTTPException(status_code=422, detail="No unit responses were provided.")
+        questions = merged
+    else:
+        # ── Single flow ──
+        if not data.response_text or not data.response_text.strip():
+            raise HTTPException(status_code=422, detail="Please paste the AI's JSON response.")
+        try:
+            questions = ai_service.parse_manual_response(
+                data.response_text, plan, has_cdap=has_cdap
+            )
+        except AIServiceError as e:
+            raise HTTPException(status_code=422, detail=str(e))
+
+    qb = _finalize_question_bank(db, user, subject, syllabus, pattern, cdap, parts_data, questions,
+                                 include_answers=data.include_answers)
     return qb
 
 # ── Image upload ──────────────────────────────────────────────────────────────
@@ -511,6 +835,8 @@ async def update_questions(
 
         # Strip imageData (base64 blobs) before passing to excel service — handled separately
         parts_questions: dict = questions_dict.get('parts', {})
+        # Preserve the original Question/With-Answer mode (default True for legacy banks)
+        include_answers = questions_dict.get('include_answers', True)
 
         # Delete old Excel file if it exists
         if qb.excel_path and os.path.exists(qb.excel_path):
@@ -526,6 +852,7 @@ async def update_questions(
             parts_config=parts_data,
             department=subject.department or "CSE" if subject else "CSE",
             semester=subject.semester or 1 if subject else 1,
+            include_answers=include_answers,
         )
         qb.excel_path = new_excel_path
     except Exception:
@@ -589,11 +916,13 @@ async def download_excel(
                 pass
                 
         parts_questions = {}
+        include_answers = True
         if isinstance(questions_data, dict):
             parts_questions = questions_data.get("parts", {})
+            include_answers = questions_data.get("include_answers", True)
             if not parts_questions:
                 parts_questions = questions_data
-                
+
         try:
             excel_path = excel_service.generate_question_bank_excel(
                 questions=parts_questions,
@@ -602,7 +931,8 @@ async def download_excel(
                 parts_config=parts_data,
                 department=subject.department or "CSE" if subject else "CSE",
                 semester=subject.semester or 1 if subject else 1,
-                has_cdap=cdap is not None
+                has_cdap=cdap is not None,
+                include_answers=include_answers
             )
             qb.excel_path = excel_path
             db.add(qb)

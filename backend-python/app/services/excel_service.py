@@ -114,6 +114,39 @@ class ExcelService:
                 
         return CellRichText(rich_content)
     
+    @staticmethod
+    def _unit_major_runs(questions: Dict[str, List[Dict]], parts_config: List[Dict]):
+        """
+        Flatten all parts' questions into UNIT-MAJOR order and return consecutive (part_name, [qs])
+        runs. Order: unit/CO (1→2→…) → part order in the pattern → MCQ before descriptive → CDAP
+        part. So rows read CO1(Part A, Part B), CO2(Part A, Part B), … with each row still tagged
+        by its Part. Returning runs (instead of a flat list) lets the sheet loops keep their body
+        unchanged: `for part_name, part_questions in _unit_major_runs(...)` then `for q in ...`.
+        """
+        part_order = {pn: i for i, pn in enumerate(questions.keys())}
+        flat = [(pn, q) for pn, qs in questions.items() for q in (qs or [])]
+
+        def _unit_key(q):
+            try:
+                return int(q.get('unit', 1))
+            except (TypeError, ValueError):
+                return 1
+
+        flat.sort(key=lambda pq: (
+            _unit_key(pq[1]),                        # CO1, CO2, CO3 …
+            part_order.get(pq[0], 99),               # Part A before Part B (pattern order)
+            0 if pq[1].get('isMCQ') else 1,          # MCQ before descriptive
+            pq[1].get('cdap_part', 1),               # CDAP Part 1 before Part 2
+        ))
+
+        runs: List = []
+        for pn, q in flat:
+            if runs and runs[-1][0] == pn:
+                runs[-1][1].append(q)
+            else:
+                runs.append((pn, [q]))
+        return runs
+
     def generate_question_bank_excel(
         self,
         questions: Dict[str, List[Dict]],
@@ -123,9 +156,11 @@ class ExcelService:
         department: str = "CSE",
         semester: int = 1,
         academic_year: str = None,
-        has_cdap: bool = False
+        has_cdap: bool = False,
+        include_answers: bool = True
     ) -> str:
-        """Generate Excel file for question bank matching the required format"""
+        """Generate Excel file for question bank matching the required format.
+        When include_answers is False (Question Mode), only the Question Bank sheet is produced."""
         
         if not academic_year:
             year = datetime.now().year
@@ -211,22 +246,11 @@ class ExcelService:
         current_row = 6
         q_number = 1
         
-        for part_name, part_questions in questions.items():
+        for part_name, part_questions in self._unit_major_runs(questions, parts_config):
             part_config = next((p for p in parts_config if p.get('partName') == part_name), {})
             marks_per_q = part_config.get('marksPerQuestion', 2)
-            
-            # Sort: CO order (unit 1 → 2 → …), MCQ before descriptive within each CO,
-            # then CDAP Part 1 before Part 2 within each group
-            sorted_questions = sorted(
-                part_questions,
-                key=lambda q: (
-                    q.get('unit', 1),          # CO1 first, then CO2, CO3 …
-                    0 if q.get('isMCQ') else 1, # MCQ before descriptive
-                    q.get('cdap_part', 1),      # CDAP Part 1 before Part 2
-                )
-            )
-            
-            for q in sorted_questions:
+
+            for q in part_questions:
                 question_text = self._format_question_text(q.get('question', ''))
                 mcq_options_text = ''
 
@@ -322,8 +346,16 @@ class ExcelService:
                 q_number += 1
         
         # ============== SHEET 2: Answer Key ==============
+        # Question Mode: skip the Answer Key sheet entirely — save the single sheet and return.
+        if not include_answers:
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f"{subject_code}_QuestionBank_{timestamp}.xlsx"
+            filepath = os.path.join(self.upload_dir, filename)
+            wb.save(filepath)
+            return filepath
+
         ws_ans = wb.create_sheet("Answer Key")
-        
+
         # Set column widths first
         for col_letter, width in col_widths_ans.items():
             ws_ans.column_dimensions[col_letter].width = width
@@ -362,22 +394,11 @@ class ExcelService:
         current_row = 5
         q_number = 1
         
-        for part_name, part_questions in questions.items():
+        for part_name, part_questions in self._unit_major_runs(questions, parts_config):
             part_config = next((p for p in parts_config if p.get('partName') == part_name), {})
             marks_per_q = part_config.get('marksPerQuestion', 2)
-            
-            # Sort: CO order (unit 1 → 2 → …), MCQ before descriptive within each CO,
-            # then CDAP Part 1 before Part 2 within each group
-            sorted_questions = sorted(
-                part_questions,
-                key=lambda q: (
-                    q.get('unit', 1),          # CO1 first, then CO2, CO3 …
-                    0 if q.get('isMCQ') else 1, # MCQ before descriptive
-                    q.get('cdap_part', 1),      # CDAP Part 1 before Part 2
-                )
-            )
-            
-            for q in sorted_questions:
+
+            for q in part_questions:
                 question_text = self._format_question_text(q.get('question', ''))
 
                 # For MCQ, add options on new lines (same as Question Bank sheet)

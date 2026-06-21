@@ -67,6 +67,9 @@ class AIService:
 
     # Max questions per single AI call — keeps prompts well within token limits
     CHUNK_SIZE = 10
+    # Question-only mode omits answers, so each item is far smaller — allow a larger chunk
+    # (fewer/faster API calls, less likely to exhaust providers).
+    CHUNK_SIZE_QUESTION_ONLY = 22
 
     def __init__(self):
         # Build ordered provider chain from available API keys
@@ -351,7 +354,8 @@ class AIService:
         syllabus_units: List[Dict],
         part_config: Dict,
         subject_name: str,
-        cdap_units: Optional[List[Dict]] = None
+        cdap_units: Optional[List[Dict]] = None,
+        include_answers: bool = True
     ) -> List[Dict]:
         """
         Unit-assignment strategy with Slot-based exact BTL mapping:
@@ -379,12 +383,14 @@ class AIService:
         _log("AI", f"📚  Units: {len(syllabus_units)} | CDAP: {'Yes' if cdap_units else 'No'}")
 
         # ── Dynamic chunk size: large-mark questions need more output tokens ──
+        # Question-only mode omits answers, so we can fit far more per call.
+        base_chunk = self.CHUNK_SIZE_QUESTION_ONLY if not include_answers else self.CHUNK_SIZE
         if marks >= 13:
-            effective_chunk = 5
+            effective_chunk = 5 if include_answers else 10
         elif marks >= 8:
-            effective_chunk = 7
+            effective_chunk = 7 if include_answers else 14
         else:
-            effective_chunk = self.CHUNK_SIZE
+            effective_chunk = base_chunk
 
         # Step 1: pre-assign questions to units (round-robin)
         unit_assignments = self._assign_questions_to_units(q_count, syllabus_units, mcq_count)
@@ -527,7 +533,7 @@ class AIService:
             _log("AI", f"📦  Chunk {chunk_idx+1}/{num_chunks} | {unit_summary} "
                        f"| MCQ:{chunk_mcq} Desc:{chunk_desc} | BTL budget:{chunk_btl_dist} | Provider: {prov_name}")
 
-            prompt = self._build_prompt(slots, chunk_config, subject_name, cdap_units)
+            prompt = self._build_prompt(slots, chunk_config, subject_name, cdap_units, include_answers)
             _log("AI", f"📝  Prompt length: {len(prompt):,} chars")
 
             content = await self._call_with_fallback(prompt, provider_chain=provider_chain, prov_start_idx=prov_idx)
@@ -657,7 +663,7 @@ class AIService:
             chunks.append(current)
         return chunks
 
-    def _build_prompt(self, slots: List[Dict], part: Dict, subject: str, cdap_units: Optional[List[Dict]] = None) -> str:
+    def _build_prompt(self, slots: List[Dict], part: Dict, subject: str, cdap_units: Optional[List[Dict]] = None, include_answers: bool = True) -> str:
         part_name  = part.get("partName", "Part")
         marks      = part.get("marksPerQuestion", 2)
         count      = len(slots)
@@ -713,6 +719,18 @@ class AIService:
             'is based on a topic in the Part2 list above. This mapping must be 100% accurate.\n'
         ) if has_cdap else ''
 
+        answer_rules = (
+            f"- Answer depth: {answer_depth}\n"
+            "- For code/DB topics: include relevant SQL/pseudocode in answers\n"
+        ) if include_answers else (
+            "- Do NOT include any answers, solutions, or correct options — generate the QUESTIONS ONLY.\n"
+        )
+
+        # Staff-authored style guidance for this part (e.g. "short answer", "scenario-based",
+        # "problem-solving / numerical"). Honour it verbatim so questions match what they expect.
+        desc = (part.get("description") or "").strip()
+        style_rule = f"- Question STYLE for {part_name} (follow this strictly): {desc}\n" if desc else ""
+
         prompt = f"""Generate exactly {count} exam questions for "{subject}" ({part_name}).
 
 SPECIFIC QUESTIONS REQUIREMENT:
@@ -723,24 +741,300 @@ You MUST generate exactly {count} questions matching the slot-by-slot specificat
 
 RULES:
 - Marks each: {marks} marks
-- Answer depth: {answer_depth}
-- For code/DB topics: include relevant SQL/pseudocode in answers
-- BTL3+: frame with real-world context ("Given a hospital system...", "For an e-commerce DB...")
+{style_rule}{answer_rules}- BTL3+: frame with real-world context ("Given a hospital system...", "For an e-commerce DB...")
 - NEVER mention unit names or numbers inside question or answer text
 {cdap_rule}"""
 
         if mcq_count > 0:
+            if include_answers:
+                mcq_obj = (f'{{"question":"...","unit":1{cdap_field},"btl":"BTL1","marks":{marks},'
+                           f'"isMCQ":true,"options":{{"A":"...","B":"...","C":"...","D":"..."}},"correctOption":"A","answer":"..."}}')
+                desc_obj = f'{{"question":"...","unit":1{cdap_field},"btl":"BTL2","marks":{marks},"isMCQ":false,"answer":"..."}}'
+            else:
+                mcq_obj = (f'{{"question":"...","unit":1{cdap_field},"btl":"BTL1","marks":{marks},'
+                           f'"isMCQ":true,"options":{{"A":"...","B":"...","C":"...","D":"..."}}}}')
+                desc_obj = f'{{"question":"...","unit":1{cdap_field},"btl":"BTL2","marks":{marks},"isMCQ":false}}'
             prompt += f"""\n\nOUTPUT — JSON array of EXACTLY {count} items. First {mcq_count} MCQ, rest descriptive.
 The BTL levels in the output JSON array must match the slot specifications above exactly:
-[{{"question":"...","unit":1{cdap_field},"btl":"BTL1","marks":{marks},"isMCQ":true,"options":{{"A":"...","B":"...","C":"...","D":"..."}},"correctOption":"A","answer":"..."}},
- {{"question":"...","unit":1{cdap_field},"btl":"BTL2","marks":{marks},"isMCQ":false,"answer":"..."}}]"""
+[{mcq_obj},
+ {desc_obj}]"""
         else:
+            if include_answers:
+                desc_obj = f'{{"question":"...","unit":1{cdap_field},"btl":"BTL2","marks":{marks},"answer":"..."}}'
+            else:
+                desc_obj = f'{{"question":"...","unit":1{cdap_field},"btl":"BTL2","marks":{marks}}}'
             prompt += f"""\n\nOUTPUT — JSON array of EXACTLY {count} items:
 The BTL levels in the output JSON array must match the slot specifications above exactly:
-[{{"question":"...","unit":1{cdap_field},"btl":"BTL2","marks":{marks},"answer":"..."}}]"""
+[{desc_obj}]"""
 
         prompt += '\nReturn ONLY the JSON array. No markdown. Escape internal quotes as \\" and newlines as \\n.'
         return prompt
+
+    # ── Manual (copy-paste) prompt mode ──────────────────────────────────────
+    # These power "Prompt Mode": build one consolidated prompt the user can paste
+    # into any external AI, then parse the pasted-back response. They reuse the
+    # same slot construction and the same 5-attempt parser as the automatic flow.
+
+    @staticmethod
+    def _norm_key(k: str) -> str:
+        """Normalize a part-name key for tolerant matching (case/spacing/punctuation-insensitive)."""
+        return re.sub(r'[^a-z0-9]', '', str(k).lower())
+
+    def _build_part_slots(self, part_config: Dict, syllabus_units: List[Dict]) -> List[Dict]:
+        """
+        Build the complete ordered slot list for ONE part across all its units in a single pass
+        (no chunking). Mirrors the per-chunk slot construction in generate_questions but for the
+        full questionCount. Each slot = {unit_num, unit_title, topics, is_mcq, btl}.
+        """
+        q_count   = int(part_config.get("questionCount", 5) or 0)
+        mcq_count = int(part_config.get("mcqCount", 0) or 0)
+        btl_levels = part_config.get("allowedBTLLevels", []) or []
+
+        if q_count <= 0 or not syllabus_units:
+            return []
+
+        # Round-robin assign questions (and MCQs) to units
+        unit_assignments = self._assign_questions_to_units(q_count, syllabus_units, mcq_count)
+
+        # Build MCQ-first, then descriptive slots
+        mcq_slots, desc_slots = [], []
+        for ua in unit_assignments:
+            u_num = ua["unit"].get("unitNumber", 1)
+            u_title = ua["unit"].get("title", "")
+            topics = ", ".join(self._extract_topics(ua["unit"])[:8])
+            for _ in range(ua["mcq"]):
+                mcq_slots.append({"unit_num": u_num, "unit_title": u_title, "topics": topics, "is_mcq": True})
+            for _ in range(ua["count"] - ua["mcq"]):
+                desc_slots.append({"unit_num": u_num, "unit_title": u_title, "topics": topics, "is_mcq": False})
+        slots = mcq_slots + desc_slots
+        total = len(slots)
+
+        # Allocate BTL pool from btlDistribution (targets) within allowed levels, fill remainder
+        orig_dist = part_config.get("btlDistribution") or {}
+        allowed_btls = set(btl_levels)
+        btl_targets = {
+            k: int(v) for k, v in orig_dist.items()
+            if k in allowed_btls and v and int(v) > 0
+        } if orig_dist else {}
+
+        btl_pool: List[str] = []
+        for level, lvl_cnt in btl_targets.items():
+            btl_pool.extend([level] * lvl_cnt)
+
+        allowed_list = [b for b in btl_levels if b] or ["BTL1", "BTL2"]
+        while len(btl_pool) < total:
+            btl_pool.append(allowed_list[len(btl_pool) % len(allowed_list)])
+        btl_pool = btl_pool[:total]
+
+        _BTL_ORDER = ["BTL1", "BTL2", "BTL3", "BTL4", "BTL5", "BTL6"]
+        btl_pool.sort(key=lambda b: _BTL_ORDER.index(b) if b in _BTL_ORDER else 99)
+
+        for idx, slot in enumerate(slots):
+            slot["btl"] = btl_pool[idx]
+
+        return slots
+
+    def build_manual_prompt(self, plan: Dict[str, Dict], subject_name: str,
+                            cdap_units: Optional[List[Dict]] = None,
+                            include_answers: bool = True,
+                            scope_label: str = "") -> str:
+        """
+        Build ONE consolidated copy-paste prompt covering the whole question bank.
+        plan = {part_name: {"part_config": {...}, "slots": [...]}}
+        The AI is asked to return a single JSON object keyed by exact part name.
+        When include_answers is False (Question Mode), answers are omitted — shorter prompt
+        and a shorter AI reply (less likely to truncate).
+        scope_label (e.g. "Unit 1: Basics") marks this as one batch of a larger bank and tells
+        the AI to finish this batch without stopping/asking.
+        """
+        has_cdap = bool(cdap_units)
+        part_sections: List[str] = []
+        all_part_names = [pn for pn, e in plan.items() if e.get("slots")]
+
+        for part_name in all_part_names:
+            entry = plan[part_name]
+            part  = entry["part_config"]
+            slots = entry["slots"]
+            marks = part.get("marksPerQuestion", 2)
+            count = len(slots)
+            mcq_count = sum(1 for s in slots if s["is_mcq"])
+
+            if marks <= 2:
+                answer_depth = "1-2 sentences"
+            elif marks <= 8:
+                answer_depth = "5-8 sentences with example"
+            else:
+                answer_depth = "structured ~200-300 word explanation with steps/code/examples"
+
+            slot_lines = []
+            for idx, s in enumerate(slots):
+                q_type = "MCQ (with options A, B, C, D)" if s["is_mcq"] else "Descriptive"
+                verbs = _K_KEYWORDS.get(s["btl"], "")
+                slot_lines.append(
+                    f"  Question {idx+1} ({q_type}):\n"
+                    f"    - Unit: Unit {s['unit_num']} ({s['unit_title']})\n"
+                    f"    - Key topics: {s['topics']}\n"
+                    f"    - Required Cognitive Level: {s['btl']} (MUST use Bloom's Taxonomy verbs: {verbs})\n"
+                    f"    - Marks: {marks}"
+                )
+            slot_block = "\n\n".join(slot_lines)
+            depth_line = f"Answer depth: {answer_depth}\n" if include_answers else ""
+            # Staff-authored question style for this part (e.g. short answer / scenario-based / numerical)
+            desc = (part.get("description") or "").strip()
+            style_line = f"Question STYLE (follow strictly): {desc}\n" if desc else ""
+            part_sections.append(
+                f'═══ "{part_name}" — {count} questions '
+                f'({mcq_count} MCQ, {count - mcq_count} descriptive), {marks} marks each ═══\n'
+                f"{style_line}{depth_line}\n"
+                f"{slot_block}"
+            )
+
+        parts_joined = "\n\n\n".join(part_sections)
+
+        # CDAP block (whole bank)
+        cdap_text = cdap_field = cdap_rule = ""
+        if has_cdap:
+            cdap_lines = []
+            for u in cdap_units:
+                u_num = u.get("unit_number")
+                p1 = ", ".join(t.get("topic", str(t)) if isinstance(t, dict) else str(t) for t in u.get("part1_topics", [])[:6])
+                p2 = ", ".join(t.get("topic", str(t)) if isinstance(t, dict) else str(t) for t in u.get("part2_topics", [])[:6])
+                if p1: cdap_lines.append(f"Unit {u_num} Part1 (CDAP Part 1): {p1}")
+                if p2: cdap_lines.append(f"Unit {u_num} Part2 (CDAP Part 2): {p2}")
+            if cdap_lines:
+                cdap_text = "\nCDAP topics (Part1 vs Part2 list):\n" + "\n".join(cdap_lines) + "\n"
+            cdap_field = ', "cdap_part": 1_or_2'
+            cdap_rule = ('- "cdap_part": set to 1 if the question is based on a Part1 topic above, '
+                         '2 if Part2. Be 100% accurate.\n')
+
+        answer_tail = ',"isMCQ":false,"answer":"..."' if include_answers else ',"isMCQ":false'
+        example_keys = ",\n  ".join(
+            f'"{pn}": [ {{"question":"...","unit":1{cdap_field},"btl":"BTL1",'
+            f'"marks":{plan[pn]["part_config"].get("marksPerQuestion", 2)}{answer_tail}}} ]'
+            for pn in all_part_names
+        )
+
+        if include_answers:
+            answer_global_rules = (
+                "- For code/DB topics, include relevant SQL/pseudocode in answers.\n"
+                '- MCQ questions MUST include "options" (with keys A, B, C, D) and "correctOption".\n'
+            )
+        else:
+            answer_global_rules = (
+                "- Generate QUESTIONS ONLY — do NOT include any \"answer\", \"correctOption\", or solutions.\n"
+                '- MCQ questions MUST include "options" (with keys A, B, C, D) but NO "correctOption".\n'
+            )
+
+        total_q = sum(len(plan[pn]["slots"]) for pn in all_part_names)
+        scope_note = (
+            f"\nThis is ONE batch of a larger question bank. Generate ALL {total_q} questions for THIS "
+            f"batch below — do not stop early, do not ask to continue, do not summarise.\n"
+        ) if scope_label else ""
+        batch_title = f' — {scope_label}' if scope_label else ''
+
+        prompt = f"""You are an academic exam question paper setter who understands Bloom's Taxonomy (BTL1-BTL6).
+Generate exam questions for the subject "{subject_name}"{batch_title} following the EXACT specifications below.
+{scope_note}{cdap_text}
+{parts_joined}
+
+
+GLOBAL RULES:
+- Generate EXACTLY the number of questions specified in each part, matching each slot's unit, type, BTL level and marks.
+- Generate EVERY question in one reply. Do NOT stop early, do NOT say "I'll continue", do NOT ask permission.
+- Output JSON ONLY. No greeting, no explanation, no markdown fences, no text before or after the JSON.
+{answer_global_rules}- For BTL3+ questions, frame with real-world context (e.g. "Given a hospital system...").
+- NEVER mention unit names or numbers inside the question or answer text.
+{cdap_rule}
+OUTPUT FORMAT — return ONLY a single valid JSON object (no markdown, no commentary) where each key is the
+EXACT part name and each value is a JSON array of that part's question objects, in slot order:
+{{
+  {example_keys}
+}}
+
+Escape internal quotes as \\" and newlines as \\n. Return ONLY the JSON object — nothing else."""
+        return prompt
+
+    @staticmethod
+    def split_plan_by_unit(plan: Dict[str, Dict]) -> Dict[int, Dict]:
+        """
+        Split a generation plan into per-unit sub-plans, preserving slot order within each part.
+        Returns { unit_number: { part_name: {"part_config": {...}, "slots": [...]} } }, ordered by
+        unit number. Each sub-plan has the same shape as the full plan, so build_manual_prompt and
+        parse_manual_response work on it unchanged.
+        """
+        per_unit: Dict[int, Dict] = {}
+        for part_name, entry in plan.items():
+            part_config = entry["part_config"]
+            for slot in entry["slots"]:
+                u = slot.get("unit_num", 1)
+                sub = per_unit.setdefault(u, {})
+                if part_name not in sub:
+                    sub[part_name] = {"part_config": part_config, "slots": []}
+                sub[part_name]["slots"].append(slot)
+        # Return ordered by unit number
+        return {u: per_unit[u] for u in sorted(per_unit.keys())}
+
+    def parse_manual_response(self, content: str, plan: Dict[str, Dict],
+                              has_cdap: bool = False) -> Dict[str, List[Dict]]:
+        """
+        Parse a pasted external-AI response (a JSON object keyed by part name) into the questions
+        dict. Reuses _parse_questions (with its 5-attempt repair + slot matching) per part.
+        """
+        if not content or not content.strip():
+            raise AIServiceError("Empty response. Please paste the AI's JSON output.")
+
+        text = content.strip()
+        text = re.sub(r'^```(?:json)?\s*', '', text)
+        text = re.sub(r'\s*```$', '', text)
+
+        parsed = None
+        try:
+            parsed = json.loads(text)
+        except Exception:
+            try:
+                parsed = json.loads(_repair(text))
+            except Exception:
+                parsed = None
+
+        part_names = list(plan.keys())
+
+        # Map the parsed structure to {part_name: array}
+        part_arrays: Dict[str, list] = {}
+        if isinstance(parsed, dict):
+            norm = {self._norm_key(k): v for k, v in parsed.items()}
+            for pn in part_names:
+                val = parsed.get(pn)
+                if val is None:
+                    val = norm.get(self._norm_key(pn))
+                if isinstance(val, list):
+                    part_arrays[pn] = val
+            # Positional fallback if no keys matched
+            if not part_arrays:
+                list_vals = [v for v in parsed.values() if isinstance(v, list)]
+                for pn, val in zip(part_names, list_vals):
+                    part_arrays[pn] = val
+        elif isinstance(parsed, list) and len(part_names) == 1:
+            part_arrays[part_names[0]] = parsed
+
+        if not part_arrays:
+            raise AIServiceError(
+                "Could not find question arrays in the pasted response. Make sure you pasted the full "
+                "JSON object the AI produced (keyed by part name)."
+            )
+
+        questions: Dict[str, List[Dict]] = {}
+        for pn in part_names:
+            entry = plan[pn]
+            slots = entry["slots"]
+            if not slots:
+                questions[pn] = []
+                continue
+            arr = part_arrays.get(pn)
+            sub_json = json.dumps(arr if isinstance(arr, list) else [])
+            # _parse_questions tolerates an empty array by filling placeholders from slots
+            questions[pn] = self._parse_questions(sub_json, entry["part_config"], slots, has_cdap)
+
+        return questions
 
     def _get_btl_guidelines(self, btl_levels, marks, subject):
         """Kept for compatibility — no longer injected into prompts."""
@@ -1156,7 +1450,8 @@ The BTL levels in the output JSON array must match the slot specifications above
         syllabus_units: List[Dict],
         parts: List[Dict],
         subject_name: str,
-        cdap_units: Optional[List[Dict]] = None
+        cdap_units: Optional[List[Dict]] = None,
+        include_answers: bool = True
     ) -> Dict[str, List[Dict]]:
         """Generate questions for all parts"""
         result = {}
@@ -1177,7 +1472,7 @@ The BTL levels in the output JSON array must match the slot specifications above
             part_name = part.get("partName", "Part")
             part_start = time.time()
             _log("QB", f"[{i}/{len(parts)}] Starting {part_name} ...")
-            questions = await self.generate_questions(syllabus_units, part, subject_name, cdap_units)
+            questions = await self.generate_questions(syllabus_units, part, subject_name, cdap_units, include_answers)
             part_elapsed = time.time() - part_start
             result[part_name] = questions
             _log("QB", f"[{i}/{len(parts)}] {part_name} done — {len(questions)} questions in {part_elapsed:.2f}s")

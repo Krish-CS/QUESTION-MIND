@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Users, Edit, RefreshCw, KeyRound, AlertCircle, Check, Upload, Loader2, Trash2, Plus, X, Download } from 'lucide-react';
 import api, { authApi } from '../lib/api';
 import { Combobox } from '../components/Combobox';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
 import toast from 'react-hot-toast';
 
 interface User {
@@ -25,6 +27,21 @@ export default function AdminDashboard() {
   const [successResetUser, setSuccessResetUser] = useState<User | null>(null);
   const [resetStatus, setResetStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [resetError, setResetError] = useState('');
+  
+  // Confirmation state for deleting users
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isDangerous?: boolean;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
   
   // Edit form state
   const [editName, setEditName] = useState('');
@@ -115,18 +132,24 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteUser = async (userId: string, userName: string) => {
-    if (!window.confirm(`Are you sure you want to delete user "${userName}"? This cannot be undone.`)) {
-      return;
-    }
-    try {
-      await authApi.deleteUser(userId);
-      toast.success('User deleted successfully.');
-      loadUsers();
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.response?.data?.detail || 'Failed to delete user');
-    }
+  const handleDeleteUser = (userId: string, userName: string) => {
+    setConfirmState({
+      isOpen: true,
+      title: 'Delete User',
+      message: `Are you sure you want to delete user "${userName}"? This cannot be undone.`,
+      isDangerous: true,
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        try {
+          await authApi.deleteUser(userId);
+          toast.success('User deleted successfully.');
+          loadUsers();
+        } catch (err: any) {
+          console.error(err);
+          toast.error(err.response?.data?.detail || 'Failed to delete user');
+        }
+      },
+    });
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -307,8 +330,8 @@ export default function AdminDashboard() {
         </div>
 
       {/* Add User Modal */}
-      {isAddingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      {isAddingUser && createPortal(
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-pink-200 dark:border-slate-800">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Add Manual User</h2>
@@ -385,12 +408,13 @@ export default function AdminDashboard() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Edit User Modal */}
-      {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      {editingUser && createPortal(
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-pink-200 dark:border-slate-800">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Edit User</h2>
@@ -446,12 +470,13 @@ export default function AdminDashboard() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Reset Password Modal */}
-      {resettingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      {resettingUser && createPortal(
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-pink-200 dark:border-slate-800">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center gap-2">
@@ -483,13 +508,14 @@ export default function AdminDashboard() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Password Reset Status Popup */}
-      {showResetSuccessPopup && successResetUser && (
+      {showResetSuccessPopup && successResetUser && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => { if (resetStatus !== 'loading') setShowResetSuccessPopup(false) }}
         >
           <div
@@ -538,9 +564,19 @@ export default function AdminDashboard() {
               </>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
+      <ConfirmationModal
+        isOpen={confirmState.isOpen}
+        onClose={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        isDangerous={confirmState.isDangerous}
+        confirmText={confirmState.confirmText}
+      />
     </div>
   );
 }

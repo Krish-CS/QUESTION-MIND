@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { subjectsApi, syllabusApi, questionBankApi, staffApi } from '../lib/api';
 import { useAuthStore, useUiStore } from '../lib/store';
@@ -18,9 +19,34 @@ import {
   Pencil,
   X,
   Share2,
+  Copy,
+  ClipboardCheck,
+  ClipboardPaste,
+  FileText,
+  HelpCircle,
+  CheckCircle2,
 } from 'lucide-react';
 import { Subject, Syllabus, QuestionBank, MySubjectAssignment, PartConfiguration, BloomLevel, ALL_BTL_LEVELS } from '../types';
 import QuestionBankViewModal from '../components/QuestionBankViewModal';
+import AILogosBackground from '../components/AILogosBackground';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
+import chatGptLogo from '../assets/AI LOGOS/chat_gpt.png';
+import geminiLogo from '../assets/AI LOGOS/gemini.png';
+import claudeLogo from '../assets/AI LOGOS/claude.png';
+import deepseekLogo from '../assets/AI LOGOS/DeepSeek.png';
+import grokLogo from '../assets/AI LOGOS/Grok.png';
+import kimiLogo from '../assets/AI LOGOS/KIMI.png';
+import qwenLogo from '../assets/AI LOGOS/qwen.png';
+
+const AI_OPTIONS = [
+  { name: 'ChatGPT', logo: chatGptLogo, url: 'https://chatgpt.com/' },
+  { name: 'Gemini', logo: geminiLogo, url: 'https://gemini.google.com/app' },
+  { name: 'Claude', logo: claudeLogo, url: 'https://claude.ai/new' },
+  { name: 'DeepSeek', logo: deepseekLogo, url: 'https://chat.deepseek.com/' },
+  { name: 'Grok', logo: grokLogo, url: 'https://x.com/i/grok' },
+  { name: 'KIMI', logo: kimiLogo, url: 'https://kimi.moonshot.cn/' },
+  { name: 'Qwen', logo: qwenLogo, url: 'https://chat.qwenlm.ai/' },
+];
 
 export default function QuestionBanks() {
   const { user } = useAuthStore();
@@ -41,7 +67,28 @@ export default function QuestionBanks() {
   const [viewingBank, setViewingBank] = useState<QuestionBank | null>(null);
   const [editingBankId, setEditingBankId] = useState<string | null>(null);
   const [selectedSubjectPattern, setSelectedSubjectPattern] = useState<any>(null);
-  const [qbMode, setQbMode] = useState<'combined' | 'individual'>('combined');
+  const [qbMode, setQbMode] = useState<'combined' | 'individual' | 'prompt'>('combined');
+  // Within Prompt mode, which generation style to use (mirrors Combined/Individual)
+  const [promptSubMode, setPromptSubMode] = useState<'combined' | 'individual'>('combined');
+  // Global answer mode — applies to all 3 generation modes. Default Question (no answer key)
+  // so the AI can use a larger chunk size (faster, fewer API calls).
+  const [includeAnswers, setIncludeAnswers] = useState(false);
+  // ── Prompt Mode (copy-paste fallback) state ──
+  const [promptText, setPromptText] = useState('');
+  const [promptResponse, setPromptResponse] = useState('');
+  const [promptLoading, setPromptLoading] = useState(false);
+  const [parsingResponse, setParsingResponse] = useState(false);
+  const [promptCopied, setPromptCopied] = useState(false);
+  // Split-by-unit: default ON so large banks don't get truncated by web AIs
+  const [splitByUnit, setSplitByUnit] = useState(true);
+  // Per-unit prompts from the backend: [{ unit_number, unit_title, prompt, total_questions }]
+  const [unitPrompts, setUnitPrompts] = useState<{ unit_number: number; unit_title: string; prompt: string; total_questions: number }[]>([]);
+  // Per-unit pasted responses, keyed by unit number (as string)
+  const [unitResponses, setUnitResponses] = useState<Record<string, string>>({});
+  // Which unit's prompt was last copied (for per-card "Copied!" feedback)
+  const [copiedUnit, setCopiedUnit] = useState<number | null>(null);
+  // Recommendation popup when a single prompt is very large
+  const [showSplitSuggestion, setShowSplitSuggestion] = useState(false);
   // Inline-editable copies of pattern data
   const [localParts, setLocalParts] = useState<PartConfiguration[]>([]);
   const [localUnitCfg, setLocalUnitCfg] = useState<Record<string, PartConfiguration[]>>({});
@@ -55,6 +102,22 @@ export default function QuestionBanks() {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successBank, setSuccessBank] = useState<QuestionBank | null>(null);
 
+  // Confirmation state for deleting question bank, etc.
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isDangerous?: boolean;
+    confirmText?: string;
+    alertOnly?: boolean;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
+
 
 
 
@@ -67,6 +130,20 @@ export default function QuestionBanks() {
     const timeout = setTimeout(() => setBtlWarning(''), 4000);
     return () => clearTimeout(timeout);
   }, [btlWarning]);
+
+  // Invalidate and reset prompt mode states when prompt inputs change
+  useEffect(() => {
+    setPromptText('');
+    setPromptResponse('');
+    setUnitPrompts([]);
+    setUnitResponses({});
+  }, [
+    promptSubMode,
+    splitByUnit,
+    includeAnswers,
+    selectedUnitIds,
+    selectedSubjectId
+  ]);
 
   const loadData = async () => {
     try {
@@ -108,6 +185,16 @@ export default function QuestionBanks() {
   useEffect(() => {
     if (selectedSubjectId) {
       fetchSubjectPattern(selectedSubjectId);
+      
+      // Reset UI on explicitly changing subject
+      setQbMode('combined');
+      const syllabus = syllabi[selectedSubjectId];
+      const syllabusUnits: any[] = syllabus?.units || [];
+      if (syllabusUnits.length > 0) {
+        setSelectedUnitIds(syllabusUnits.map((u: any) => u.unitNumber));
+      } else {
+        setSelectedUnitIds([]);
+      }
     } else {
       setSelectedSubjectPattern(null);
     }
@@ -202,13 +289,6 @@ export default function QuestionBanks() {
         setSelectedSubjectPattern(JSON.parse(JSON.stringify(pattern)));
         applyPatternToLocalState(pattern, syllabusUnits);
       }
-    }
-    // Always stay in combined mode
-    setQbMode('combined');
-    if (syllabusUnits.length > 0) {
-      setSelectedUnitIds(syllabusUnits.map((u: any) => u.unitNumber));
-    } else {
-      setSelectedUnitIds([]);
     }
   };
 
@@ -453,25 +533,22 @@ export default function QuestionBanks() {
     setSelectedUnitIds(next);
   };
 
-  const handleGenerate = async () => {
-    if (!selectedSubjectId) return;
-    const syllabus = syllabi[selectedSubjectId];
-    if (!syllabus) { setError('Please upload syllabus first'); return; }
-    if (selectedUnitIds.length === 0) { setError('Please select at least one unit'); return; }
-    setGenerating(true);
-    setGlobalLoading(true, 'Generating Question Bank');
-    setError('');
-
+  /**
+   * Build the shared generate payload from the current selection/pattern state.
+   * Used by Combined/Individual (auto) generate AND by Prompt Mode (prompt + parse).
+   * `forPrompt` treats prompt-mode unit selection like combined-mode selection.
+   */
+  const buildGeneratePayload = (syllabus: Syllabus) => {
+    // In Prompt mode the effective generation style is the prompt sub-mode (combined/individual)
+    const effMode = qbMode === 'prompt' ? promptSubMode : qbMode;
     const allUnitIds = (syllabus.units || []).map((u: any) => u.unitNumber);
     const isAllSelected = selectedUnitIds.length === allUnitIds.length;
 
     // Individual mode: unit_configs (full per-unit config) takes priority over legacy unit_question_counts
-    const hasUnitCfg = qbMode === 'individual' && localUnitCfg
+    const hasUnitCfg = effMode === 'individual' && localUnitCfg
       && Object.keys(localUnitCfg).length > 0;
 
-    const sanitizedParts = localParts.map(p => sanitizePartConfig(p, btlCustomization));
-
-    const unitCfg = qbMode === 'combined' ? undefined : (hasUnitCfg
+    const unitCfg = effMode !== 'individual' ? undefined : (hasUnitCfg
       ? Object.fromEntries(
         Object.entries(localUnitCfg)
           .filter(([unitNum]) => selectedUnitIds.includes(Number(unitNum)))
@@ -479,7 +556,7 @@ export default function QuestionBanks() {
       )
       : undefined);
 
-    const uqc = !hasUnitCfg && qbMode === 'individual' && selectedSubjectPattern?.unit_question_counts
+    const uqc = !hasUnitCfg && effMode === 'individual' && selectedSubjectPattern?.unit_question_counts
       && Object.keys(selectedSubjectPattern.unit_question_counts).length > 0
       ? Object.fromEntries(
         Object.entries(selectedSubjectPattern.unit_question_counts).map(([partName, unitCounts]) => [
@@ -491,28 +568,153 @@ export default function QuestionBanks() {
       )
       : undefined;
 
+    // Combined (and combined-style Prompt) pass an explicit unit filter (round-robin distribution)
+    const useUnitFilter = effMode !== 'individual' && !isAllSelected;
+
+    return {
+      subject_id: selectedSubjectId,
+      syllabus_id: syllabus.id,
+      custom_parts: localParts,
+      selected_unit_ids: useUnitFilter ? selectedUnitIds : undefined,
+      unit_configs: unitCfg,
+      unit_question_counts: uqc,
+      include_answers: includeAnswers,
+    };
+  };
+
+  const onBankCreated = (newBank: QuestionBank) => {
+    setQuestionBanks(prev => [newBank, ...prev]);
+    setLatestBankId(newBank.id);
+    setSuccessBank(newBank);
+    setShowSuccessPopup(true);
+    setTimeout(() => setLatestBankId(null), 12000);
+    setSelectedSubjectId('');
+    setSelectedUnitIds([]);
+    setQbMode('combined');
+    setPromptText('');
+    setPromptResponse('');
+    setUnitPrompts([]);
+    setUnitResponses({});
+  };
+
+  const handleGenerate = async () => {
+    if (!selectedSubjectId) return;
+    const syllabus = syllabi[selectedSubjectId];
+    if (!syllabus) { setError('Please upload syllabus first'); return; }
+    if (selectedUnitIds.length === 0) { setError('Please select at least one unit'); return; }
+    setGenerating(true);
+    setGlobalLoading(true, 'Generating Question Bank');
+    setError('');
+
     try {
-      const response = await questionBankApi.generate({
-        subject_id: selectedSubjectId,
-        syllabus_id: syllabus.id,
-        custom_parts: localParts,
-        selected_unit_ids: qbMode === 'combined' && !isAllSelected ? selectedUnitIds : undefined,
-        unit_configs: unitCfg,
-        unit_question_counts: uqc,
-      });
-      const newBank: QuestionBank = response.data;
-      setQuestionBanks([newBank, ...questionBanks]);
-      setLatestBankId(newBank.id);
-      setSuccessBank(newBank);
-      setShowSuccessPopup(true);
-      setTimeout(() => setLatestBankId(null), 12000);
-      setSelectedSubjectId('');
-      setSelectedUnitIds([]);
-      setQbMode('combined');
+      const response = await questionBankApi.generate(buildGeneratePayload(syllabus));
+      onBankCreated(response.data as QuestionBank);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to generate questions');
     } finally {
       setGenerating(false);
+      setGlobalLoading(false);
+    }
+  };
+
+  const handleGeneratePrompt = async () => {
+    if (!selectedSubjectId) return;
+    const syllabus = syllabi[selectedSubjectId];
+    if (!syllabus) { setError('Please upload syllabus first'); return; }
+    if (selectedUnitIds.length === 0) { setError('Please select at least one unit'); return; }
+    setPromptLoading(true);
+    setError('');
+    try {
+      const response = await questionBankApi.generatePrompt({
+        ...buildGeneratePayload(syllabus),
+        split_by_unit: splitByUnit,
+      });
+      const data = response.data;
+      if (data.split_by_unit) {
+        setUnitPrompts(data.unit_prompts || []);
+        setUnitResponses({});
+        setPromptText('');
+      } else {
+        setPromptText(data.prompt || '');
+        setUnitPrompts([]);
+        // If a single prompt is very large, recommend switching to split mode
+        if ((data.prompt || '').length > 12000) setShowSplitSuggestion(true);
+      }
+      setPromptCopied(false);
+      setCopiedUnit(null);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to build prompt');
+    } finally {
+      setPromptLoading(false);
+    }
+  };
+
+  const handleCopyPrompt = async () => {
+    if (!promptText) return;
+    try {
+      await navigator.clipboard.writeText(promptText);
+      setPromptCopied(true);
+      setTimeout(() => setPromptCopied(false), 2500);
+    } catch {
+      setError('Could not copy automatically — please select the prompt text and copy manually.');
+    }
+  };
+
+  // Copy text, then open the chosen AI in a new tab. True auto-paste into another site's
+  // chatbox is impossible (browser cross-origin security), so the user just presses Ctrl/Cmd+V.
+  const handleOpenAI = async (url: string, text?: string, unitNum?: number) => {
+    const toCopy = text ?? promptText;
+    if (!toCopy) return;
+    try {
+      await navigator.clipboard.writeText(toCopy);
+      if (unitNum != null) { setCopiedUnit(unitNum); setTimeout(() => setCopiedUnit(null), 2500); }
+      else { setPromptCopied(true); setTimeout(() => setPromptCopied(false), 2500); }
+    } catch {
+      // Even if copy fails, still open the AI; user can copy manually from the box.
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleCopyUnitPrompt = async (text: string, unitNum: number) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedUnit(unitNum);
+      setTimeout(() => setCopiedUnit(null), 2500);
+    } catch {
+      setError('Could not copy automatically — please select the prompt text and copy manually.');
+    }
+  };
+
+  const handleGenerateFromResponse = async () => {
+    if (!selectedSubjectId) return;
+    const syllabus = syllabi[selectedSubjectId];
+    if (!syllabus) { setError('Please upload syllabus first'); return; }
+
+    const isSplit = unitPrompts.length > 0;
+    if (isSplit) {
+      const missing = unitPrompts.filter(up => !(unitResponses[String(up.unit_number)] || '').trim());
+      if (missing.length > 0) {
+        setError(`Please paste the AI response for: ${missing.map(m => `Unit ${m.unit_number}`).join(', ')}`);
+        return;
+      }
+    } else if (!promptResponse.trim()) {
+      setError('Please paste the AI response first');
+      return;
+    }
+
+    setParsingResponse(true);
+    setGlobalLoading(true, 'Building Question Bank from response');
+    setError('');
+    try {
+      const response = await questionBankApi.generateFromResponse({
+        ...buildGeneratePayload(syllabus),
+        ...(isSplit ? { unit_responses: unitResponses } : { response_text: promptResponse }),
+      });
+      onBankCreated(response.data as QuestionBank);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to parse the pasted response');
+    } finally {
+      setParsingResponse(false);
       setGlobalLoading(false);
     }
   };
@@ -537,14 +739,22 @@ export default function QuestionBanks() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this question bank?')) return;
-    try {
-      await questionBankApi.delete(id);
-      setQuestionBanks(questionBanks.filter(b => b.id !== id));
-    } catch (err) {
-      setError('Failed to delete');
-    }
+  const handleDelete = (id: string) => {
+    setConfirmState({
+      isOpen: true,
+      title: 'Delete Question Bank',
+      message: 'Are you sure you want to delete this question bank? This action cannot be undone.',
+      isDangerous: true,
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        try {
+          await questionBankApi.delete(id);
+          setQuestionBanks(questionBanks.filter(b => b.id !== id));
+        } catch (err) {
+          setError('Failed to delete');
+        }
+      },
+    });
   };
 
   const handleDirectShare = async (bank: QuestionBank) => {
@@ -588,7 +798,14 @@ export default function QuestionBanks() {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-      alert("Excel file downloaded!\n\nYour browser doesn't support direct file sharing. Please share the downloaded file manually via WhatsApp or Email.");
+      setConfirmState({
+        isOpen: true,
+        title: 'Sharing Fallback',
+        message: "Excel file downloaded!\n\nYour browser doesn't support direct file sharing. Please share the downloaded file manually via WhatsApp or Email.",
+        alertOnly: true,
+        confirmText: 'OK',
+        onConfirm: () => {},
+      });
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error('Sharing failed:', err);
@@ -615,6 +832,8 @@ export default function QuestionBanks() {
 
   const selectedSubject = getSelectedSubject();
   const availableSubjects = subjects.filter(s => syllabi[s.id] && s.configuration?.hasExam !== false);
+  // In Prompt mode the unit/pattern UI follows the chosen prompt sub-mode (combined/individual)
+  const effectiveMode = qbMode === 'prompt' ? promptSubMode : qbMode;
 
   return (
     <div className="space-y-6">
@@ -634,10 +853,29 @@ export default function QuestionBanks() {
         <p className="text-purple-700 dark:text-purple-300 mt-1 font-medium">Generate and manage AI-powered question banks</p>
       </div>
 
-      {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 dark:bg-rose-900 dark:border-rose-800 dark:text-rose-200">
-          {error}
-        </div>
+      {error && createPortal(
+        <div
+          className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setError('')}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center border-2 border-rose-300 dark:border-rose-700 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-2">Error Occurred</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed whitespace-pre-wrap">
+              {error}
+            </p>
+            <button
+              onClick={() => setError('')}
+              className="btn bg-rose-600 hover:bg-rose-700 text-white px-6 py-2.5 rounded-xl transition-all font-semibold shadow-lg shadow-rose-500/25 active:scale-95"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* No subjects warning */}
@@ -656,7 +894,42 @@ export default function QuestionBanks() {
       {/* ── Generator Card ── */}
       {subjects.length > 0 && (
         <div className="card dark:!bg-slate-900 p-6">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Generate New Question Bank</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Generate New Question Bank</h2>
+            {/* ── Global Output toggle: Question only vs With Answer Key (applies to all modes) ── */}
+            <div className="flex flex-col items-start sm:items-end gap-1">
+              <div className="relative grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full max-w-[340px] isolate">
+                <div
+                  className={`absolute inset-y-1 w-[calc(50%-0.25rem)] bg-gradient-to-r from-pink-500 to-purple-600 rounded-md shadow-md transition-all duration-300 ease-out -z-10 ${
+                    !includeAnswers ? 'left-1' : 'left-[calc(100%-0.25rem)] -translate-x-full'
+                  }`}
+                />
+                <button
+                  onClick={() => { setIncludeAnswers(false); setPromptText(''); }}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-300 ${!includeAnswers
+                      ? 'text-white'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                >
+                  <HelpCircle className="w-4 h-4" /> Question Only
+                </button>
+                <button
+                  onClick={() => { setIncludeAnswers(true); setPromptText(''); }}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-300 ${includeAnswers
+                      ? 'text-white'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                >
+                  <CheckCircle2 className="w-4 h-4" /> With Answer Key
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-[340px] text-center sm:text-right mt-1">
+                {includeAnswers
+                  ? 'Excel has 2 sheets (Questions + Answer Key)'
+                  : 'Faster — only a Question sheet, no answers'}
+              </p>
+            </div>
+          </div>
 
           <div className="space-y-4">
 
@@ -703,17 +976,19 @@ export default function QuestionBanks() {
                 </div>
               </div>
 
-              <button
-                onClick={handleGenerate}
-                disabled={!selectedSubjectId || generating}
-                title=''
-                className="btn w-full md:w-auto bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 text-white shadow-lg shadow-pink-500/40 hover:shadow-pink-500/60 hover:scale-105 active:scale-95 transition-all duration-300 font-extrabold tracking-wide border-0 disabled:opacity-90 disabled:cursor-not-allowed"
-              >
-                {generating
-                  ? <><Loader2 className="w-5 h-5 animate-spin" />Generating...</>
-                  : <><Sparkles className="w-5 h-5 animate-pulse" />Generate</>
-                }
-              </button>
+              {qbMode !== 'prompt' && (
+                <button
+                  onClick={handleGenerate}
+                  disabled={!selectedSubjectId || generating}
+                  title=''
+                  className="btn w-full md:w-auto bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 text-white shadow-lg shadow-pink-500/40 hover:shadow-pink-500/60 hover:scale-105 active:scale-95 transition-all duration-300 font-extrabold tracking-wide border-0 disabled:opacity-90 disabled:cursor-not-allowed"
+                >
+                  {generating
+                    ? <><Loader2 className="w-5 h-5 animate-spin" />Generating...</>
+                    : <><Sparkles className="w-5 h-5 animate-pulse" />Generate</>
+                  }
+                </button>
+              )}
             </div>
 
             {selectedSubjectId && !syllabi[selectedSubjectId] && (
@@ -726,11 +1001,18 @@ export default function QuestionBanks() {
             {selectedSubjectId && syllabi[selectedSubjectId] && (
               <div>
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Generation Mode</p>
-                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full">
+                <div className="relative grid grid-cols-3 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full isolate">
+                  <div
+                    className={`absolute inset-y-1 w-[calc(33.333%-0.167rem)] bg-gradient-to-r from-pink-500 to-purple-600 rounded-md shadow-md transition-all duration-300 ease-out -z-10 ${
+                      qbMode === 'combined' ? 'left-1' :
+                      qbMode === 'individual' ? 'left-1/2 -translate-x-1/2' :
+                      'left-[calc(100%-0.25rem)] -translate-x-full'
+                    }`}
+                  />
                   <button
                     onClick={() => setQbMode('combined')}
-                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${qbMode === 'combined'
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                    className={`flex-1 text-center py-2 rounded-md text-sm font-semibold transition-colors duration-300 ${qbMode === 'combined'
+                        ? 'text-white'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}
                   >
@@ -738,24 +1020,64 @@ export default function QuestionBanks() {
                   </button>
                   <button
                     onClick={() => setQbMode('individual')}
-                    className={`flex-1 text-center py-1.5 rounded-md text-sm font-semibold transition-all ${qbMode === 'individual'
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                    className={`flex-1 text-center py-2 rounded-md text-sm font-semibold transition-colors duration-300 ${qbMode === 'individual'
+                        ? 'text-white'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}
                   >
                     🎯 Individual
                   </button>
+                  <button
+                    onClick={() => setQbMode('prompt')}
+                    className={`flex-1 text-center py-2 rounded-md text-sm font-semibold transition-colors duration-300 ${qbMode === 'prompt'
+                        ? 'text-white'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                      }`}
+                  >
+                    📋 Prompt
+                  </button>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
                   {qbMode === 'combined'
                     ? 'AI distributes questions evenly across the units you select'
-                    : 'Uses exact per-unit counts from the pattern — select which units to include'}
+                    : qbMode === 'individual'
+                      ? 'Uses exact per-unit counts from the pattern — select which units to include'
+                      : 'No API needed — copy a ready-made prompt into any AI (ChatGPT, Gemini, Claude), then paste its response back here to build the Excel'}
                 </p>
               </div>
             )}
 
-            {/* COMBINED: unit checkboxes */}
-            {qbMode === 'combined' && selectedSubjectId && (syllabi[selectedSubjectId]?.units?.length ?? 0) > 0 && (
+            {qbMode === 'prompt' && selectedSubjectId && syllabi[selectedSubjectId] && (
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300 mb-6">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Generation Style</p>
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-full">
+                  <button
+                    onClick={() => { setPromptSubMode('combined'); setPromptText(''); setUnitPrompts([]); setUnitResponses({}); }}
+                    className={`flex-1 text-center py-2.5 rounded-lg text-sm font-bold transition-all ${promptSubMode === 'combined'
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  >
+                    🔀 Combined
+                  </button>
+                  <button
+                    onClick={() => { setPromptSubMode('individual'); setPromptText(''); setUnitPrompts([]); setUnitResponses({}); }}
+                    className={`flex-1 text-center py-2.5 rounded-lg text-sm font-bold transition-all ${promptSubMode === 'individual'
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  >
+                    🎯 Individual
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+                  {promptSubMode === 'combined'
+                    ? 'Even distribution across the units you select'
+                    : 'Uses exact per-unit counts from the pattern — same as the main Individual mode'}
+                </p>
+              </div>
+            )}
+
+            {/* COMBINED (and combined-style PROMPT): unit checkboxes */}
+            {effectiveMode === 'combined' && selectedSubjectId && (syllabi[selectedSubjectId]?.units?.length ?? 0) > 0 && (
               <div className="p-4 bg-white rounded-lg border-2 border-pink-200 dark:bg-slate-900 dark:border-pink-700 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white">📚 Select Units</h3>
@@ -799,7 +1121,7 @@ export default function QuestionBanks() {
             )}
 
             {/* INDIVIDUAL: unit selection + detailed per-unit × per-part table */}
-            {qbMode === 'individual' && selectedSubjectId && syllabi[selectedSubjectId] && (() => {
+            {effectiveMode === 'individual' && selectedSubjectId && syllabi[selectedSubjectId] && (() => {
               const hasUnitCfg = Object.keys(localUnitCfg).length > 0;
               const uqc: Record<string, Record<string, number>> = selectedSubjectPattern?.unit_question_counts || {};
               const hasUqc = !hasUnitCfg && Object.values(uqc).some(p => Object.values(p).some(v => v > 0));
@@ -894,7 +1216,7 @@ export default function QuestionBanks() {
                               <button
                                 type="button"
                                 onClick={handleCancelPatternEdit}
-                                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 transition-colors"
                               >
                                 <X className="w-3.5 h-3.5" /> Cancel
                               </button>
@@ -1196,8 +1518,8 @@ export default function QuestionBanks() {
               );
             })()}
 
-            {/* ── Pattern Summary Table (Combined mode only) ── */}
-            {qbMode === 'combined' && selectedSubject && localParts.length > 0 && (
+            {/* ── Pattern Summary Table (Combined / combined-style Prompt) ── */}
+            {effectiveMode === 'combined' && selectedSubject && localParts.length > 0 && (
               <div className="bg-white rounded-lg border-2 border-pink-200 dark:bg-slate-900 dark:border-pink-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="flex flex-col md:flex-row md:items-center justify-between px-4 py-3 bg-pink-50 dark:bg-pink-900/20 border-b border-pink-100 dark:border-pink-900 gap-3">
                   <div className="flex flex-wrap items-center gap-3">
@@ -1236,7 +1558,7 @@ export default function QuestionBanks() {
                         <button
                           type="button"
                           onClick={handleCancelPatternEdit}
-                          className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                          className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 transition-colors"
                         >
                           <X className="w-3.5 h-3.5" /> Cancel
                         </button>
@@ -1410,6 +1732,276 @@ export default function QuestionBanks() {
               </div>
             )}
 
+            {/* ── PROMPT MODE: copy prompt → paste response panel ── */}
+            {qbMode === 'prompt' && selectedSubjectId && syllabi[selectedSubjectId] && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+
+                {/* Single / Split — big full-width segmented control */}
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Prompt Delivery</p>
+                  <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-full">
+                    <button
+                      onClick={() => { setSplitByUnit(true); setPromptText(''); setUnitPrompts([]); setUnitResponses({}); }}
+                      className={`flex-1 text-center py-2.5 rounded-lg text-sm font-bold transition-all ${splitByUnit
+                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    >
+                      🧩 Split by Unit
+                    </button>
+                    <button
+                      onClick={() => { setSplitByUnit(false); setPromptText(''); setUnitPrompts([]); setUnitResponses({}); }}
+                      className={`flex-1 text-center py-2.5 rounded-lg text-sm font-bold transition-all ${!splitByUnit
+                          ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    >
+                      📄 Single Prompt
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+                    {splitByUnit
+                      ? 'One small prompt per unit — best for large banks (AIs won’t cut off the reply)'
+                      : 'One prompt for the whole bank — fine for small banks'}
+                  </p>
+                </div>
+
+                {/* ── SPLIT BY UNIT: one prompt + paste box per unit ── */}
+                {splitByUnit && (
+                  <div className="bg-white dark:bg-slate-900 rounded-lg border-2 border-pink-200 dark:border-pink-700 overflow-hidden">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-pink-50 dark:bg-pink-900/20 border-b border-pink-100 dark:border-pink-900">
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-pink-500 text-white text-xs font-bold">1</span>
+                        Generate prompts (one per unit)
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={handleGeneratePrompt}
+                        disabled={promptLoading || selectedUnitIds.length === 0}
+                        className="btn bg-gradient-to-r from-pink-600 to-purple-600 text-white text-sm px-4 py-2 gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {promptLoading
+                          ? <><Loader2 className="w-4 h-4 animate-spin" /> Building...</>
+                          : <><FileText className="w-4 h-4" /> {unitPrompts.length > 0 ? 'Rebuild' : 'Generate Prompts'}</>}
+                      </button>
+                    </div>
+                    {unitPrompts.length > 0 ? (
+                      <div className="p-4 space-y-4">
+                        {unitPrompts.map(up => {
+                          const key = String(up.unit_number);
+                          const hasResp = (unitResponses[key] || '').trim().length > 0;
+                          return (
+                            <div key={key} className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                              <div className="flex items-center justify-between gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
+                                <span className="text-sm font-bold text-pink-700 dark:text-pink-300 flex items-center gap-2">
+                                  Unit {up.unit_number}{up.unit_title ? `: ${up.unit_title}` : ''}
+                                  <span className="text-[10px] font-medium text-slate-400">{up.total_questions} Qs</span>
+                                  {hasResp && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyUnitPrompt(up.prompt, up.unit_number)}
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all ${copiedUnit === up.unit_number
+                                      ? 'bg-emerald-500 text-white'
+                                      : 'bg-white dark:bg-slate-800 text-pink-600 dark:text-pink-300 border border-pink-300 dark:border-pink-700 hover:bg-pink-50 dark:hover:bg-pink-900/20'}`}
+                                >
+                                  {copiedUnit === up.unit_number ? <><ClipboardCheck className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+                                </button>
+                              </div>
+                              <div className="p-3 space-y-2">
+                                <textarea
+                                  readOnly
+                                  value={up.prompt}
+                                  rows={4}
+                                  onClick={e => (e.target as HTMLTextAreaElement).select()}
+                                  className="w-full text-[11px] font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-pink-400 resize-y"
+                                />
+                                {/* Beautiful Animated AI Row */}
+                                <div className="relative overflow-hidden rounded-2xl border border-pink-200 dark:border-pink-900/50 p-6 shadow-inner my-4">
+                                  {/* Dedicated AI Logos Background */}
+                                  <div className="absolute inset-0 z-0 pointer-events-none">
+                                    <AILogosBackground />
+                                  </div>
+                                  
+                                  <div className="relative z-10 flex flex-wrap items-center justify-center gap-6 md:gap-10">
+                                    {AI_OPTIONS.map(ai => (
+                                      <button
+                                        key={ai.name}
+                                        type="button"
+                                        onClick={() => handleOpenAI(ai.url, up.prompt, up.unit_number)}
+                                        title={`Copy & open ${ai.name}`}
+                                        className="ai-logo-btn group relative flex items-center justify-center transition-all duration-500 hover:scale-[1.15] focus:outline-none"
+                                      >
+                                        {/* Clean white glow behind the logo */}
+                                        <div className="absolute inset-[-10%] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl rounded-full bg-white/70 dark:bg-white/40 pointer-events-none" />
+                                        <div className="absolute inset-[-5%] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-md rounded-full bg-white dark:bg-white/60 pointer-events-none" />
+                                        
+                                        <img 
+                                          src={ai.logo} 
+                                          alt={ai.name} 
+                                          className="h-10 w-auto object-contain drop-shadow-sm group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.9)] transition-all duration-500 relative z-10" 
+                                        />
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <textarea
+                                  value={unitResponses[key] || ''}
+                                  onChange={e => setUnitResponses(prev => ({ ...prev, [key]: e.target.value }))}
+                                  rows={4}
+                                  placeholder={`Paste Unit ${up.unit_number}'s AI JSON response here…`}
+                                  className="w-full text-[11px] font-mono bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-y"
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                          <ClipboardPaste className="w-3.5 h-3.5" />
+                          Copy each unit's prompt into any AI, paste its reply in that unit's box, then click Generate below.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-sm text-slate-400 dark:text-slate-500">
+                        Select your units &amp; pattern above, then click <span className="font-semibold">Generate Prompts</span>.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Step 1: Generate & copy prompt (SINGLE) */}
+                {!splitByUnit && (
+                <div className="bg-white dark:bg-slate-900 rounded-lg border-2 border-pink-200 dark:border-pink-700 overflow-hidden">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-3 bg-pink-50 dark:bg-pink-900/20 border-b border-pink-100 dark:border-pink-900">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-pink-500 text-white text-xs font-bold">1</span>
+                      Generate the prompt
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={handleGeneratePrompt}
+                      disabled={promptLoading || selectedUnitIds.length === 0}
+                      className="btn bg-gradient-to-r from-pink-600 to-purple-600 text-white text-sm px-4 py-2 gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {promptLoading
+                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Building...</>
+                        : <><FileText className="w-4 h-4" /> {promptText ? 'Rebuild Prompt' : 'Generate Prompt'}</>}
+                    </button>
+                  </div>
+
+                  {promptText ? (
+                    <div className="p-4 space-y-3">
+                      <div className="relative">
+                        <textarea
+                          readOnly
+                          value={promptText}
+                          rows={10}
+                          onClick={e => (e.target as HTMLTextAreaElement).select()}
+                          className="w-full text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-pink-400 resize-y"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCopyPrompt}
+                          className={`absolute top-2 right-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all ${promptCopied
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-white dark:bg-slate-800 text-pink-600 dark:text-pink-300 border border-pink-300 dark:border-pink-700 hover:bg-pink-50 dark:hover:bg-pink-900/20'
+                            }`}
+                        >
+                          {promptCopied ? <><ClipboardCheck className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                        <span>{promptText.length.toLocaleString()} characters</span>
+                        {promptText.length > 12000 && (
+                          <button type="button" onClick={() => setShowSplitSuggestion(true)} className="text-amber-600 dark:text-amber-400 font-medium underline decoration-dotted">
+                            ⚠️ Large prompt — switch to Split by Unit?
+                          </button>
+                        )}
+                      </div>
+                      {/* One-click: copy prompt + open the chosen AI in a new tab (then Ctrl/Cmd+V) */}
+                      <div className="pt-3">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 text-center">
+                          Click an AI below — we&apos;ll <span className="font-semibold text-pink-500">copy the prompt</span> and open it. Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[10px] font-mono mx-1">Ctrl/Cmd + V</kbd> to paste!
+                        </p>
+                        
+                        {/* Beautiful Animated AI Row */}
+                        <div className="relative overflow-hidden rounded-2xl border border-pink-200 dark:border-pink-900/50 p-6 shadow-inner">
+                          {/* Dedicated AI Logos Background */}
+                          <div className="absolute inset-0 z-0 pointer-events-none">
+                            <AILogosBackground />
+                          </div>
+                          
+                          <div className="relative z-10 flex flex-wrap items-center justify-center gap-6 md:gap-10">
+                            {AI_OPTIONS.map(ai => (
+                              <button
+                                key={ai.name}
+                                type="button"
+                                onClick={() => handleOpenAI(ai.url)}
+                                title={`Open ${ai.name}`}
+                                className="ai-logo-btn group relative flex items-center justify-center transition-all duration-500 hover:scale-[1.15] focus:outline-none"
+                              >
+                                {/* Clean white glow behind the logo */}
+                                <div className="absolute inset-[-10%] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl rounded-full bg-white/70 dark:bg-white/40 pointer-events-none" />
+                                <div className="absolute inset-[-5%] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-md rounded-full bg-white dark:bg-white/60 pointer-events-none" />
+                                
+                                <img 
+                                  src={ai.logo} 
+                                  alt={ai.name} 
+                                  className="h-10 md:h-12 w-auto object-contain drop-shadow-sm group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.9)] transition-all duration-500 relative z-10" 
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-6 text-center text-sm text-slate-400 dark:text-slate-500">
+                      Select your units &amp; pattern above, then click <span className="font-semibold">Generate Prompt</span>.
+                    </div>
+                  )}
+                </div>
+                )}
+
+                {/* Step 2: Build Excel (single = paste box here; split = uses per-unit boxes above) */}
+                <div className="bg-white dark:bg-slate-900 rounded-lg border-2 border-pink-200 dark:border-pink-700 overflow-hidden">
+                  <div className="px-4 py-3 bg-pink-50 dark:bg-pink-900/20 border-b border-pink-100 dark:border-pink-900">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-pink-500 text-white text-xs font-bold">2</span>
+                      {splitByUnit ? 'Build the Excel (merges all units)' : "Paste the AI's response"}
+                    </h3>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    {!splitByUnit && (
+                      <textarea
+                        value={promptResponse}
+                        onChange={e => setPromptResponse(e.target.value)}
+                        rows={8}
+                        placeholder='Paste the AI&apos;s JSON response here, e.g. {"Part A": [ ... ], "Part B": [ ... ]}'
+                        className="w-full text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-pink-400 resize-y"
+                      />
+                    )}
+                    <div className="flex flex-col gap-4 items-center">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5 text-center w-full">
+                        <ClipboardPaste className="w-3.5 h-3.5" />
+                        {splitByUnit
+                          ? 'Once every unit above has a pasted response, click Generate — they’re merged into one Excel.'
+                          : 'The Excel is built from your pattern — minor formatting issues in the response are auto-repaired.'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleGenerateFromResponse}
+                        disabled={parsingResponse || (splitByUnit ? unitPrompts.length === 0 : !promptResponse.trim())}
+                        className="btn bg-gradient-to-r from-pink-600 via-rose-500 to-orange-500 text-white text-sm px-8 py-3 gap-1.5 font-bold disabled:opacity-60 disabled:cursor-not-allowed w-full max-w-sm justify-center"
+                      >
+                        {parsingResponse
+                          ? <><Loader2 className="w-4 h-4 animate-spin" /> Building Excel...</>
+                          : <><Sparkles className="w-4 h-4" /> Generate Excel{splitByUnit ? ' from All Units' : ' from Response'}</>}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       )}
@@ -1502,10 +2094,48 @@ export default function QuestionBanks() {
         />
       )}
 
-      {/* Generation Success Popup */}
-      {showSuccessPopup && successBank && (
+      {/* Split recommendation popup (large single prompt) */}
+      {showSplitSuggestion && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setShowSplitSuggestion(false)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-7 max-w-md w-full mx-4 text-center border-2 border-amber-300 dark:border-amber-700"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-4xl mb-2">🧩</div>
+            <h2 className="text-lg font-bold text-amber-600 dark:text-amber-400 mb-1">This prompt is large</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-5">
+              Big single prompts often get <span className="font-semibold">cut off</span> by free AI chats (they stop early or refuse).
+              <span className="block mt-2">Switch to <span className="font-semibold">Split by Unit</span> — one small prompt per unit that the AI can finish, merged into one Excel.</span>
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                className="btn bg-gradient-to-r from-pink-600 to-purple-600 text-white px-5 py-2"
+                onClick={() => {
+                  setShowSplitSuggestion(false);
+                  setSplitByUnit(true);
+                  setPromptText('');
+                  setUnitPrompts([]);
+                  setUnitResponses({});
+                }}
+              >
+                Switch to Split by Unit
+              </button>
+              <button className="btn btn-secondary px-5 py-2" onClick={() => setShowSplitSuggestion(false)}>
+                Keep single
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Generation Success Popup */}
+      {showSuccessPopup && successBank && createPortal(
+        <div
+          className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={() => setShowSuccessPopup(false)}
         >
           <div
@@ -1531,10 +2161,21 @@ export default function QuestionBanks() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
 
+      <ConfirmationModal
+        isOpen={confirmState.isOpen}
+        onClose={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        isDangerous={confirmState.isDangerous}
+        confirmText={confirmState.confirmText}
+        alertOnly={confirmState.alertOnly}
+      />
     </div>
   );
 }

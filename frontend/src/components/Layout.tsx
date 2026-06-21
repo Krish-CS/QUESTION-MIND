@@ -15,6 +15,7 @@ import {
   Moon,
   Sun,
   BarChart3,
+  Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import logo from '../assets/logo.png';
@@ -43,6 +44,7 @@ export default function Layout({ children }: LayoutProps) {
         { path: '/syllabus', icon: FileText, label: 'Syllabus' },
         { path: '/patterns', icon: Brain, label: 'Patterns' },
         { path: '/question-banks', icon: FileQuestion, label: 'Question Banks' },
+        { path: '/quick-checks', icon: Zap, label: 'Quick Checks' },
       ];
 
   const handleLogout = () => {
@@ -147,7 +149,10 @@ export default function Layout({ children }: LayoutProps) {
       </aside>
 
       {/* Main */}
-      <main className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-72' : 'lg:ml-72'} relative z-10 pt-16 lg:pt-0`}>
+      {/* NOTE: no z-index here — a positioned z-index would create a stacking context that traps
+          modal `fixed` overlays below the sidebar (z-40), so popup blur only covered part of the
+          screen. `relative` (without z-index) keeps offset-parent behavior without that trap. */}
+      <main className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-72' : 'lg:ml-72'} relative pt-16 lg:pt-0`}>
         <div className="p-6 lg:p-10">
           {children}
         </div>

@@ -30,9 +30,9 @@
     "semantic_hash": "e25ae501603ce6bf738198f5ce32ba83"
   },
   "D:\\QUESTION MIND\\.vscode\\settings.json": {
-    "mtime": 1779953544.3737576,
-    "ast_hash": "edcea4e2efd52eef416f70d7269ed6e9",
-    "semantic_hash": "edcea4e2efd52eef416f70d7269ed6e9"
+    "mtime": 1782021512.978173,
+    "ast_hash": "f3f849c726807230a6c481d3ca2de8ac",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\migrate.py": {
     "mtime": 1781064321.318892,
@@ -40,9 +40,9 @@
     "semantic_hash": "c6b89a3c0c4b6796a436e413a71bc8ca"
   },
   "D:\\QUESTION MIND\\backend-python\\app\\config.py": {
-    "mtime": 1781614025.4799392,
-    "ast_hash": "fe02bbe9c2760f4a3cc11eaecf0b162d",
-    "semantic_hash": "fe02bbe9c2760f4a3cc11eaecf0b162d"
+    "mtime": 1782020250.8608482,
+    "ast_hash": "af9946b05318d04e7c99346a1d2fca35",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\database.py": {
     "mtime": 1781590126.2760942,
@@ -50,9 +50,9 @@
     "semantic_hash": "9268e7082b0313826d87ed7584e9d5d3"
   },
   "D:\\QUESTION MIND\\backend-python\\app\\main.py": {
-    "mtime": 1781543742.2956247,
-    "ast_hash": "5b26ccd0a7399d537b2e5d2023d11bd0",
-    "semantic_hash": "5b26ccd0a7399d537b2e5d2023d11bd0"
+    "mtime": 1781926938.0096765,
+    "ast_hash": "ff8d29ce60eb8147ac2af33e3233f148",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\__init__.py": {
     "mtime": 1769435220.4893458,
@@ -105,9 +105,9 @@
     "semantic_hash": "6757b83d37d57950512e1437e259ab46"
   },
   "D:\\QUESTION MIND\\backend-python\\app\\routers\\question_bank.py": {
-    "mtime": 1781543660.5220013,
-    "ast_hash": "ae8484d3a0f7b50603e92afda30625ab",
-    "semantic_hash": "ae8484d3a0f7b50603e92afda30625ab"
+    "mtime": 1781943386.4954655,
+    "ast_hash": "e8c71a13e4b4f94c318ec3e11966fed0",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\routers\\staff.py": {
     "mtime": 1781534667.4879563,
@@ -135,9 +135,9 @@
     "semantic_hash": "44e48b96b6312b8997b53dc6408d10fb"
   },
   "D:\\QUESTION MIND\\backend-python\\app\\schemas\\question_bank.py": {
-    "mtime": 1781356168.104009,
-    "ast_hash": "f6ab30dd8f64268612caf8d7c65ae0bd",
-    "semantic_hash": "f6ab30dd8f64268612caf8d7c65ae0bd"
+    "mtime": 1781692151.861907,
+    "ast_hash": "cf334d31bb359a29f0cad390f5f4f323",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\schemas\\staff.py": {
     "mtime": 1781534667.5113537,
@@ -160,14 +160,14 @@
     "semantic_hash": "b6530f68aadf6740774ff4161840886a"
   },
   "D:\\QUESTION MIND\\backend-python\\app\\schemas\\__init__.py": {
-    "mtime": 1781534667.5098155,
-    "ast_hash": "4a67fb745fede56f569a2e6d54444e17",
-    "semantic_hash": "4a67fb745fede56f569a2e6d54444e17"
+    "mtime": 1781624632.4236126,
+    "ast_hash": "cb6e35720d1be777d3ddde45703f170b",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\services\\ai_service.py": {
-    "mtime": 1781586638.282875,
-    "ast_hash": "88e9e0db781d08dcad859bfda03c176b",
-    "semantic_hash": "88e9e0db781d08dcad859bfda03c176b"
+    "mtime": 1781754833.0602872,
+    "ast_hash": "4c48f4ab6992d84ab9d54731dcec8b31",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\services\\auth.py": {
     "mtime": 1781588150.548985,
@@ -185,9 +185,9 @@
     "semantic_hash": "d2d0db19fa75112ed0116ba8d2866c5f"
   },
   "D:\\QUESTION MIND\\backend-python\\app\\services\\excel_service.py": {
-    "mtime": 1772969068.883383,
-    "ast_hash": "c335ba30b06784507b0f50ef1b4aaf30",
-    "semantic_hash": "c335ba30b06784507b0f50ef1b4aaf30"
+    "mtime": 1781935512.2257106,
+    "ast_hash": "0c6129f73f10ee03e930ee30f49ed211",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\app\\services\\local_model_service.py": {
     "mtime": 1780210157.279698,
@@ -235,9 +235,9 @@
     "semantic_hash": "2bf785d018014f0534e899761256cc03"
   },
   "D:\\QUESTION MIND\\frontend\\src\\App.tsx": {
-    "mtime": 1781612282.8495338,
-    "ast_hash": "a86f031abae225c129d3786a0dfdd106",
-    "semantic_hash": "a86f031abae225c129d3786a0dfdd106"
+    "mtime": 1781964800.0841951,
+    "ast_hash": "9cef1f73d633c43f176d368b3aee6ccd",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\main.tsx": {
     "mtime": 1781431506.6918771,
@@ -255,24 +255,24 @@
     "semantic_hash": "e23776543cc3d3ffc4a821a9702212cd"
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\Layout.tsx": {
-    "mtime": 1781370115.648164,
-    "ast_hash": "a6b65fb9f6c1ee59952dadd826681a5b",
-    "semantic_hash": "a6b65fb9f6c1ee59952dadd826681a5b"
+    "mtime": 1781964811.2038083,
+    "ast_hash": "41b580aac8757ac8b152d94ce6d7c1e1",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\QuestionBankViewModal.tsx": {
-    "mtime": 1781359499.3275878,
-    "ast_hash": "2cc2d08c308058dfdd615e964f9c3f67",
-    "semantic_hash": "2cc2d08c308058dfdd615e964f9c3f67"
+    "mtime": 1781962993.0377276,
+    "ast_hash": "b26780a5eb100df58249d50b433aa332",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\ui\\ConfirmationModal.tsx": {
-    "mtime": 1769935533.9830165,
-    "ast_hash": "44d5ffb598878bb0e32bb7801206a82f",
-    "semantic_hash": "44d5ffb598878bb0e32bb7801206a82f"
+    "mtime": 1781962960.9795735,
+    "ast_hash": "444b420cf50dc6bc73bcbed4d53a06bc",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\lib\\api.ts": {
-    "mtime": 1781588184.875009,
-    "ast_hash": "05c488a7dc46f81e2d5265215b7acf33",
-    "semantic_hash": "05c488a7dc46f81e2d5265215b7acf33"
+    "mtime": 1781692176.5368147,
+    "ast_hash": "448fc660928637706a6f79b21ddf1508",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\lib\\store.ts": {
     "mtime": 1781588196.2636833,
@@ -285,39 +285,39 @@
     "semantic_hash": "81616d5a1b5f9a9733f7566641b4a901"
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Dashboard.tsx": {
-    "mtime": 1781544055.8390033,
-    "ast_hash": "bc1d5ea1275637eb54f15e52ceb7993d",
-    "semantic_hash": "bc1d5ea1275637eb54f15e52ceb7993d"
+    "mtime": 1781936069.337114,
+    "ast_hash": "021254c90423bba60df1df8875c860cd",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Login.tsx": {
-    "mtime": 1781606162.9925098,
-    "ast_hash": "57306796805de6996e3c4c799e950eed",
-    "semantic_hash": "57306796805de6996e3c4c799e950eed"
+    "mtime": 1782011809.247519,
+    "ast_hash": "c3349d5ba5c3b3f62832448e83cb1dba",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Overview.tsx": {
-    "mtime": 1781544073.2864857,
-    "ast_hash": "729f1b9b1fde86ec2e11f5c9478c08e4",
-    "semantic_hash": "729f1b9b1fde86ec2e11f5c9478c08e4"
+    "mtime": 1781962612.3832643,
+    "ast_hash": "e05b273e1aaaf28ae1894df66599d86f",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Patterns.tsx": {
-    "mtime": 1781411496.5898097,
-    "ast_hash": "c4f74f8a8f106f3f20f413bf42eed05c",
-    "semantic_hash": "c4f74f8a8f106f3f20f413bf42eed05c"
+    "mtime": 1781936052.1987116,
+    "ast_hash": "7c5272ba68fb665d8fe330fcc96695d8",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\QuestionBanks.tsx": {
-    "mtime": 1781543712.169626,
-    "ast_hash": "45fc6ac7631c4c7594c949dfe786955b",
-    "semantic_hash": "45fc6ac7631c4c7594c949dfe786955b"
+    "mtime": 1781964177.1305072,
+    "ast_hash": "05339799b9e19ab47d4fff8531918bcd",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Subjects.tsx": {
-    "mtime": 1781407616.2465513,
-    "ast_hash": "edb878e41fd9d627bfaa9e68a07e1595",
-    "semantic_hash": "edb878e41fd9d627bfaa9e68a07e1595"
+    "mtime": 1782015414.2807646,
+    "ast_hash": "00a17a3dd57041e1b4c682ee86f4cf06",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Syllabus.tsx": {
-    "mtime": 1781411308.9953055,
-    "ast_hash": "905675afdc18419cdde4bb27f23e32fd",
-    "semantic_hash": "905675afdc18419cdde4bb27f23e32fd"
+    "mtime": 1782018309.9620948,
+    "ast_hash": "870bcc8dcf614acde386c11857ed7342",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\types\\index.ts": {
     "mtime": 1781434760.9575922,
@@ -690,9 +690,9 @@
     "semantic_hash": "11dfae0ea3142a89796e1a0d7a5b72cd"
   },
   "D:\\QUESTION MIND\\frontend\\index.html": {
-    "mtime": 1781540596.9080567,
-    "ast_hash": "db51fe93c2464764e49fef24b913c2e5",
-    "semantic_hash": "db51fe93c2464764e49fef24b913c2e5"
+    "mtime": 1781668087.7533793,
+    "ast_hash": "971909a7985c774fd4f710a0145270fa",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\index.html": {
     "mtime": 1780216506.3861697,
@@ -1095,9 +1095,9 @@
     "semantic_hash": "1d6edc7f4cef2bc127f3756baf6cfe0b"
   },
   "D:\\QUESTION MIND\\backend-python\\app\\services\\email_service.py": {
-    "mtime": 1781614065.9739864,
-    "ast_hash": "bc41383edc2b883b9980d1ff46a959c2",
-    "semantic_hash": "bc41383edc2b883b9980d1ff46a959c2"
+    "mtime": 1782021246.5359688,
+    "ast_hash": "461d4b2bc74363c33075df98d46242a0",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\patch.py": {
     "mtime": 1780729769.723344,
@@ -1135,327 +1135,327 @@
     "semantic_hash": "b2a03ef4a5de06720f32728270dcbd80"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_cdap_7958dfd3_74388996.md": {
-    "mtime": 1781615457.874141,
+    "mtime": 1782025142.3363767,
     "ast_hash": "7cc5bdce066c6bcef6b5c52fb9f90036",
     "semantic_hash": "7cc5bdce066c6bcef6b5c52fb9f90036"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_cdap_153c13a6_41a291e7.md": {
-    "mtime": 1781615457.943941,
+    "mtime": 1782025142.3899164,
     "ast_hash": "f5f092440f931ae40de7114b6c684a9c",
     "semantic_hash": "f5f092440f931ae40de7114b6c684a9c"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_153150_c1babb73.md": {
-    "mtime": 1781615458.0470798,
+    "mtime": 1782025142.5019007,
     "ast_hash": "d515abe7bb0167b47c29629df87188fb",
     "semantic_hash": "d515abe7bb0167b47c29629df87188fb"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_163215_92c085e9.md": {
-    "mtime": 1781615458.118822,
+    "mtime": 1782025142.5748446,
     "ast_hash": "add6bfb99a1d1ff04143264fed1bbb45",
     "semantic_hash": "add6bfb99a1d1ff04143264fed1bbb45"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_194636_dd665057.md": {
-    "mtime": 1781615458.177544,
+    "mtime": 1782025142.6346662,
     "ast_hash": "80efe6cd59c3c8eb91c9e1b32d996ace",
     "semantic_hash": "80efe6cd59c3c8eb91c9e1b32d996ace"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_195556_ea4e0f03.md": {
-    "mtime": 1781615458.2509422,
+    "mtime": 1782025142.6851513,
     "ast_hash": "57fa43669b19f69f897cdbdf818d9733",
     "semantic_hash": "57fa43669b19f69f897cdbdf818d9733"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_112638_35a7294d.md": {
-    "mtime": 1781615458.297827,
+    "mtime": 1782025142.7486265,
     "ast_hash": "380aff85ef2a3b5e40a90e1df3186964",
     "semantic_hash": "380aff85ef2a3b5e40a90e1df3186964"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_113145_186d344b.md": {
-    "mtime": 1781615458.3164666,
+    "mtime": 1782025142.7924807,
     "ast_hash": "7b0944c7dc188edec6d9fadee0579486",
     "semantic_hash": "7b0944c7dc188edec6d9fadee0579486"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_113859_23c82583.md": {
-    "mtime": 1781615458.3561537,
+    "mtime": 1782025142.8564985,
     "ast_hash": "dfa6a780373b0bd351b199f0c297d738",
     "semantic_hash": "dfa6a780373b0bd351b199f0c297d738"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_114333_2e32bd9c.md": {
-    "mtime": 1781615458.4048781,
+    "mtime": 1782025142.88667,
     "ast_hash": "fae6b18685a27cb5b31eed816626df1a",
     "semantic_hash": "fae6b18685a27cb5b31eed816626df1a"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_114850_709f5eea.md": {
-    "mtime": 1781615458.4437883,
+    "mtime": 1782025142.9407296,
     "ast_hash": "d824625053942e74635f75bde85341b9",
     "semantic_hash": "d824625053942e74635f75bde85341b9"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_115144_0511a736.md": {
-    "mtime": 1781615458.4806006,
+    "mtime": 1782025143.0104468,
     "ast_hash": "b5abadd06b75adb260ece0adc7d7d608",
     "semantic_hash": "b5abadd06b75adb260ece0adc7d7d608"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_115513_4791a0cb.md": {
-    "mtime": 1781615458.5164077,
+    "mtime": 1782025143.0745542,
     "ast_hash": "b04e2c7a441599b7eb20c85596096760",
     "semantic_hash": "b04e2c7a441599b7eb20c85596096760"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_115829_16ee1f2b.md": {
-    "mtime": 1781615458.574923,
+    "mtime": 1782025143.1265697,
     "ast_hash": "d6845c3401a30d17c47856701b20df7d",
     "semantic_hash": "d6845c3401a30d17c47856701b20df7d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_145830_b43a0efb.md": {
-    "mtime": 1781615458.6214764,
+    "mtime": 1782025143.168536,
     "ast_hash": "94f21be6a1ded7ac412e32a3b375a338",
     "semantic_hash": "94f21be6a1ded7ac412e32a3b375a338"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_154322_7412a532.md": {
-    "mtime": 1781615458.6543694,
+    "mtime": 1782025143.2098653,
     "ast_hash": "c1baa414ec550d6858c7c64ecee4fb0f",
     "semantic_hash": "c1baa414ec550d6858c7c64ecee4fb0f"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_154749_c76f86da.md": {
-    "mtime": 1781615458.690845,
+    "mtime": 1782025143.2414012,
     "ast_hash": "c23f31c8425d9acece3dc9039dedc536",
     "semantic_hash": "c23f31c8425d9acece3dc9039dedc536"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_155249_7d194487.md": {
-    "mtime": 1781615458.743273,
+    "mtime": 1782025143.2774427,
     "ast_hash": "d70f88b50f4223ce6d48003abd388cd0",
     "semantic_hash": "d70f88b50f4223ce6d48003abd388cd0"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_155628_5619096f.md": {
-    "mtime": 1781615458.8073711,
+    "mtime": 1782025143.3379924,
     "ast_hash": "72d2957c3d1cd9b1efc7ee265d100abf",
     "semantic_hash": "72d2957c3d1cd9b1efc7ee265d100abf"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_155901_7e4b357f.md": {
-    "mtime": 1781615458.8734963,
+    "mtime": 1782025143.3858726,
     "ast_hash": "0b83d54bb17b56f8eca060ecc15bbdc7",
     "semantic_hash": "0b83d54bb17b56f8eca060ecc15bbdc7"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_163241_6901c0c8.md": {
-    "mtime": 1781615458.932237,
+    "mtime": 1782025143.4496238,
     "ast_hash": "25015c376e9b3b0547a065eb484d512d",
     "semantic_hash": "25015c376e9b3b0547a065eb484d512d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_214622_322b7f0b.md": {
-    "mtime": 1781615458.973668,
+    "mtime": 1782025143.48334,
     "ast_hash": "31331ed411857021cbceacecb78e3f5a",
     "semantic_hash": "31331ed411857021cbceacecb78e3f5a"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_215338_2e12b958.md": {
-    "mtime": 1781615459.0652463,
+    "mtime": 1782025143.5543725,
     "ast_hash": "5b5461f4c30accea9adfbc27fa3a837c",
     "semantic_hash": "5b5461f4c30accea9adfbc27fa3a837c"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_215815_671f18dd.md": {
-    "mtime": 1781615459.1341808,
+    "mtime": 1782025143.6047642,
     "ast_hash": "423e7fd5c8c315ca590b90fc69f4c016",
     "semantic_hash": "423e7fd5c8c315ca590b90fc69f4c016"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_220236_1b16f72a.md": {
-    "mtime": 1781615459.1816895,
+    "mtime": 1782025143.6806712,
     "ast_hash": "7c4015d885f902ee076bef129c656b6e",
     "semantic_hash": "7c4015d885f902ee076bef129c656b6e"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_220845_334f0812.md": {
-    "mtime": 1781615459.2430222,
+    "mtime": 1782025143.7597866,
     "ast_hash": "282a9acb8b0e9acd86bc624881af07f6",
     "semantic_hash": "282a9acb8b0e9acd86bc624881af07f6"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260129_061717_d21a8d3e.md": {
-    "mtime": 1781615459.2898881,
+    "mtime": 1782025143.8269434,
     "ast_hash": "7a62200099acd726f3b9a8de6bef87e0",
     "semantic_hash": "7a62200099acd726f3b9a8de6bef87e0"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260130_145428_fec597e4.md": {
-    "mtime": 1781615459.3478158,
+    "mtime": 1782025143.8856258,
     "ast_hash": "b5cb449d5a530291eca712f1493677cb",
     "semantic_hash": "b5cb449d5a530291eca712f1493677cb"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_133640_32cf7646.md": {
-    "mtime": 1781615459.430535,
+    "mtime": 1782025143.94349,
     "ast_hash": "f2517edd7ddb2b886727c940034eb7dd",
     "semantic_hash": "f2517edd7ddb2b886727c940034eb7dd"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_135447_cc67831a.md": {
-    "mtime": 1781615459.5025313,
+    "mtime": 1782025144.0077083,
     "ast_hash": "b23a4c2e3a0bc7791e714d656bc49221",
     "semantic_hash": "b23a4c2e3a0bc7791e714d656bc49221"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_163451_a98894cd.md": {
-    "mtime": 1781615459.5580728,
+    "mtime": 1782025144.0396564,
     "ast_hash": "cd86d1b82c1fd6f7b99a13e949cf55e6",
     "semantic_hash": "cd86d1b82c1fd6f7b99a13e949cf55e6"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_191909_d85b0b0e.md": {
-    "mtime": 1781615459.6261897,
+    "mtime": 1782025144.0730982,
     "ast_hash": "a08ab4258a6c32c29049063b4affdc4d",
     "semantic_hash": "a08ab4258a6c32c29049063b4affdc4d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_192613_5c27110c.md": {
-    "mtime": 1781615459.6910827,
+    "mtime": 1782025144.1233149,
     "ast_hash": "e274e0322d17241c845f4c8658d93e82",
     "semantic_hash": "e274e0322d17241c845f4c8658d93e82"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_192713_7b418371.md": {
-    "mtime": 1781615459.7459302,
+    "mtime": 1782025144.1907704,
     "ast_hash": "67b600ee6f5e2044d34020e778d76c64",
     "semantic_hash": "67b600ee6f5e2044d34020e778d76c64"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_195715_001eaba7.md": {
-    "mtime": 1781615459.812404,
+    "mtime": 1782025144.244505,
     "ast_hash": "02ddc1ee2add3b12edbd12321fe12f90",
     "semantic_hash": "02ddc1ee2add3b12edbd12321fe12f90"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_113234_f07dd1ed.md": {
-    "mtime": 1781615459.85639,
+    "mtime": 1782025144.3049493,
     "ast_hash": "fc723279d410323500e35c7431f1193d",
     "semantic_hash": "fc723279d410323500e35c7431f1193d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_113905_4f43fdc0.md": {
-    "mtime": 1781615459.924169,
+    "mtime": 1782025144.3383498,
     "ast_hash": "509eae95a81181df5577748f3ec3fa7f",
     "semantic_hash": "509eae95a81181df5577748f3ec3fa7f"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_114232_943f0119.md": {
-    "mtime": 1781615459.9611795,
+    "mtime": 1782025144.3659184,
     "ast_hash": "aeaaf8d88df21f53a3685d5f59d02c19",
     "semantic_hash": "aeaaf8d88df21f53a3685d5f59d02c19"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_115135_633e8508.md": {
-    "mtime": 1781615460.020835,
+    "mtime": 1782025144.4023156,
     "ast_hash": "602e808033f3261843146fc44c4ee48d",
     "semantic_hash": "602e808033f3261843146fc44c4ee48d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_152308_3ec6e0ae.md": {
-    "mtime": 1781615460.0861418,
+    "mtime": 1782025144.4386148,
     "ast_hash": "859b83f9dcae025fd06a06bad2341bfd",
     "semantic_hash": "859b83f9dcae025fd06a06bad2341bfd"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_061501_e1fc4605.md": {
-    "mtime": 1781615460.144925,
+    "mtime": 1782025144.4684937,
     "ast_hash": "7ed82e951dae8e76f57689362db42ab3",
     "semantic_hash": "7ed82e951dae8e76f57689362db42ab3"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_061629_09f50249.md": {
-    "mtime": 1781615460.1804295,
+    "mtime": 1782025144.505571,
     "ast_hash": "88929b4c6e414915065c013b4f26cc55",
     "semantic_hash": "88929b4c6e414915065c013b4f26cc55"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_062742_3b4e4811.md": {
-    "mtime": 1781615460.2351239,
+    "mtime": 1782025144.5395653,
     "ast_hash": "7bc80005341cfbcd4959ce4ab6f74a6b",
     "semantic_hash": "7bc80005341cfbcd4959ce4ab6f74a6b"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_063359_9a46fbee.md": {
-    "mtime": 1781615460.2843223,
+    "mtime": 1782025144.584532,
     "ast_hash": "4771ead33673e2eb8afe7f29db5a2cfd",
     "semantic_hash": "4771ead33673e2eb8afe7f29db5a2cfd"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_065924_9059a67b.md": {
-    "mtime": 1781615460.3503687,
+    "mtime": 1782025144.618448,
     "ast_hash": "e55ec4058a90f0fd8547451d8e686294",
     "semantic_hash": "e55ec4058a90f0fd8547451d8e686294"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_070328_325cb643.md": {
-    "mtime": 1781615460.4057226,
+    "mtime": 1782025144.6531148,
     "ast_hash": "dfbd4da1f8ef8e6f5ff75341503148a1",
     "semantic_hash": "dfbd4da1f8ef8e6f5ff75341503148a1"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_070806_47e8ed78.md": {
-    "mtime": 1781615460.449216,
+    "mtime": 1782025144.7045958,
     "ast_hash": "75b5f9fb799eb4606bc31b49e8a1f857",
     "semantic_hash": "75b5f9fb799eb4606bc31b49e8a1f857"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_070842_d49cb943.md": {
-    "mtime": 1781615460.5210707,
+    "mtime": 1782025144.73572,
     "ast_hash": "a751a41ebe0210bda9039bf1979e4f69",
     "semantic_hash": "a751a41ebe0210bda9039bf1979e4f69"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_140336_c24230f6.md": {
-    "mtime": 1781615460.5865588,
+    "mtime": 1782025144.7953255,
     "ast_hash": "bffe2030b96ecf13006dfb1bc117f34f",
     "semantic_hash": "bffe2030b96ecf13006dfb1bc117f34f"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_143452_a6e38e57.md": {
-    "mtime": 1781615460.6622298,
+    "mtime": 1782025144.8525336,
     "ast_hash": "6137e91c7ab63d6c079d6bd35a78ec10",
     "semantic_hash": "6137e91c7ab63d6c079d6bd35a78ec10"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_152010_6ab8b55e.md": {
-    "mtime": 1781615460.7125947,
+    "mtime": 1782025144.883654,
     "ast_hash": "431d669771ff7fafa028edebb710e4a5",
     "semantic_hash": "431d669771ff7fafa028edebb710e4a5"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_152026_ca2d7d77.md": {
-    "mtime": 1781615460.774939,
+    "mtime": 1782025144.928674,
     "ast_hash": "aa5a13a0de9be0576c78b1e42f761b2f",
     "semantic_hash": "aa5a13a0de9be0576c78b1e42f761b2f"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_111355_8e971f9f.md": {
-    "mtime": 1781615460.9422019,
+    "mtime": 1782025144.985509,
     "ast_hash": "205c9d2c2487401d963a4f8d99beb920",
     "semantic_hash": "205c9d2c2487401d963a4f8d99beb920"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_111552_a34e4986.md": {
-    "mtime": 1781615461.0395758,
+    "mtime": 1782025145.0603733,
     "ast_hash": "1a97c3b30998b422cd6dd579aaf7cfc5",
     "semantic_hash": "1a97c3b30998b422cd6dd579aaf7cfc5"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_112217_ad6fe290.md": {
-    "mtime": 1781615461.109382,
+    "mtime": 1782025145.1132624,
     "ast_hash": "154e227b4374c6ca7d85e693e1294a4d",
     "semantic_hash": "154e227b4374c6ca7d85e693e1294a4d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_122625_3511858b.md": {
-    "mtime": 1781615461.161628,
+    "mtime": 1782025145.1628537,
     "ast_hash": "e17f05b792892f044e72f42f1c4f18d4",
     "semantic_hash": "e17f05b792892f044e72f42f1c4f18d4"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_143123_dfe93cc7.md": {
-    "mtime": 1781615461.2373195,
+    "mtime": 1782025145.2362213,
     "ast_hash": "d7b49f384d6732a1cf2d7fd254e134a8",
     "semantic_hash": "d7b49f384d6732a1cf2d7fd254e134a8"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_195800_6c34d766.md": {
-    "mtime": 1781615461.3047864,
+    "mtime": 1782025145.295372,
     "ast_hash": "d3a15eb464d8509d638319c6413fa783",
     "semantic_hash": "d3a15eb464d8509d638319c6413fa783"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260306_111948_3afec71d.md": {
-    "mtime": 1781615461.3655014,
+    "mtime": 1782025145.3557274,
     "ast_hash": "b66a3c84c524eedd26cfad42d79a72b6",
     "semantic_hash": "b66a3c84c524eedd26cfad42d79a72b6"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260307_202151_09961a2e.md": {
-    "mtime": 1781615461.4160478,
+    "mtime": 1782025145.3990636,
     "ast_hash": "4b720de29b63548acaf5314fca39f9d7",
     "semantic_hash": "4b720de29b63548acaf5314fca39f9d7"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260308_162944_21301cd5.md": {
-    "mtime": 1781615461.4835644,
+    "mtime": 1782025145.4433396,
     "ast_hash": "2182dc6a73a4d842374c86e69e98b220",
     "semantic_hash": "2182dc6a73a4d842374c86e69e98b220"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\dbms question bank_95163910.md": {
-    "mtime": 1781615462.6878617,
+    "mtime": 1782025146.664186,
     "ast_hash": "8c12f5358b2c88a5b6b9eb8231e84776",
     "semantic_hash": "8c12f5358b2c88a5b6b9eb8231e84776"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\OS CDAP_e040c93a.md": {
-    "mtime": 1781615462.7791584,
+    "mtime": 1782025146.7188778,
     "ast_hash": "c68a6fbb97e0a975b49ebdb403b3afca",
     "semantic_hash": "c68a6fbb97e0a975b49ebdb403b3afca"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\dbms question bank_e476cdb6.md": {
-    "mtime": 1781615467.1899095,
+    "mtime": 1782025149.508178,
     "ast_hash": "8c12f5358b2c88a5b6b9eb8231e84776",
     "semantic_hash": "8c12f5358b2c88a5b6b9eb8231e84776"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\OS CDAP_70e4ebef.md": {
-    "mtime": 1781615467.262519,
+    "mtime": 1782025149.579953,
     "ast_hash": "c68a6fbb97e0a975b49ebdb403b3afca",
     "semantic_hash": "c68a6fbb97e0a975b49ebdb403b3afca"
   },
@@ -1465,9 +1465,9 @@
     "semantic_hash": "7d0e7163d826f3d27a367d7a9fcaccbe"
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\AdminDashboard.tsx": {
-    "mtime": 1781613862.3327608,
-    "ast_hash": "1e8356f4efeb35c7568990346111d329",
-    "semantic_hash": "1e8356f4efeb35c7568990346111d329"
+    "mtime": 1782018295.848668,
+    "ast_hash": "8ad8675d5bcd753572ae989ba91ff178",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\index-WTMhnkVv.js": {
     "mtime": 1781070241.4688213,
@@ -1730,7 +1730,7 @@
     "semantic_hash": "558952261c4b0f09447f8bb91d9a2b68"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_cdap_cbba219a_4a3c7d74.md": {
-    "mtime": 1781615458.0124986,
+    "mtime": 1782025142.4422195,
     "ast_hash": "f30412f5f397c07a063be54724c16d21",
     "semantic_hash": "f30412f5f397c07a063be54724c16d21"
   },
@@ -1740,22 +1740,22 @@
     "semantic_hash": "23e76e776d5d03d9eb509cc9f6d0bf56"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_102422_9a2cac5b.md": {
-    "mtime": 1781615461.5995493,
+    "mtime": 1782025145.4995134,
     "ast_hash": "6eff25f5b163763f29ad9fbfb1bd7b2c",
     "semantic_hash": "6eff25f5b163763f29ad9fbfb1bd7b2c"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_111822_0eb40d20.md": {
-    "mtime": 1781615461.7096379,
+    "mtime": 1782025145.5857248,
     "ast_hash": "2f1caccd4084802c5ae692268b8fb60a",
     "semantic_hash": "2f1caccd4084802c5ae692268b8fb60a"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_121213_964bf8fd.md": {
-    "mtime": 1781615461.8006399,
+    "mtime": 1782025145.6508505,
     "ast_hash": "f05f2a68c1c972b068988a59190d9fb0",
     "semantic_hash": "f05f2a68c1c972b068988a59190d9fb0"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_124320_1646531e.md": {
-    "mtime": 1781615461.9030173,
+    "mtime": 1782025145.7364116,
     "ast_hash": "c1f7adf632296d988b324ea95e68e101",
     "semantic_hash": "c1f7adf632296d988b324ea95e68e101"
   },
@@ -1765,32 +1765,32 @@
     "semantic_hash": "bd0fb2b70224b7328d65d4d1664ae32b"
   },
   "D:\\QUESTION MIND\\frontend\\public\\favicon.png": {
-    "mtime": 1769821194.204169,
-    "ast_hash": "3316984efb8fe6109ba67d7f17f04953",
-    "semantic_hash": "3316984efb8fe6109ba67d7f17f04953"
+    "mtime": 1781940425.208705,
+    "ast_hash": "5cd93a853b5c19a24d7a492f084d290c",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_221030_80953cfc.md": {
-    "mtime": 1781615461.9824028,
+    "mtime": 1782025145.8365,
     "ast_hash": "cbc873c0acb44393e58851e3a0208593",
     "semantic_hash": "cbc873c0acb44393e58851e3a0208593"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_224442_dbf4004b.md": {
-    "mtime": 1781615462.0718677,
+    "mtime": 1782025145.939793,
     "ast_hash": "7bd37058a338cebd45f96a02d2f70126",
     "semantic_hash": "7bd37058a338cebd45f96a02d2f70126"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_231751_f55f55e4.md": {
-    "mtime": 1781615462.1527174,
+    "mtime": 1782025146.0135846,
     "ast_hash": "471e87f6a6cccfb498903c98390654b5",
     "semantic_hash": "471e87f6a6cccfb498903c98390654b5"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_233224_032df05b.md": {
-    "mtime": 1781615462.252185,
+    "mtime": 1782025146.0706391,
     "ast_hash": "f4c941eba05e6a49d3c60a6681b41696",
     "semantic_hash": "f4c941eba05e6a49d3c60a6681b41696"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_233819_37124ac2.md": {
-    "mtime": 1781615462.3390517,
+    "mtime": 1782025146.1581378,
     "ast_hash": "3e2ddd560f1b944ac9efae5082550eda",
     "semantic_hash": "3e2ddd560f1b944ac9efae5082550eda"
   },
@@ -1800,7 +1800,7 @@
     "semantic_hash": "ab2c49e3adeeafabd776d09769721937"
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\AuroraBackground.tsx": {
-    "mtime": 1781609542.310771,
+    "mtime": 1781692728.3283336,
     "ast_hash": "614681007c0290f77f693608a922582f",
     "semantic_hash": "614681007c0290f77f693608a922582f"
   },
@@ -2138,5 +2138,90 @@
     "mtime": 1781605583.978037,
     "ast_hash": "f965f33bb1be4a718dc2a3b1cb724b42",
     "semantic_hash": "f965f33bb1be4a718dc2a3b1cb724b42"
+  },
+  "D:\\QUESTION MIND\\backend-python\\.claude\\settings.local.json": {
+    "mtime": 1782013518.7532074,
+    "ast_hash": "59285dac360a701a39adcdb3654f52b4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\components\\AIAuroraBackground.tsx": {
+    "mtime": 1781693038.5988948,
+    "ast_hash": "4db1b3a9f52e533a3b72fdadfa3ab364",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\components\\AILogosBackground.tsx": {
+    "mtime": 1781937538.1491685,
+    "ast_hash": "2cd5b807447d779f9f8d49490b5f53cd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260618_084041_5a14ccc6.md": {
+    "mtime": 1782025146.2328968,
+    "ast_hash": "30f4fd23d398108141b310ab1ee0e850",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260618_091203_fe46a961.md": {
+    "mtime": 1782025146.2849698,
+    "ast_hash": "2233b9096ff71099118127554860dbce",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\sample_users_template_d36e15da.md": {
+    "mtime": 1782025146.6421525,
+    "ast_hash": "cc8199572d43b4b76c55b6d108498f62",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\backend-python\\app\\assets\\email_logo.png": {
+    "mtime": 1782017657.4244883,
+    "ast_hash": "c366f22d5b9198d487f7abe8f962406a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\public\\email_logo.png": {
+    "mtime": 1782017657.4244883,
+    "ast_hash": "c366f22d5b9198d487f7abe8f962406a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\AI LOGOS\\chat_gpt.png": {
+    "mtime": 1781692104.8471785,
+    "ast_hash": "74157ca7548bdb4dbe1069cf4fe0e91a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\AI LOGOS\\claude.png": {
+    "mtime": 1781684244.588958,
+    "ast_hash": "e703c9869622e6c4888d3b97a62fd8ce",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\AI LOGOS\\DeepSeek.png": {
+    "mtime": 1781690068.9929056,
+    "ast_hash": "31357a9ec9212a6827ab5fd95d07a9c4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\AI LOGOS\\gemini.png": {
+    "mtime": 1781684183.003875,
+    "ast_hash": "0a2ed9e107970ca1a1dfad424ef8060c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\AI LOGOS\\Grok.png": {
+    "mtime": 1781690290.0931852,
+    "ast_hash": "55385eabac8542c8233dd6a5d207c0f6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\AI LOGOS\\KIMI.png": {
+    "mtime": 1781690413.639719,
+    "ast_hash": "dd31bcfb5b3738b3372a43a0dbd015d1",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\AI LOGOS\\qwen.png": {
+    "mtime": 1781684289.1092622,
+    "ast_hash": "50e0e7b770c3889bb8d4642b83ec2614",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260620_122019_08108c46.md": {
+    "mtime": 1782025146.341385,
+    "ast_hash": "82efe37349a835f086129fdaef744cbc",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\pages\\QuickChecks.tsx": {
+    "mtime": 1781966028.7941477,
+    "ast_hash": "02b635b4409d8fe478b56423380b57bb",
+    "semantic_hash": ""
   }
 }

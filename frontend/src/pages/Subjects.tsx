@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { subjectsApi, staffApi, questionBankApi } from '../lib/api';
 import { useAuthStore } from '../lib/store';
 import { Combobox } from '../components/Combobox';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
 import {
   Plus,
   Edit2,
@@ -45,6 +46,21 @@ export default function Subjects() {
   const [error, setError] = useState('');
   const [showImportModal, setShowImportModal] = useState(false);
 
+  // Confirmation state for deleting subjects
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isDangerous?: boolean;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
+
   useEffect(() => {
     loadSubjects();
   }, []);
@@ -67,15 +83,22 @@ export default function Subjects() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this subject?')) return;
-
-    try {
-      await subjectsApi.delete(id);
-      setSubjects(subjects.filter((s) => s.id !== id));
-    } catch (err) {
-      setError('Failed to delete subject');
-    }
+  const handleDelete = (id: string) => {
+    setConfirmState({
+      isOpen: true,
+      title: 'Delete Subject',
+      message: 'Are you sure you want to delete this subject? associated Syllabus and Question Banks will also be permanently deleted. This action cannot be undone.',
+      isDangerous: true,
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        try {
+          await subjectsApi.delete(id);
+          setSubjects(prev => prev.filter((s) => s.id !== id));
+        } catch (err) {
+          setError('Failed to delete subject');
+        }
+      },
+    });
   };
 
   const filteredSubjects = subjects.filter(
@@ -125,10 +148,29 @@ export default function Subjects() {
         />
       </div>
 
-      {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 dark:bg-rose-900 dark:border-rose-800 dark:text-rose-200">
-          {error}
-        </div>
+      {error && createPortal(
+        <div
+          className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setError('')}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center border-2 border-rose-300 dark:border-rose-700 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-2">Error Occurred</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed whitespace-pre-wrap">
+              {error}
+            </p>
+            <button
+              onClick={() => setError('')}
+              className="btn bg-rose-600 hover:bg-rose-700 text-white px-6 py-2.5 rounded-xl transition-all font-semibold shadow-lg shadow-rose-500/25 active:scale-95"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Content */}
@@ -196,6 +238,16 @@ export default function Subjects() {
       {showImportModal && (
         <StaffImportModal onClose={() => setShowImportModal(false)} />
       )}
+
+      <ConfirmationModal
+        isOpen={confirmState.isOpen}
+        onClose={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        isDangerous={confirmState.isDangerous}
+        confirmText={confirmState.confirmText}
+      />
     </div>
   );
 }

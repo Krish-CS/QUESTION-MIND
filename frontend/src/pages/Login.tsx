@@ -18,9 +18,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('checking');
   const [backendMessage, setBackendMessage] = useState('Checking backend connection...');
-  const [showIntro, setShowIntro] = useState(() => {
-    return localStorage.getItem('saraswathiIntroPlayed') !== 'true';
-  });
+  const [showIntro, setShowIntro] = useState(true);
   const [introVisualDone, setIntroVisualDone] = useState(false);
   const [renderCanvas, setRenderCanvas] = useState(true);
 
@@ -131,7 +129,6 @@ export default function Login() {
       {showIntro && (
         <SaraswathiIntro
           onVisualComplete={() => {
-            localStorage.setItem('saraswathiIntroPlayed', 'true');
             setIntroVisualDone(true);
           }}
           onAudioComplete={() => {

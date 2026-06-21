@@ -20,6 +20,21 @@ class GenerateQuestionsRequest(BaseModel):
     unit_question_counts: Optional[Dict[str, Dict[int, int]]] = None
     # { unitNumber -> [PartConfiguration] }  — full per-unit config (Individual mode)
     unit_configs: Optional[Dict[str, List[PartConfiguration]]] = None
+    # When False (Question Mode), only questions are generated — no answer key. This lets the
+    # AI use a larger chunk size (faster, fewer API calls) and produces a single-sheet Excel.
+    include_answers: bool = True
+    # Prompt Mode only: when True, /generate-prompt returns one prompt PER UNIT (smaller replies
+    # that web AIs won't truncate) instead of a single consolidated prompt.
+    split_by_unit: bool = False
+
+class GenerateFromResponseRequest(GenerateQuestionsRequest):
+    # Same selection params as a normal generate request, plus the AI response the user
+    # pasted back in Prompt Mode. The plan is rebuilt server-side from the selection params,
+    # so this text is the only untrusted input and is only used for parsing.
+    # Single-prompt flow uses response_text; unit-wise split flow uses unit_responses
+    # ({ unitNumber(as str) -> pasted JSON for that unit }). At least one must be provided.
+    response_text: Optional[str] = None
+    unit_responses: Optional[Dict[str, str]] = None
 
 class UpdatePatternRequest(BaseModel):
     parts: List[PartConfiguration]

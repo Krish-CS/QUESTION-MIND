@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { QuestionBank } from '../types';
 import QuestionBankViewModal from '../components/QuestionBankViewModal';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
 
 interface StaffAssignment {
   id: string;
@@ -46,6 +47,21 @@ export default function Overview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewingBank, setViewingBank] = useState<QuestionBank | null>(null);
+  
+  // Confirmation state for alerts
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    alertOnly?: boolean;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
   const [stats, setStats] = useState({
     totalSubjects: 0,
     totalStaff: 0,
@@ -624,7 +640,14 @@ export default function Overview() {
                 link.click();
                 link.parentNode?.removeChild(link);
               } catch (e) {
-                alert('Download failed');
+                setConfirmState({
+                  isOpen: true,
+                  title: 'Download Error',
+                  message: 'Failed to download the Question Bank Excel file. Please try again.',
+                  alertOnly: true,
+                  confirmText: 'OK',
+                  onConfirm: () => {},
+                });
               } finally {
                 setGlobalLoading(false);
               }
@@ -632,6 +655,15 @@ export default function Overview() {
           }}
         />
       )}
+      <ConfirmationModal
+        isOpen={confirmState.isOpen}
+        onClose={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        alertOnly={confirmState.alertOnly}
+        confirmText={confirmState.confirmText}
+      />
     </div>
   );
 }

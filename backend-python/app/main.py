@@ -5,7 +5,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
 from app.routers import auth, subjects, syllabus, question_bank, staff
@@ -28,6 +29,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Global handler for unhandled exceptions. Without this, an unhandled 500 is produced by
+# Starlette's outermost error middleware (outside CORSMiddleware), so the response lacks the
+# Access-Control-Allow-Origin header and the browser misreports it as a CORS error. Handling it
+# here keeps CORS headers on the response and surfaces the real error to the client/logs.
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logging.getLogger("app").exception(f"Unhandled error on {request.method} {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {type(exc).__name__}: {exc}"},
+        headers={"Access-Control-Allow-Origin": "*"},
+    )
 
 # Include routers
 app.include_router(auth, prefix="/api")

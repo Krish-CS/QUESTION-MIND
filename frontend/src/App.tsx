@@ -12,6 +12,7 @@ import Subjects from './pages/Subjects';
 import Syllabus from './pages/Syllabus';
 import Patterns from './pages/Patterns';
 import QuestionBanks from './pages/QuestionBanks';
+import QuickChecks from './pages/QuickChecks';
 import AdminDashboard from './pages/AdminDashboard';
 import GlobalLoader from './components/GlobalLoader';
 
@@ -127,6 +128,7 @@ export default function App() {
                       <Route path="/syllabus" element={<Syllabus />} />
                       <Route path="/patterns" element={<Patterns />} />
                       <Route path="/question-banks" element={<QuestionBanks />} />
+                      <Route path="/quick-checks" element={<QuickChecks />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </>
                   )}
