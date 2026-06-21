@@ -163,8 +163,8 @@ def _build_html_email(
       </td>
     </tr>
   </table>
+  <div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </body>
-<div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </html>"""
 
 
@@ -343,8 +343,8 @@ def send_user_welcome_email(recipient_email: str, name: str, password: str, role
       </td>
     </tr>
   </table>
+  <div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </body>
-<div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </html>"""
     return _send_html_email(recipient_email, subject, html_body)
 
@@ -445,8 +445,8 @@ def send_user_update_email(recipient_email: str, name: str, changes: dict) -> bo
       </td>
     </tr>
   </table>
+  <div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </body>
-<div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </html>"""
     return _send_html_email(recipient_email, subject, html_body)
 
@@ -524,7 +524,7 @@ def send_user_password_reset_email(recipient_email: str, name: str, new_password
       </td>
     </tr>
   </table>
+  <div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </body>
-<div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </html>"""
     return _send_html_email(recipient_email, subject, html_body)
