@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     # from the SMTP key above. Get it from Brevo → SMTP & API → API Keys.
     BREVO_API_KEY: str = ""
 
+    # Point LOGO_URL at a PUBLICLY reachable copy of the logo
+    # We use the raw GitHub URL for the newly pushed email_logo.png so it works immediately.
+    LOGO_URL: str = "https://raw.githubusercontent.com/Krish-CS/QUESTION-MIND/main/frontend/public/email_logo.png"
+
 
 
     class Config:

@@ -10,6 +10,7 @@ import smtplib
 import httpx
 import base64
 import os
+import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -105,9 +106,7 @@ def _build_html_email(
           <tr>
             <td style="background:linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);padding:40px 32px;text-align:center;">
               <!-- LOGO -->
-              <div style="font-family:'Outfit', 'Inter', 'Segoe UI', -apple-system, sans-serif; font-size:26px; font-weight:800; color:#ffffff; letter-spacing:-0.5px; margin-bottom:16px; display:inline-block; text-decoration:none;">
-                <span style="background:rgba(255, 255, 255, 0.2); padding:4px 12px; border-radius:8px; border:1px solid rgba(255, 255, 255, 0.1);">Krish Academia</span>
-              </div>
+              <img src="{settings.LOGO_URL}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;">
                 📚 Question Bank Shared With You
               </h1>
@@ -165,6 +164,7 @@ def _build_html_email(
     </tr>
   </table>
 </body>
+<div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </html>"""
 
 
@@ -269,9 +269,7 @@ def send_user_welcome_email(recipient_email: str, name: str, password: str, role
           <tr>
             <td style="background:linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);padding:40px 32px;text-align:center;">
               <!-- LOGO -->
-              <div style="font-family:'Outfit', 'Inter', 'Segoe UI', -apple-system, sans-serif; font-size:26px; font-weight:800; color:#ffffff; letter-spacing:-0.5px; margin-bottom:16px; display:inline-block; text-decoration:none;">
-                <span style="background:rgba(255, 255, 255, 0.2); padding:4px 12px; border-radius:8px; border:1px solid rgba(255, 255, 255, 0.1);">Krish Academia</span>
-              </div>
+              <img src="{settings.LOGO_URL}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;">
                 🎉 Account Created
               </h1>
@@ -346,6 +344,7 @@ def send_user_welcome_email(recipient_email: str, name: str, password: str, role
     </tr>
   </table>
 </body>
+<div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </html>"""
     return _send_html_email(recipient_email, subject, html_body)
 
@@ -381,9 +380,7 @@ def send_user_update_email(recipient_email: str, name: str, changes: dict) -> bo
           <tr>
             <td style="background:linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);padding:40px 32px;text-align:center;">
               <!-- LOGO -->
-              <div style="font-family:'Outfit', 'Inter', 'Segoe UI', -apple-system, sans-serif; font-size:26px; font-weight:800; color:#ffffff; letter-spacing:-0.5px; margin-bottom:16px; display:inline-block; text-decoration:none;">
-                <span style="background:rgba(255, 255, 255, 0.2); padding:4px 12px; border-radius:8px; border:1px solid rgba(255, 255, 255, 0.1);">Krish Academia</span>
-              </div>
+              <img src="{settings.LOGO_URL}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;">
                 🔒 Details Updated
               </h1>
@@ -449,6 +446,7 @@ def send_user_update_email(recipient_email: str, name: str, changes: dict) -> bo
     </tr>
   </table>
 </body>
+<div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </html>"""
     return _send_html_email(recipient_email, subject, html_body)
 
@@ -472,9 +470,7 @@ def send_user_password_reset_email(recipient_email: str, name: str, new_password
           <tr>
             <td style="background:linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);padding:40px 32px;text-align:center;">
               <!-- LOGO -->
-              <div style="font-family:'Outfit', 'Inter', 'Segoe UI', -apple-system, sans-serif; font-size:26px; font-weight:800; color:#ffffff; letter-spacing:-0.5px; margin-bottom:16px; display:inline-block; text-decoration:none;">
-                <span style="background:rgba(255, 255, 255, 0.2); padding:4px 12px; border-radius:8px; border:1px solid rgba(255, 255, 255, 0.1);">Krish Academia</span>
-              </div>
+              <img src="{settings.LOGO_URL}" alt="Krish Academia" height="75" style="display:block;margin:0 auto 16px;height:75px;width:auto;max-width:240px;border:0;outline:none;text-decoration:none;" />
               <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;">
                 🔑 Password Reset
               </h1>
@@ -529,5 +525,6 @@ def send_user_password_reset_email(recipient_email: str, name: str, new_password
     </tr>
   </table>
 </body>
+<div style="display:none; color:transparent; font-size:0px;">{time.time()}</div>
 </html>"""
     return _send_html_email(recipient_email, subject, html_body)
