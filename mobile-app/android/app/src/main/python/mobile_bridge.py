@@ -74,7 +74,7 @@ def parse_cdap_file(file_path):
                     f.write(file_bytes)
                 file_path = temp_path
                 
-        res = cdap_parser.parse_document(file_path)
+        res = cdap_parser.parse_file(file_path)
         
         if 'temp_path' in locals():
             try: os.remove(temp_path)
@@ -97,13 +97,50 @@ def parse_syllabus_file(file_path):
                     f.write(file_bytes)
                 file_path = temp_path
                 
-        res = syllabus_parser.parse_document(file_path)
+        res = syllabus_parser.parse_file(file_path)
         
         if 'temp_path' in locals():
             try: os.remove(temp_path)
             except: pass
             
         return json.dumps({"success": True, "data": res})
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e) + "\n" + traceback.format_exc()})
+
+def execute_sqlite_query(query, params):
+    try:
+        import sqlite3
+        from app.config import settings
+        import os
+        
+        # Use fallback DB path
+        db_path = os.path.join(settings.DATA_DIR, 'question_mind_fallback.db')
+        
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Ensure params is a list
+        if params is None:
+            params = []
+        elif not isinstance(params, (list, tuple)):
+            params = [params]
+            
+        cursor.execute(query, params)
+        
+        if query.strip().upper().startswith("SELECT"):
+            rows = [dict(row) for row in cursor.fetchall()]
+            return json.dumps({
+                "success": True,
+                "rows": rows,
+                "count": len(rows)
+            })
+        else:
+            conn.commit()
+            return json.dumps({
+                "success": True,
+                "changes": cursor.rowcount
+            })
     except Exception as e:
         return json.dumps({"success": False, "error": str(e) + "\n" + traceback.format_exc()})
 
