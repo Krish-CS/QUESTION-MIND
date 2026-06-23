@@ -65,3 +65,4 @@ mobile-app/graphify-out/converted/
 
 # Databases
 *.db
+data/

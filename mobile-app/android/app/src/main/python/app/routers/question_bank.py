@@ -166,8 +166,15 @@ def build_generation_plan(data, subject, syllabus, cdap, pattern):
     rebuild the identical plan from the same selection params (the plan never has to be trusted
     from the client).
     """
+    cfg = subject.configuration
+    if isinstance(cfg, str):
+        import json
+        try:
+            cfg = json.loads(cfg)
+        except Exception:
+            cfg = {}
     parts = data.custom_parts or (
-        pattern.parts if pattern else subject.configuration.get('parts', []) if subject.configuration else []
+        pattern.parts if pattern else cfg.get('parts', []) if cfg else []
     )
     if not parts:
         raise HTTPException(status_code=400, detail="No question pattern defined")
@@ -446,7 +453,14 @@ async def generate_questions(
     
     # Get pattern
     pattern = db.query(QuestionPattern).filter(QuestionPattern.subject_id == data.subject_id).first()
-    parts = data.custom_parts or (pattern.parts if pattern else subject.configuration.get('parts', []) if subject.configuration else [])
+    cfg = subject.configuration
+    if isinstance(cfg, str):
+        import json
+        try:
+            cfg = json.loads(cfg)
+        except Exception:
+            cfg = {}
+    parts = data.custom_parts or (pattern.parts if pattern else cfg.get('parts', []) if cfg else [])
     
     if not parts:
         raise HTTPException(status_code=400, detail="No question pattern defined")
@@ -827,7 +841,15 @@ async def update_questions(
         # Fall back to subject configuration
         if not parts_data and subject and subject.configuration:
             cfg = subject.configuration
+            if isinstance(cfg, str):
+                import json
+                try:
+                    cfg = json.loads(cfg)
+                except Exception:
+                    cfg = {}
             if hasattr(cfg, 'model_dump'):
+                cfg = cfg.dict()
+            elif hasattr(cfg, 'dict'):
                 cfg = cfg.dict()
             parts_data = normalize_parts(cfg.get('parts', []))
 
@@ -903,7 +925,14 @@ async def download_excel(
             parts_raw = pattern.parts
         
         if not parts_raw and subject and subject.configuration:
-            parts_raw = subject.configuration.get('parts', [])
+            cfg = subject.configuration
+            if isinstance(cfg, str):
+                import json
+                try:
+                    cfg = json.loads(cfg)
+                except Exception:
+                    cfg = {}
+            parts_raw = cfg.get('parts', []) if isinstance(cfg, dict) else []
             
         parts_data = normalize_parts(parts_raw)
         
