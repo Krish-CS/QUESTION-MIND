@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { subjectsApi, questionBankApi, downloadExcel } from '../lib/api';
+import { subjectsApi, questionBankApi } from '../lib/api';
 import { useUiStore } from '../lib/store';
 import {
   Users,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { QuestionBank } from '../types';
 import QuestionBankViewModal from '../components/QuestionBankViewModal';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
 
 interface StaffAssignment {
   id: string;
@@ -46,6 +47,21 @@ export default function Overview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewingBank, setViewingBank] = useState<QuestionBank | null>(null);
+  
+  // Confirmation state for alerts
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    alertOnly?: boolean;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
   const [stats, setStats] = useState({
     totalSubjects: 0,
     totalStaff: 0,
@@ -71,10 +87,10 @@ export default function Overview() {
       setLoading(true);
       setError(null);
 
-      // Fetch subjects with staff assignments and all question banks (HOD view)
+      // Fetch the current user's own subjects and question banks
       const [subjectsRes, banksRes] = await Promise.all([
         subjectsApi.getAll(),
-        questionBankApi.getAll({ own_only: false }),
+        questionBankApi.getAll({ own_only: true }),
       ]);
 
       const subjectsData = subjectsRes.data;
@@ -114,13 +130,7 @@ export default function Overview() {
       });
     } catch (error: any) {
       console.error('Failed to fetch overview data:', error);
-      if (!error.response) {
-        setError('Server is unreachable. Please check your connection (Not fetchable).');
-      } else if (error.response.status === 404) {
-        setError('Data is currently empty or not found.');
-      } else {
-        setError(error.response?.data?.detail || error.message || 'Failed to load overview data.');
-      }
+      setError(error.response?.data?.detail || 'Failed to load overview data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -622,9 +632,22 @@ export default function Overview() {
               setGlobalLoading(true, 'Downloading');
               try {
                 const response = await questionBankApi.download(viewingBank.id);
-                await downloadExcel(response.data, `${viewingBank.title}.xlsx`);
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `${viewingBank.title}.xlsx`);
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode?.removeChild(link);
               } catch (e) {
-                alert('Download failed');
+                setConfirmState({
+                  isOpen: true,
+                  title: 'Download Error',
+                  message: 'Failed to download the Question Bank Excel file. Please try again.',
+                  alertOnly: true,
+                  confirmText: 'OK',
+                  onConfirm: () => {},
+                });
               } finally {
                 setGlobalLoading(false);
               }
@@ -632,10 +655,18 @@ export default function Overview() {
           }}
         />
       )}
+      <ConfirmationModal
+        isOpen={confirmState.isOpen}
+        onClose={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        alertOnly={confirmState.alertOnly}
+        confirmText={confirmState.confirmText}
+      />
     </div>
   );
 }
-
 
 
 

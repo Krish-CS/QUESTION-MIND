@@ -30,8 +30,8 @@
     "semantic_hash": "e25ae501603ce6bf738198f5ce32ba83"
   },
   "D:\\QUESTION MIND\\.vscode\\settings.json": {
-    "mtime": 1782021512.978173,
-    "ast_hash": "f3f849c726807230a6c481d3ca2de8ac",
+    "mtime": 1782031104.8656843,
+    "ast_hash": "e19b565f9a1a54742c39c5ad5a74b1ab",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\backend-python\\migrate.py": {
@@ -255,8 +255,8 @@
     "semantic_hash": "e23776543cc3d3ffc4a821a9702212cd"
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\Layout.tsx": {
-    "mtime": 1781964811.2038083,
-    "ast_hash": "41b580aac8757ac8b152d94ce6d7c1e1",
+    "mtime": 1782184072.4320533,
+    "ast_hash": "949ebc5983f5f15f1323974e0287275c",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\components\\QuestionBankViewModal.tsx": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\lib\\api.ts": {
-    "mtime": 1781692176.5368147,
-    "ast_hash": "448fc660928637706a6f79b21ddf1508",
+    "mtime": 1782054000.9431832,
+    "ast_hash": "5352f4566cf235ea583131207a4ca68a",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\lib\\store.ts": {
@@ -285,8 +285,8 @@
     "semantic_hash": "81616d5a1b5f9a9733f7566641b4a901"
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Dashboard.tsx": {
-    "mtime": 1781936069.337114,
-    "ast_hash": "021254c90423bba60df1df8875c860cd",
+    "mtime": 1782107691.401026,
+    "ast_hash": "d569f4454a6d988502b4a74c6c19503f",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\Login.tsx": {
@@ -330,9 +330,9 @@
     "semantic_hash": "96bfffdb749fbf12bdf3abba735aa7e6"
   },
   "D:\\QUESTION MIND\\mobile-app\\package.json": {
-    "mtime": 1781071233.4948697,
-    "ast_hash": "a4d3322628d97ee10c9897e975488b28",
-    "semantic_hash": "a4d3322628d97ee10c9897e975488b28"
+    "mtime": 1782027894.3171248,
+    "ast_hash": "1f1d9b56225481dc1f9f32aba2ba26fc",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\postcss.config.js": {
     "mtime": 1769434466.6167476,
@@ -365,7 +365,7 @@
     "semantic_hash": "df5235a24ce72ce71aed42f56cfd1745"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\capacitor.settings.gradle": {
-    "mtime": 1781071292.041212,
+    "mtime": 1782184111.8438382,
     "ast_hash": "0f6a045828ffc6162d10b08e982ec60f",
     "semantic_hash": "0f6a045828ffc6162d10b08e982ec60f"
   },
@@ -380,17 +380,17 @@
     "semantic_hash": "f6cd925b3f859e23c3d819fe2459e0e4"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\variables.gradle": {
-    "mtime": 1743440248.0,
-    "ast_hash": "d1e86fb0649ce4226bfb023e806aa6d8",
-    "semantic_hash": "d1e86fb0649ce4226bfb023e806aa6d8"
+    "mtime": 1782059875.436025,
+    "ast_hash": "d38abe6b026dbce9f22cc25975a6457f",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\build.gradle": {
-    "mtime": 1781070961.1424296,
-    "ast_hash": "9b476fa48aae01d8c5a6ccda78276e06",
-    "semantic_hash": "9b476fa48aae01d8c5a6ccda78276e06"
+    "mtime": 1782059699.3475668,
+    "ast_hash": "096a8656adf22cdcd5581e29efec66d6",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\capacitor.build.gradle": {
-    "mtime": 1781071292.041212,
+    "mtime": 1782184111.8448095,
     "ast_hash": "5523e9c3af47602d4bcea4514464e9d6",
     "semantic_hash": "5523e9c3af47602d4bcea4514464e9d6"
   },
@@ -400,22 +400,22 @@
     "semantic_hash": "fbaf7cc870c663eb52dcf218531c439d"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\capacitor.config.json": {
-    "mtime": 1781071291.9596505,
+    "mtime": 1782184111.762678,
     "ast_hash": "5a3f233b212bafb3b186c267cec679b8",
     "semantic_hash": "5a3f233b212bafb3b186c267cec679b8"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\capacitor.plugins.json": {
-    "mtime": 1781071292.0105078,
+    "mtime": 1782184111.8081064,
     "ast_hash": "a152c036cb36ac1e4aac564b8d92814d",
     "semantic_hash": "a152c036cb36ac1e4aac564b8d92814d"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\cordova.js": {
-    "mtime": 1781071292.0376778,
+    "mtime": 1782184111.8387606,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\cordova_plugins.js": {
-    "mtime": 1781071292.0381937,
+    "mtime": 1782184111.8387606,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
@@ -435,9 +435,9 @@
     "semantic_hash": "efc70bd616e42e580b3ff0d279fed9c4"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\java\\com\\krishacademia\\questionmind\\MainActivity.java": {
-    "mtime": 1781065761.478609,
-    "ast_hash": "047d546ea6c1631f57aa61a1576dd101",
-    "semantic_hash": "047d546ea6c1631f57aa61a1576dd101"
+    "mtime": 1782049476.4918122,
+    "ast_hash": "9fbfc156f6d81c4739de47fefad07207",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\test\\java\\com\\getcapacitor\\myapp\\ExampleUnitTest.java": {
     "mtime": 1743440248.0,
@@ -445,12 +445,12 @@
     "semantic_hash": "e91b4501c14da821682fa5c26a16d616"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\capacitor-cordova-android-plugins\\build.gradle": {
-    "mtime": 1781071292.0432127,
+    "mtime": 1782184111.8470619,
     "ast_hash": "13a885b925f99b619845018a13d508d3",
     "semantic_hash": "13a885b925f99b619845018a13d508d3"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\capacitor-cordova-android-plugins\\cordova.variables.gradle": {
-    "mtime": 1781071292.0442076,
+    "mtime": 1782184111.8480763,
     "ast_hash": "299becb7733b8720b74d289e3cb837f1",
     "semantic_hash": "299becb7733b8720b74d289e3cb837f1"
   },
@@ -475,14 +475,14 @@
     "semantic_hash": "efc70bd616e42e580b3ff0d279fed9c4"
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\App.tsx": {
-    "mtime": 1781071247.8956933,
-    "ast_hash": "235d825847301b175f0c7bfb50464d6b",
-    "semantic_hash": "235d825847301b175f0c7bfb50464d6b"
+    "mtime": 1782103297.4592066,
+    "ast_hash": "d0af1215932a2474f74620de0d5b2726",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\main.tsx": {
-    "mtime": 1779952095.547217,
-    "ast_hash": "e1dd93f4f368057fea306f9444d794a4",
-    "semantic_hash": "e1dd93f4f368057fea306f9444d794a4"
+    "mtime": 1782103307.0433736,
+    "ast_hash": "c09a7f31f843053d2febde0fb3fe2cb1",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\vite-env.d.ts": {
     "mtime": 1769435727.9116383,
@@ -499,150 +499,90 @@
     "ast_hash": "efc70bd616e42e580b3ff0d279fed9c4",
     "semantic_hash": "efc70bd616e42e580b3ff0d279fed9c4"
   },
-  "D:\\QUESTION MIND\\mobile-app\\src\\components\\ApiKeyInput.tsx": {
-    "mtime": 1780221490.3931015,
-    "ast_hash": "777ebddae5bebb016c10a7be73d8fac4",
-    "semantic_hash": "777ebddae5bebb016c10a7be73d8fac4"
-  },
   "D:\\QUESTION MIND\\mobile-app\\src\\components\\FormattedAnswer.tsx": {
     "mtime": 1772946894.0041509,
     "ast_hash": "e23776543cc3d3ffc4a821a9702212cd",
     "semantic_hash": "e23776543cc3d3ffc4a821a9702212cd"
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\components\\Layout.tsx": {
-    "mtime": 1780238001.7914662,
-    "ast_hash": "9c3589ff56bfd7d88bb641225c736365",
-    "semantic_hash": "9c3589ff56bfd7d88bb641225c736365"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\src\\components\\ProviderSelector.tsx": {
-    "mtime": 1780221463.4847188,
-    "ast_hash": "57afc480b4a586a1cefea29732f43390",
-    "semantic_hash": "57afc480b4a586a1cefea29732f43390"
+    "mtime": 1782184087.5764873,
+    "ast_hash": "dd1be517ceb013064da4cf822dd0c3b7",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\components\\QuestionBankViewModal.tsx": {
-    "mtime": 1780998455.783676,
-    "ast_hash": "72fd2940f62b79d4f7285ee3809190a9",
-    "semantic_hash": "72fd2940f62b79d4f7285ee3809190a9"
+    "mtime": 1781962993.0377276,
+    "ast_hash": "b26780a5eb100df58249d50b433aa332",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\components\\ui\\ConfirmationModal.tsx": {
-    "mtime": 1780761502.00999,
-    "ast_hash": "16a571560ec23e702752f7ed64504941",
-    "semantic_hash": "16a571560ec23e702752f7ed64504941"
+    "mtime": 1781962960.9795735,
+    "ast_hash": "444b420cf50dc6bc73bcbed4d53a06bc",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\aiInit.ts": {
-    "mtime": 1779952095.547217,
-    "ast_hash": "996c32f9f621c3df6dd986daafac7521",
-    "semantic_hash": "996c32f9f621c3df6dd986daafac7521"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\aiService.ts": {
-    "mtime": 1780914066.557609,
-    "ast_hash": "c27d435d6c689a4f8a0c123826cd357d",
-    "semantic_hash": "c27d435d6c689a4f8a0c123826cd357d"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\aiSettingsApi.ts": {
-    "mtime": 1780220934.5963778,
-    "ast_hash": "7681a7477a3a96f573918ed8e16a5bd0",
-    "semantic_hash": "7681a7477a3a96f573918ed8e16a5bd0"
+    "mtime": 1782055601.0208495,
+    "ast_hash": "c17beb76b0b120e977e454450f0669e8",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\api.ts": {
-    "mtime": 1781070553.3966708,
-    "ast_hash": "26816cd582017b3578a7c75163e2f50d",
-    "semantic_hash": "26816cd582017b3578a7c75163e2f50d"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\excelGenerator.ts": {
-    "mtime": 1780999469.587664,
-    "ast_hash": "f635211c5a0948cd990793048594e8c4",
-    "semantic_hash": "f635211c5a0948cd990793048594e8c4"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\pdfExtractor.ts": {
-    "mtime": 1780220037.1232705,
-    "ast_hash": "4c59323b60611a31666f88d77ad59b52",
-    "semantic_hash": "4c59323b60611a31666f88d77ad59b52"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\settingsStore.ts": {
-    "mtime": 1781065110.4079435,
-    "ast_hash": "24823ab6f32f937a4d2a3096ccf2a510",
-    "semantic_hash": "24823ab6f32f937a4d2a3096ccf2a510"
+    "mtime": 1782053998.9280982,
+    "ast_hash": "6ba8f24da1bdaa254e5ea77b21a99ece",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\store.ts": {
-    "mtime": 1780731709.3511934,
-    "ast_hash": "e294112f138b70c893f39cdd23c013cb",
-    "semantic_hash": "e294112f138b70c893f39cdd23c013cb"
+    "mtime": 1782103657.2174804,
+    "ast_hash": "6f1c6c1e8deb6abe216b35e73a45257a",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\themeStore.ts": {
     "mtime": 1769512290.9245665,
     "ast_hash": "81616d5a1b5f9a9733f7566641b4a901",
     "semantic_hash": "81616d5a1b5f9a9733f7566641b4a901"
   },
-  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\parsers\\cdapParser.ts": {
-    "mtime": 1780216709.1593351,
-    "ast_hash": "ef64d72fa5de57e535ab5537555b0be8",
-    "semantic_hash": "ef64d72fa5de57e535ab5537555b0be8"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\parsers\\syllabusParser.ts": {
-    "mtime": 1780219428.4272301,
-    "ast_hash": "7c8061a2a12704be294f7e430d883462",
-    "semantic_hash": "7c8061a2a12704be294f7e430d883462"
-  },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\storage\\db.ts": {
     "mtime": 1779952095.547217,
     "ast_hash": "694a04b1979edc6ded7bd5bade236a1c",
     "semantic_hash": "694a04b1979edc6ded7bd5bade236a1c"
   },
-  "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Approvals.tsx": {
-    "mtime": 1780999178.4664288,
-    "ast_hash": "6b0885304d4bf4e0a6bf0b6867a2f865",
-    "semantic_hash": "6b0885304d4bf4e0a6bf0b6867a2f865"
-  },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Dashboard.tsx": {
-    "mtime": 1781063959.2850626,
-    "ast_hash": "418870801aed4cd4874bc3b25837cb94",
-    "semantic_hash": "418870801aed4cd4874bc3b25837cb94"
+    "mtime": 1782107709.1869912,
+    "ast_hash": "d569f4454a6d988502b4a74c6c19503f",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Login.tsx": {
-    "mtime": 1769821286.3486404,
-    "ast_hash": "41083a3a22d97c7e961346215d195e1e",
-    "semantic_hash": "41083a3a22d97c7e961346215d195e1e"
+    "mtime": 1782011809.247519,
+    "ast_hash": "c3349d5ba5c3b3f62832448e83cb1dba",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Overview.tsx": {
-    "mtime": 1780999174.6569822,
-    "ast_hash": "2aecc253dde3929161673f21f3aaed69",
-    "semantic_hash": "2aecc253dde3929161673f21f3aaed69"
+    "mtime": 1781962612.3832643,
+    "ast_hash": "e05b273e1aaaf28ae1894df66599d86f",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Patterns.tsx": {
-    "mtime": 1780997401.171553,
-    "ast_hash": "d7423d47fcb3fa951e0dfbf534b7ca5e",
-    "semantic_hash": "d7423d47fcb3fa951e0dfbf534b7ca5e"
+    "mtime": 1781936052.1987116,
+    "ast_hash": "7c5272ba68fb665d8fe330fcc96695d8",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\QuestionBanks.tsx": {
-    "mtime": 1781421022.7779665,
-    "ast_hash": "a065e9b99dd72f413e9f3b9acec769c6",
-    "semantic_hash": "a065e9b99dd72f413e9f3b9acec769c6"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Register.tsx": {
-    "mtime": 1780448458.6573195,
-    "ast_hash": "a6e8db664b35c5413a6e8eeb8b8a47f5",
-    "semantic_hash": "a6e8db664b35c5413a6e8eeb8b8a47f5"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Settings.tsx": {
-    "mtime": 1781071090.1609128,
-    "ast_hash": "ad1cd79ecd36813a0ee71d0dad086d8b",
-    "semantic_hash": "ad1cd79ecd36813a0ee71d0dad086d8b"
+    "mtime": 1782055737.9687335,
+    "ast_hash": "c140ecd4219c42682b5973b718612b1b",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Subjects.tsx": {
-    "mtime": 1781418944.4846864,
-    "ast_hash": "5e9318e78f008876a1a4cf78c27b701f",
-    "semantic_hash": "5e9318e78f008876a1a4cf78c27b701f"
+    "mtime": 1782015414.2807646,
+    "ast_hash": "00a17a3dd57041e1b4c682ee86f4cf06",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Syllabus.tsx": {
-    "mtime": 1780996746.099771,
-    "ast_hash": "b5f265c5f35bd69515d9dd679b1daae0",
-    "semantic_hash": "b5f265c5f35bd69515d9dd679b1daae0"
+    "mtime": 1782018309.9620948,
+    "ast_hash": "870bcc8dcf614acde386c11857ed7342",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\types\\index.ts": {
-    "mtime": 1780216633.530629,
-    "ast_hash": "6b840bb971c0fdd685f4aa0f28d2d11b",
-    "semantic_hash": "6b840bb971c0fdd685f4aa0f28d2d11b"
+    "mtime": 1781434760.9575922,
+    "ast_hash": "384f0c8552ac9a4b93344f9ad25d7a71",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\shared\\package.json": {
     "mtime": 1769251574.5082312,
@@ -700,9 +640,9 @@
     "semantic_hash": "81827a3ea78a9d252476956a8673d108"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\index.html": {
-    "mtime": 1781070241.4688213,
-    "ast_hash": "66b256652f8805118c5754a20b46377e",
-    "semantic_hash": "66b256652f8805118c5754a20b46377e"
+    "mtime": 1782184105.444845,
+    "ast_hash": "58148296f829663d0e07992ad24209a7",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\src\\main\\python\\requirements.txt": {
     "mtime": 1780209673.0759337,
@@ -935,7 +875,7 @@
     "semantic_hash": "3316984efb8fe6109ba67d7f17f04953"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\logo-5KIOeEvm.png": {
-    "mtime": 1781070241.4572232,
+    "mtime": 1782184105.440832,
     "ast_hash": "3316984efb8fe6109ba67d7f17f04953",
     "semantic_hash": "3316984efb8fe6109ba67d7f17f04953"
   },
@@ -1135,327 +1075,327 @@
     "semantic_hash": "b2a03ef4a5de06720f32728270dcbd80"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_cdap_7958dfd3_74388996.md": {
-    "mtime": 1782025142.3363767,
+    "mtime": 1782184116.2855394,
     "ast_hash": "7cc5bdce066c6bcef6b5c52fb9f90036",
     "semantic_hash": "7cc5bdce066c6bcef6b5c52fb9f90036"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_cdap_153c13a6_41a291e7.md": {
-    "mtime": 1782025142.3899164,
+    "mtime": 1782184116.3318508,
     "ast_hash": "f5f092440f931ae40de7114b6c684a9c",
     "semantic_hash": "f5f092440f931ae40de7114b6c684a9c"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_153150_c1babb73.md": {
-    "mtime": 1782025142.5019007,
+    "mtime": 1782184116.3620412,
     "ast_hash": "d515abe7bb0167b47c29629df87188fb",
     "semantic_hash": "d515abe7bb0167b47c29629df87188fb"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_163215_92c085e9.md": {
-    "mtime": 1782025142.5748446,
+    "mtime": 1782184116.4035435,
     "ast_hash": "add6bfb99a1d1ff04143264fed1bbb45",
     "semantic_hash": "add6bfb99a1d1ff04143264fed1bbb45"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_194636_dd665057.md": {
-    "mtime": 1782025142.6346662,
+    "mtime": 1782184116.4639227,
     "ast_hash": "80efe6cd59c3c8eb91c9e1b32d996ace",
     "semantic_hash": "80efe6cd59c3c8eb91c9e1b32d996ace"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CGB1222_QuestionBank_20260304_195556_ea4e0f03.md": {
-    "mtime": 1782025142.6851513,
+    "mtime": 1782184116.5176399,
     "ast_hash": "57fa43669b19f69f897cdbdf818d9733",
     "semantic_hash": "57fa43669b19f69f897cdbdf818d9733"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_112638_35a7294d.md": {
-    "mtime": 1782025142.7486265,
+    "mtime": 1782184116.5841181,
     "ast_hash": "380aff85ef2a3b5e40a90e1df3186964",
     "semantic_hash": "380aff85ef2a3b5e40a90e1df3186964"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_113145_186d344b.md": {
-    "mtime": 1782025142.7924807,
+    "mtime": 1782184116.629841,
     "ast_hash": "7b0944c7dc188edec6d9fadee0579486",
     "semantic_hash": "7b0944c7dc188edec6d9fadee0579486"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_113859_23c82583.md": {
-    "mtime": 1782025142.8564985,
+    "mtime": 1782184116.6821537,
     "ast_hash": "dfa6a780373b0bd351b199f0c297d738",
     "semantic_hash": "dfa6a780373b0bd351b199f0c297d738"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_114333_2e32bd9c.md": {
-    "mtime": 1782025142.88667,
+    "mtime": 1782184116.7170682,
     "ast_hash": "fae6b18685a27cb5b31eed816626df1a",
     "semantic_hash": "fae6b18685a27cb5b31eed816626df1a"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_114850_709f5eea.md": {
-    "mtime": 1782025142.9407296,
+    "mtime": 1782184116.7525065,
     "ast_hash": "d824625053942e74635f75bde85341b9",
     "semantic_hash": "d824625053942e74635f75bde85341b9"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_115144_0511a736.md": {
-    "mtime": 1782025143.0104468,
+    "mtime": 1782184116.7867825,
     "ast_hash": "b5abadd06b75adb260ece0adc7d7d608",
     "semantic_hash": "b5abadd06b75adb260ece0adc7d7d608"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_115513_4791a0cb.md": {
-    "mtime": 1782025143.0745542,
+    "mtime": 1782184116.826914,
     "ast_hash": "b04e2c7a441599b7eb20c85596096760",
     "semantic_hash": "b04e2c7a441599b7eb20c85596096760"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_115829_16ee1f2b.md": {
-    "mtime": 1782025143.1265697,
+    "mtime": 1782184116.868935,
     "ast_hash": "d6845c3401a30d17c47856701b20df7d",
     "semantic_hash": "d6845c3401a30d17c47856701b20df7d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_145830_b43a0efb.md": {
-    "mtime": 1782025143.168536,
+    "mtime": 1782184116.9053657,
     "ast_hash": "94f21be6a1ded7ac412e32a3b375a338",
     "semantic_hash": "94f21be6a1ded7ac412e32a3b375a338"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_154322_7412a532.md": {
-    "mtime": 1782025143.2098653,
+    "mtime": 1782184116.9460354,
     "ast_hash": "c1baa414ec550d6858c7c64ecee4fb0f",
     "semantic_hash": "c1baa414ec550d6858c7c64ecee4fb0f"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_154749_c76f86da.md": {
-    "mtime": 1782025143.2414012,
+    "mtime": 1782184116.9811754,
     "ast_hash": "c23f31c8425d9acece3dc9039dedc536",
     "semantic_hash": "c23f31c8425d9acece3dc9039dedc536"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_155249_7d194487.md": {
-    "mtime": 1782025143.2774427,
+    "mtime": 1782184117.0201392,
     "ast_hash": "d70f88b50f4223ce6d48003abd388cd0",
     "semantic_hash": "d70f88b50f4223ce6d48003abd388cd0"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_155628_5619096f.md": {
-    "mtime": 1782025143.3379924,
+    "mtime": 1782184117.0617125,
     "ast_hash": "72d2957c3d1cd9b1efc7ee265d100abf",
     "semantic_hash": "72d2957c3d1cd9b1efc7ee265d100abf"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_155901_7e4b357f.md": {
-    "mtime": 1782025143.3858726,
+    "mtime": 1782184117.1036959,
     "ast_hash": "0b83d54bb17b56f8eca060ecc15bbdc7",
     "semantic_hash": "0b83d54bb17b56f8eca060ecc15bbdc7"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260127_163241_6901c0c8.md": {
-    "mtime": 1782025143.4496238,
+    "mtime": 1782184117.1443577,
     "ast_hash": "25015c376e9b3b0547a065eb484d512d",
     "semantic_hash": "25015c376e9b3b0547a065eb484d512d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_214622_322b7f0b.md": {
-    "mtime": 1782025143.48334,
+    "mtime": 1782184117.1852708,
     "ast_hash": "31331ed411857021cbceacecb78e3f5a",
     "semantic_hash": "31331ed411857021cbceacecb78e3f5a"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_215338_2e12b958.md": {
-    "mtime": 1782025143.5543725,
+    "mtime": 1782184117.264,
     "ast_hash": "5b5461f4c30accea9adfbc27fa3a837c",
     "semantic_hash": "5b5461f4c30accea9adfbc27fa3a837c"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_215815_671f18dd.md": {
-    "mtime": 1782025143.6047642,
+    "mtime": 1782184117.3157134,
     "ast_hash": "423e7fd5c8c315ca590b90fc69f4c016",
     "semantic_hash": "423e7fd5c8c315ca590b90fc69f4c016"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_220236_1b16f72a.md": {
-    "mtime": 1782025143.6806712,
+    "mtime": 1782184117.3665185,
     "ast_hash": "7c4015d885f902ee076bef129c656b6e",
     "semantic_hash": "7c4015d885f902ee076bef129c656b6e"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260128_220845_334f0812.md": {
-    "mtime": 1782025143.7597866,
+    "mtime": 1782184117.4223373,
     "ast_hash": "282a9acb8b0e9acd86bc624881af07f6",
     "semantic_hash": "282a9acb8b0e9acd86bc624881af07f6"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260129_061717_d21a8d3e.md": {
-    "mtime": 1782025143.8269434,
+    "mtime": 1782184117.4805286,
     "ast_hash": "7a62200099acd726f3b9a8de6bef87e0",
     "semantic_hash": "7a62200099acd726f3b9a8de6bef87e0"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260130_145428_fec597e4.md": {
-    "mtime": 1782025143.8856258,
+    "mtime": 1782184117.5278141,
     "ast_hash": "b5cb449d5a530291eca712f1493677cb",
     "semantic_hash": "b5cb449d5a530291eca712f1493677cb"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_133640_32cf7646.md": {
-    "mtime": 1782025143.94349,
+    "mtime": 1782184117.5892303,
     "ast_hash": "f2517edd7ddb2b886727c940034eb7dd",
     "semantic_hash": "f2517edd7ddb2b886727c940034eb7dd"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_135447_cc67831a.md": {
-    "mtime": 1782025144.0077083,
+    "mtime": 1782184117.637719,
     "ast_hash": "b23a4c2e3a0bc7791e714d656bc49221",
     "semantic_hash": "b23a4c2e3a0bc7791e714d656bc49221"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_163451_a98894cd.md": {
-    "mtime": 1782025144.0396564,
+    "mtime": 1782184117.676809,
     "ast_hash": "cd86d1b82c1fd6f7b99a13e949cf55e6",
     "semantic_hash": "cd86d1b82c1fd6f7b99a13e949cf55e6"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_191909_d85b0b0e.md": {
-    "mtime": 1782025144.0730982,
+    "mtime": 1782184117.7280447,
     "ast_hash": "a08ab4258a6c32c29049063b4affdc4d",
     "semantic_hash": "a08ab4258a6c32c29049063b4affdc4d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_192613_5c27110c.md": {
-    "mtime": 1782025144.1233149,
+    "mtime": 1782184117.7776082,
     "ast_hash": "e274e0322d17241c845f4c8658d93e82",
     "semantic_hash": "e274e0322d17241c845f4c8658d93e82"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_192713_7b418371.md": {
-    "mtime": 1782025144.1907704,
+    "mtime": 1782184117.8266149,
     "ast_hash": "67b600ee6f5e2044d34020e778d76c64",
     "semantic_hash": "67b600ee6f5e2044d34020e778d76c64"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260201_195715_001eaba7.md": {
-    "mtime": 1782025144.244505,
+    "mtime": 1782184117.8760903,
     "ast_hash": "02ddc1ee2add3b12edbd12321fe12f90",
     "semantic_hash": "02ddc1ee2add3b12edbd12321fe12f90"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_113234_f07dd1ed.md": {
-    "mtime": 1782025144.3049493,
+    "mtime": 1782184117.9201972,
     "ast_hash": "fc723279d410323500e35c7431f1193d",
     "semantic_hash": "fc723279d410323500e35c7431f1193d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_113905_4f43fdc0.md": {
-    "mtime": 1782025144.3383498,
+    "mtime": 1782184117.9645948,
     "ast_hash": "509eae95a81181df5577748f3ec3fa7f",
     "semantic_hash": "509eae95a81181df5577748f3ec3fa7f"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_114232_943f0119.md": {
-    "mtime": 1782025144.3659184,
+    "mtime": 1782184117.981938,
     "ast_hash": "aeaaf8d88df21f53a3685d5f59d02c19",
     "semantic_hash": "aeaaf8d88df21f53a3685d5f59d02c19"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_115135_633e8508.md": {
-    "mtime": 1782025144.4023156,
+    "mtime": 1782184118.0212114,
     "ast_hash": "602e808033f3261843146fc44c4ee48d",
     "semantic_hash": "602e808033f3261843146fc44c4ee48d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1201_QuestionBank_20260303_152308_3ec6e0ae.md": {
-    "mtime": 1782025144.4386148,
+    "mtime": 1782184118.0664163,
     "ast_hash": "859b83f9dcae025fd06a06bad2341bfd",
     "semantic_hash": "859b83f9dcae025fd06a06bad2341bfd"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_061501_e1fc4605.md": {
-    "mtime": 1782025144.4684937,
+    "mtime": 1782184118.104486,
     "ast_hash": "7ed82e951dae8e76f57689362db42ab3",
     "semantic_hash": "7ed82e951dae8e76f57689362db42ab3"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_061629_09f50249.md": {
-    "mtime": 1782025144.505571,
+    "mtime": 1782184118.1550908,
     "ast_hash": "88929b4c6e414915065c013b4f26cc55",
     "semantic_hash": "88929b4c6e414915065c013b4f26cc55"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_062742_3b4e4811.md": {
-    "mtime": 1782025144.5395653,
+    "mtime": 1782184118.211313,
     "ast_hash": "7bc80005341cfbcd4959ce4ab6f74a6b",
     "semantic_hash": "7bc80005341cfbcd4959ce4ab6f74a6b"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_063359_9a46fbee.md": {
-    "mtime": 1782025144.584532,
+    "mtime": 1782184118.2754502,
     "ast_hash": "4771ead33673e2eb8afe7f29db5a2cfd",
     "semantic_hash": "4771ead33673e2eb8afe7f29db5a2cfd"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_065924_9059a67b.md": {
-    "mtime": 1782025144.618448,
+    "mtime": 1782184118.3231275,
     "ast_hash": "e55ec4058a90f0fd8547451d8e686294",
     "semantic_hash": "e55ec4058a90f0fd8547451d8e686294"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_070328_325cb643.md": {
-    "mtime": 1782025144.6531148,
+    "mtime": 1782184118.368312,
     "ast_hash": "dfbd4da1f8ef8e6f5ff75341503148a1",
     "semantic_hash": "dfbd4da1f8ef8e6f5ff75341503148a1"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_070806_47e8ed78.md": {
-    "mtime": 1782025144.7045958,
+    "mtime": 1782184118.4158876,
     "ast_hash": "75b5f9fb799eb4606bc31b49e8a1f857",
     "semantic_hash": "75b5f9fb799eb4606bc31b49e8a1f857"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260204_070842_d49cb943.md": {
-    "mtime": 1782025144.73572,
+    "mtime": 1782184118.4612176,
     "ast_hash": "a751a41ebe0210bda9039bf1979e4f69",
     "semantic_hash": "a751a41ebe0210bda9039bf1979e4f69"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_140336_c24230f6.md": {
-    "mtime": 1782025144.7953255,
+    "mtime": 1782184118.5062096,
     "ast_hash": "bffe2030b96ecf13006dfb1bc117f34f",
     "semantic_hash": "bffe2030b96ecf13006dfb1bc117f34f"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_143452_a6e38e57.md": {
-    "mtime": 1782025144.8525336,
+    "mtime": 1782184118.5558667,
     "ast_hash": "6137e91c7ab63d6c079d6bd35a78ec10",
     "semantic_hash": "6137e91c7ab63d6c079d6bd35a78ec10"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_152010_6ab8b55e.md": {
-    "mtime": 1782025144.883654,
+    "mtime": 1782184118.5992486,
     "ast_hash": "431d669771ff7fafa028edebb710e4a5",
     "semantic_hash": "431d669771ff7fafa028edebb710e4a5"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260303_152026_ca2d7d77.md": {
-    "mtime": 1782025144.928674,
+    "mtime": 1782184118.6435244,
     "ast_hash": "aa5a13a0de9be0576c78b1e42f761b2f",
     "semantic_hash": "aa5a13a0de9be0576c78b1e42f761b2f"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_111355_8e971f9f.md": {
-    "mtime": 1782025144.985509,
+    "mtime": 1782184118.702129,
     "ast_hash": "205c9d2c2487401d963a4f8d99beb920",
     "semantic_hash": "205c9d2c2487401d963a4f8d99beb920"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_111552_a34e4986.md": {
-    "mtime": 1782025145.0603733,
+    "mtime": 1782184118.7475696,
     "ast_hash": "1a97c3b30998b422cd6dd579aaf7cfc5",
     "semantic_hash": "1a97c3b30998b422cd6dd579aaf7cfc5"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_112217_ad6fe290.md": {
-    "mtime": 1782025145.1132624,
+    "mtime": 1782184118.782547,
     "ast_hash": "154e227b4374c6ca7d85e693e1294a4d",
     "semantic_hash": "154e227b4374c6ca7d85e693e1294a4d"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_122625_3511858b.md": {
-    "mtime": 1782025145.1628537,
+    "mtime": 1782184118.8282466,
     "ast_hash": "e17f05b792892f044e72f42f1c4f18d4",
     "semantic_hash": "e17f05b792892f044e72f42f1c4f18d4"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_143123_dfe93cc7.md": {
-    "mtime": 1782025145.2362213,
+    "mtime": 1782184118.8545804,
     "ast_hash": "d7b49f384d6732a1cf2d7fd254e134a8",
     "semantic_hash": "d7b49f384d6732a1cf2d7fd254e134a8"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260304_195800_6c34d766.md": {
-    "mtime": 1782025145.295372,
+    "mtime": 1782184118.9161599,
     "ast_hash": "d3a15eb464d8509d638319c6413fa783",
     "semantic_hash": "d3a15eb464d8509d638319c6413fa783"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260306_111948_3afec71d.md": {
-    "mtime": 1782025145.3557274,
+    "mtime": 1782184118.9680471,
     "ast_hash": "b66a3c84c524eedd26cfad42d79a72b6",
     "semantic_hash": "b66a3c84c524eedd26cfad42d79a72b6"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260307_202151_09961a2e.md": {
-    "mtime": 1782025145.3990636,
+    "mtime": 1782184119.012733,
     "ast_hash": "4b720de29b63548acaf5314fca39f9d7",
     "semantic_hash": "4b720de29b63548acaf5314fca39f9d7"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\CSB1340_QuestionBank_20260308_162944_21301cd5.md": {
-    "mtime": 1782025145.4433396,
+    "mtime": 1782184119.0714912,
     "ast_hash": "2182dc6a73a4d842374c86e69e98b220",
     "semantic_hash": "2182dc6a73a4d842374c86e69e98b220"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\dbms question bank_95163910.md": {
-    "mtime": 1782025146.664186,
+    "mtime": 1782184120.0151381,
     "ast_hash": "8c12f5358b2c88a5b6b9eb8231e84776",
     "semantic_hash": "8c12f5358b2c88a5b6b9eb8231e84776"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\OS CDAP_e040c93a.md": {
-    "mtime": 1782025146.7188778,
+    "mtime": 1782184120.0657926,
     "ast_hash": "c68a6fbb97e0a975b49ebdb403b3afca",
     "semantic_hash": "c68a6fbb97e0a975b49ebdb403b3afca"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\dbms question bank_e476cdb6.md": {
-    "mtime": 1782025149.508178,
+    "mtime": 1782184122.7737186,
     "ast_hash": "8c12f5358b2c88a5b6b9eb8231e84776",
     "semantic_hash": "8c12f5358b2c88a5b6b9eb8231e84776"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\OS CDAP_70e4ebef.md": {
-    "mtime": 1782025149.579953,
+    "mtime": 1782184122.8350606,
     "ast_hash": "c68a6fbb97e0a975b49ebdb403b3afca",
     "semantic_hash": "c68a6fbb97e0a975b49ebdb403b3afca"
   },
@@ -1469,230 +1409,20 @@
     "ast_hash": "8ad8675d5bcd753572ae989ba91ff178",
     "semantic_hash": ""
   },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\index-WTMhnkVv.js": {
-    "mtime": 1781070241.4688213,
-    "ast_hash": "f8e054f733b6e61a55f31d5dbd63b6c4",
-    "semantic_hash": "f8e054f733b6e61a55f31d5dbd63b6c4"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-BXwplYvo.js": {
-    "mtime": 1781070241.4688213,
-    "ast_hash": "d19bbde49513e10d354f3d2e4fe07a25",
-    "semantic_hash": "d19bbde49513e10d354f3d2e4fe07a25"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-DCebbxVx.js": {
-    "mtime": 1781070241.4688213,
-    "ast_hash": "2d49e08217eb3f67a9a9144c7e0714bd",
-    "semantic_hash": "2d49e08217eb3f67a9a9144c7e0714bd"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-DKnyhJCK.js": {
-    "mtime": 1781070241.4688213,
-    "ast_hash": "4a46a94920548c79085f0b4a221dd884",
-    "semantic_hash": "4a46a94920548c79085f0b4a221dd884"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\xlsx-D_0l8YDs.js": {
-    "mtime": 1781070241.4688213,
-    "ast_hash": "a80e7f778bd925f7caae84a0bc049774",
-    "semantic_hash": "a80e7f778bd925f7caae84a0bc049774"
-  },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\java\\com\\krishacademia\\questionmind\\PythonBridge.java": {
     "mtime": 1781067550.716833,
     "ast_hash": "49f4f4731ba27007052efef6c9bcea61",
     "semantic_hash": "49f4f4731ba27007052efef6c9bcea61"
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\java\\com\\krishacademia\\questionmind\\PythonBridgePlugin.java": {
-    "mtime": 1781067504.566471,
-    "ast_hash": "3e90992bd0076282c810e27e7587762e",
-    "semantic_hash": "3e90992bd0076282c810e27e7587762e"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\config.py": {
-    "mtime": 1781356610.8340447,
-    "ast_hash": "71d37091ecdf27c3fdb9e7ebfde8030e",
-    "semantic_hash": "71d37091ecdf27c3fdb9e7ebfde8030e"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\database.py": {
-    "mtime": 1781356642.5479205,
-    "ast_hash": "cd5d6e5edbcc08b3aa2d3f4465cd8f44",
-    "semantic_hash": "cd5d6e5edbcc08b3aa2d3f4465cd8f44"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\main.py": {
-    "mtime": 1781356633.4548635,
-    "ast_hash": "daaaad453be2f4d5d657c3c9336c1603",
-    "semantic_hash": "daaaad453be2f4d5d657c3c9336c1603"
+    "mtime": 1782049619.4127176,
+    "ast_hash": "ced19ad01372a86556cf4a202e42e06b",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\mobile_bridge.py": {
-    "mtime": 1781070571.5381382,
-    "ast_hash": "21b69c6bd4d6ee2ae246ca58634a9f56",
-    "semantic_hash": "21b69c6bd4d6ee2ae246ca58634a9f56"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\__init__.py": {
-    "mtime": 1769435220.4893458,
-    "ast_hash": "df77654bb1989fdfdb5172b97169c707",
-    "semantic_hash": "df77654bb1989fdfdb5172b97169c707"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\cdap.py": {
-    "mtime": 1769852500.804045,
-    "ast_hash": "12d4582ee38601059ac6c6e5a4b21e60",
-    "semantic_hash": "12d4582ee38601059ac6c6e5a4b21e60"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\help_request.py": {
-    "mtime": 1780817353.2523928,
-    "ast_hash": "9bf1f74b054d4b9ed3a620de207699f2",
-    "semantic_hash": "9bf1f74b054d4b9ed3a620de207699f2"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\question_bank.py": {
-    "mtime": 1780817341.4722931,
-    "ast_hash": "de5e558fc69519b3114295b109a1f971",
-    "semantic_hash": "de5e558fc69519b3114295b109a1f971"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\staff_assignment.py": {
-    "mtime": 1769433699.0465791,
-    "ast_hash": "3c2afa6bc0a8c80c6bac90fb7590ab23",
-    "semantic_hash": "3c2afa6bc0a8c80c6bac90fb7590ab23"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\subject.py": {
-    "mtime": 1769852523.8508868,
-    "ast_hash": "d3071332049423ae02582a9c3196aab4",
-    "semantic_hash": "d3071332049423ae02582a9c3196aab4"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\syllabus.py": {
-    "mtime": 1769433699.0465791,
-    "ast_hash": "70ed58c53a5a73b01019a76fa1d3ea75",
-    "semantic_hash": "70ed58c53a5a73b01019a76fa1d3ea75"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\user.py": {
-    "mtime": 1780817327.0698884,
-    "ast_hash": "70617fbc22d49680af1e10cd5f20be48",
-    "semantic_hash": "70617fbc22d49680af1e10cd5f20be48"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\models\\__init__.py": {
-    "mtime": 1769852521.756713,
-    "ast_hash": "33fececd5758400d8a7d69ffc94f8727",
-    "semantic_hash": "33fececd5758400d8a7d69ffc94f8727"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\ai_settings.py": {
-    "mtime": 1781064202.688025,
-    "ast_hash": "c8a8f852080fefe93abf3d03c6fd5305",
-    "semantic_hash": "c8a8f852080fefe93abf3d03c6fd5305"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\auth.py": {
-    "mtime": 1769434033.803202,
-    "ast_hash": "206403c294339f258aaf25b12fa51172",
-    "semantic_hash": "206403c294339f258aaf25b12fa51172"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\question_bank.py": {
-    "mtime": 1781065090.2345932,
-    "ast_hash": "82718dd958f3d65888033479f95a03e4",
-    "semantic_hash": "82718dd958f3d65888033479f95a03e4"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\staff.py": {
-    "mtime": 1780494381.8014007,
-    "ast_hash": "9c1aea912913757604fd492b8bf65f2d",
-    "semantic_hash": "9c1aea912913757604fd492b8bf65f2d"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\subjects.py": {
-    "mtime": 1769647601.375303,
-    "ast_hash": "c8f575429c1f0f8aa769dc0c0a0cec4a",
-    "semantic_hash": "c8f575429c1f0f8aa769dc0c0a0cec4a"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\syllabus.py": {
-    "mtime": 1769938959.1932526,
-    "ast_hash": "01fc9df9c2ce1cd64980e8eae185a2aa",
-    "semantic_hash": "01fc9df9c2ce1cd64980e8eae185a2aa"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\routers\\__init__.py": {
-    "mtime": 1769434255.8079958,
-    "ast_hash": "27618dcf31539ea32d0cffac55dc0a38",
-    "semantic_hash": "27618dcf31539ea32d0cffac55dc0a38"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\cdap.py": {
-    "mtime": 1769938075.4485993,
-    "ast_hash": "44e48b96b6312b8997b53dc6408d10fb",
-    "semantic_hash": "44e48b96b6312b8997b53dc6408d10fb"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\question_bank.py": {
-    "mtime": 1780914681.4552405,
-    "ast_hash": "1f230e45fc8d0c1de380bcadb608f7e7",
-    "semantic_hash": "1f230e45fc8d0c1de380bcadb608f7e7"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\staff.py": {
-    "mtime": 1780494316.8718853,
-    "ast_hash": "f639c7130646077be4ade8afead43e5b",
-    "semantic_hash": "f639c7130646077be4ade8afead43e5b"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\subject.py": {
-    "mtime": 1772780808.906029,
-    "ast_hash": "4b4e356a8f4cbb42d8cfbae7cbfb970c",
-    "semantic_hash": "4b4e356a8f4cbb42d8cfbae7cbfb970c"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\syllabus.py": {
-    "mtime": 1769433969.9667594,
-    "ast_hash": "f8900bbf62de0dcdc3e710581426f48d",
-    "semantic_hash": "f8900bbf62de0dcdc3e710581426f48d"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\user.py": {
-    "mtime": 1769433715.583982,
-    "ast_hash": "62dafd6559034aa2eb0149f36a85f256",
-    "semantic_hash": "62dafd6559034aa2eb0149f36a85f256"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\schemas\\__init__.py": {
-    "mtime": 1780494327.1024096,
-    "ast_hash": "82ef993de887a52088c09b3f8840538d",
-    "semantic_hash": "82ef993de887a52088c09b3f8840538d"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\ai_service.py": {
-    "mtime": 1781064166.6047566,
-    "ast_hash": "5a2cea2d42f7fe511ff9a80837ecaa0f",
-    "semantic_hash": "5a2cea2d42f7fe511ff9a80837ecaa0f"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\auth.py": {
-    "mtime": 1781070953.5973296,
-    "ast_hash": "f4755596fd4037fb1493153f14cec0cc",
-    "semantic_hash": "f4755596fd4037fb1493153f14cec0cc"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\cdap_parser.py": {
-    "mtime": 1781066968.6394596,
-    "ast_hash": "2e8ca4b6b4321925acfc6eae470e08b0",
-    "semantic_hash": "2e8ca4b6b4321925acfc6eae470e08b0"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\drive_service.py": {
-    "mtime": 1781065067.3871188,
-    "ast_hash": "04c1d0de8952f4bdb1cecfdd1046f50c",
-    "semantic_hash": "04c1d0de8952f4bdb1cecfdd1046f50c"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\email_service.py": {
-    "mtime": 1780494275.0130012,
-    "ast_hash": "165e328dcee2bd8e7c6caec3ac1503c2",
-    "semantic_hash": "165e328dcee2bd8e7c6caec3ac1503c2"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\enhanced_ai_service.py": {
-    "mtime": 1780210157.279698,
-    "ast_hash": "b07bb6262d2e128a1452ebf5761dfa5a",
-    "semantic_hash": "b07bb6262d2e128a1452ebf5761dfa5a"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\excel_service.py": {
-    "mtime": 1781067770.0371842,
-    "ast_hash": "7b42b712b6021f73c9c9f48a67109a51",
-    "semantic_hash": "7b42b712b6021f73c9c9f48a67109a51"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\google_drive_service.py": {
-    "mtime": 1781068066.5545347,
-    "ast_hash": "5410772f17c105a14905e7bff89dbbaa",
-    "semantic_hash": "5410772f17c105a14905e7bff89dbbaa"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\local_model_service.py": {
-    "mtime": 1780210157.279698,
-    "ast_hash": "2e444fc8c34ac643aea44251b3f29c4e",
-    "semantic_hash": "2e444fc8c34ac643aea44251b3f29c4e"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\syllabus_parser.py": {
-    "mtime": 1781067320.8911958,
-    "ast_hash": "6bf25ad331b865c20823b8e9a725db85",
-    "semantic_hash": "6bf25ad331b865c20823b8e9a725db85"
-  },
-  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\services\\__init__.py": {
-    "mtime": 1769434033.7866015,
-    "ast_hash": "5795d91cdae8c4c484b94b7e87860f91",
-    "semantic_hash": "5795d91cdae8c4c484b94b7e87860f91"
+    "mtime": 1782057064.8224466,
+    "ast_hash": "6f8b43a66595c1e4c8959866fc61c106",
+    "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\mobile-app\\src\\lib\\chaquopyBridge.ts": {
     "mtime": 1781065854.0683267,
@@ -1730,7 +1460,7 @@
     "semantic_hash": "558952261c4b0f09447f8bb91d9a2b68"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_cdap_cbba219a_4a3c7d74.md": {
-    "mtime": 1782025142.4422195,
+    "mtime": 1782184116.3464663,
     "ast_hash": "f30412f5f397c07a063be54724c16d21",
     "semantic_hash": "f30412f5f397c07a063be54724c16d21"
   },
@@ -1740,22 +1470,22 @@
     "semantic_hash": "23e76e776d5d03d9eb509cc9f6d0bf56"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_102422_9a2cac5b.md": {
-    "mtime": 1782025145.4995134,
+    "mtime": 1782184119.1506715,
     "ast_hash": "6eff25f5b163763f29ad9fbfb1bd7b2c",
     "semantic_hash": "6eff25f5b163763f29ad9fbfb1bd7b2c"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_111822_0eb40d20.md": {
-    "mtime": 1782025145.5857248,
+    "mtime": 1782184119.2484999,
     "ast_hash": "2f1caccd4084802c5ae692268b8fb60a",
     "semantic_hash": "2f1caccd4084802c5ae692268b8fb60a"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_121213_964bf8fd.md": {
-    "mtime": 1782025145.6508505,
+    "mtime": 1782184119.3062804,
     "ast_hash": "f05f2a68c1c972b068988a59190d9fb0",
     "semantic_hash": "f05f2a68c1c972b068988a59190d9fb0"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_124320_1646531e.md": {
-    "mtime": 1782025145.7364116,
+    "mtime": 1782184119.3864138,
     "ast_hash": "c1f7adf632296d988b324ea95e68e101",
     "semantic_hash": "c1f7adf632296d988b324ea95e68e101"
   },
@@ -1770,27 +1500,27 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_221030_80953cfc.md": {
-    "mtime": 1782025145.8365,
+    "mtime": 1782184119.4622517,
     "ast_hash": "cbc873c0acb44393e58851e3a0208593",
     "semantic_hash": "cbc873c0acb44393e58851e3a0208593"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_224442_dbf4004b.md": {
-    "mtime": 1782025145.939793,
+    "mtime": 1782184119.5263157,
     "ast_hash": "7bd37058a338cebd45f96a02d2f70126",
     "semantic_hash": "7bd37058a338cebd45f96a02d2f70126"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_231751_f55f55e4.md": {
-    "mtime": 1782025146.0135846,
+    "mtime": 1782184119.5908034,
     "ast_hash": "471e87f6a6cccfb498903c98390654b5",
     "semantic_hash": "471e87f6a6cccfb498903c98390654b5"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_233224_032df05b.md": {
-    "mtime": 1782025146.0706391,
+    "mtime": 1782184119.6642816,
     "ast_hash": "f4c941eba05e6a49d3c60a6681b41696",
     "semantic_hash": "f4c941eba05e6a49d3c60a6681b41696"
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260614_233819_37124ac2.md": {
-    "mtime": 1782025146.1581378,
+    "mtime": 1782184119.7345743,
     "ast_hash": "3e2ddd560f1b944ac9efae5082550eda",
     "semantic_hash": "3e2ddd560f1b944ac9efae5082550eda"
   },
@@ -2155,17 +1885,17 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260618_084041_5a14ccc6.md": {
-    "mtime": 1782025146.2328968,
+    "mtime": 1782184119.7870145,
     "ast_hash": "30f4fd23d398108141b310ab1ee0e850",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260618_091203_fe46a961.md": {
-    "mtime": 1782025146.2849698,
+    "mtime": 1782184119.8349547,
     "ast_hash": "2233b9096ff71099118127554860dbce",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\sample_users_template_d36e15da.md": {
-    "mtime": 1782025146.6421525,
+    "mtime": 1782184119.9809284,
     "ast_hash": "cc8199572d43b4b76c55b6d108498f62",
     "semantic_hash": ""
   },
@@ -2215,13 +1945,1173 @@
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\graphify-out\\converted\\cse_QuestionBank_20260620_122019_08108c46.md": {
-    "mtime": 1782025146.341385,
+    "mtime": 1782184119.8868482,
     "ast_hash": "82efe37349a835f086129fdaef744cbc",
     "semantic_hash": ""
   },
   "D:\\QUESTION MIND\\frontend\\src\\pages\\QuickChecks.tsx": {
     "mtime": 1781966028.7941477,
     "ast_hash": "02b635b4409d8fe478b56423380b57bb",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\components\\AIAuroraBackground.tsx": {
+    "mtime": 1781693038.5988948,
+    "ast_hash": "4db1b3a9f52e533a3b72fdadfa3ab364",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\components\\AILogosBackground.tsx": {
+    "mtime": 1781937538.1491685,
+    "ast_hash": "2cd5b807447d779f9f8d49490b5f53cd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\components\\AuroraBackground.tsx": {
+    "mtime": 1781692728.3283336,
+    "ast_hash": "614681007c0290f77f693608a922582f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\components\\Combobox.tsx": {
+    "mtime": 1781368116.6654377,
+    "ast_hash": "e157219eb3584ecdb879bdd68ba7d6d6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\components\\SaraswathiIntro.tsx": {
+    "mtime": 1781608185.945773,
+    "ast_hash": "7b935f6312d2b6207263adfc7f8863b0",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\pages\\AdminDashboard.tsx": {
+    "mtime": 1782018295.848668,
+    "ast_hash": "8ad8675d5bcd753572ae989ba91ff178",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\pages\\QuickChecks.tsx": {
+    "mtime": 1781966028.7941477,
+    "ast_hash": "02b635b4409d8fe478b56423380b57bb",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Saraswathi Maa.jpeg": {
+    "mtime": 1781602418.2234626,
+    "ast_hash": "5d2a750af45aacd8565d1b89fdbfaaa6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\AI LOGOS\\chat_gpt.png": {
+    "mtime": 1781692104.8471785,
+    "ast_hash": "74157ca7548bdb4dbe1069cf4fe0e91a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\AI LOGOS\\claude.png": {
+    "mtime": 1781684244.588958,
+    "ast_hash": "e703c9869622e6c4888d3b97a62fd8ce",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\AI LOGOS\\DeepSeek.png": {
+    "mtime": 1781690068.9929056,
+    "ast_hash": "31357a9ec9212a6827ab5fd95d07a9c4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\AI LOGOS\\gemini.png": {
+    "mtime": 1781684183.003875,
+    "ast_hash": "0a2ed9e107970ca1a1dfad424ef8060c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\AI LOGOS\\Grok.png": {
+    "mtime": 1781690290.0931852,
+    "ast_hash": "55385eabac8542c8233dd6a5d207c0f6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\AI LOGOS\\KIMI.png": {
+    "mtime": 1781690413.639719,
+    "ast_hash": "dd31bcfb5b3738b3372a43a0dbd015d1",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\AI LOGOS\\qwen.png": {
+    "mtime": 1781684289.1092622,
+    "ast_hash": "50e0e7b770c3889bb8d4642b83ec2614",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-001.jpg": {
+    "mtime": 1781605367.0723555,
+    "ast_hash": "08a7c89b99c6ea0079ab2e3514d82c2f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-002.jpg": {
+    "mtime": 1781605367.0783293,
+    "ast_hash": "e8d36c13adcdb7378303abd87471d59c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-003.jpg": {
+    "mtime": 1781605367.0863278,
+    "ast_hash": "79d8948b4b7845cd7ed9a17773b77347",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-004.jpg": {
+    "mtime": 1781605367.0933287,
+    "ast_hash": "a76eb7fd26c2eba39d192e528532c90d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-005.jpg": {
+    "mtime": 1781605367.0993643,
+    "ast_hash": "ca279c8c9eaa890fd76bb60b392a28e0",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-006.jpg": {
+    "mtime": 1781605367.1047418,
+    "ast_hash": "bba0eace554092b587ff4a1378301610",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-007.jpg": {
+    "mtime": 1781605367.110684,
+    "ast_hash": "4552a3e95acff82014f02b35f3901ec4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-008.jpg": {
+    "mtime": 1781605367.1171863,
+    "ast_hash": "e9886bf54cc022cec21527cb288ab451",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-009.jpg": {
+    "mtime": 1781605367.122604,
+    "ast_hash": "c52928717844746edb845716dc3334c5",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-010.jpg": {
+    "mtime": 1781605367.127637,
+    "ast_hash": "9af6dc41e9abfcd3cdcae3e1aee62ecc",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-011.jpg": {
+    "mtime": 1781605367.1344106,
+    "ast_hash": "842b77ab357036f7d2a669c4caf11276",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-012.jpg": {
+    "mtime": 1781605367.1387155,
+    "ast_hash": "f1f13619c535557b088fe371a50c89b8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-013.jpg": {
+    "mtime": 1781605367.1440067,
+    "ast_hash": "2f2da0713ca339086948f4defa55fa9a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-014.jpg": {
+    "mtime": 1781605367.1498756,
+    "ast_hash": "3d807e31a894d127f9674a16e08f788e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-015.jpg": {
+    "mtime": 1781605367.1549993,
+    "ast_hash": "31298bf4597afcc661e97ed635c6f5cd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-016.jpg": {
+    "mtime": 1781605367.15989,
+    "ast_hash": "b3c4e8a9c9501def2d149b499ab5793f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-017.jpg": {
+    "mtime": 1781605367.164786,
+    "ast_hash": "d92a6c61e7eed1e4552e09ef8c53468a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-018.jpg": {
+    "mtime": 1781605367.1715498,
+    "ast_hash": "55a275e664608fa4b43fe779c27d85d2",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-019.jpg": {
+    "mtime": 1781605367.1765513,
+    "ast_hash": "cd5f2e43c56c8bc4cf657bd4956fcec9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-020.jpg": {
+    "mtime": 1781605367.1815472,
+    "ast_hash": "95bbf1d8a36a68035cccb5cd69f94315",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-021.jpg": {
+    "mtime": 1781605367.1865463,
+    "ast_hash": "857da477f2ab1faefef67678d6051f70",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-022.jpg": {
+    "mtime": 1781605367.1915462,
+    "ast_hash": "50de48d17f49ca287a68428bea1eda8c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-023.jpg": {
+    "mtime": 1781605367.196571,
+    "ast_hash": "52db98b1a348ac8fc6b2c5181784811e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-024.jpg": {
+    "mtime": 1781605367.2021573,
+    "ast_hash": "f998b8de4a0612a55b217634118802cd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-025.jpg": {
+    "mtime": 1781605367.207189,
+    "ast_hash": "480ce2dcaff778930ab35994a421f6e9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-026.jpg": {
+    "mtime": 1781605367.2124412,
+    "ast_hash": "a36c62b45a37cf28249e9b5b1f4425ee",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-027.jpg": {
+    "mtime": 1781605367.2184608,
+    "ast_hash": "eee01fc2c6dfe43dda1ef08f0a341d6c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-028.jpg": {
+    "mtime": 1781605367.2242093,
+    "ast_hash": "332b70207212556f4bb85d673183cfda",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-029.jpg": {
+    "mtime": 1781605367.2292218,
+    "ast_hash": "c21df2f0dcdd6cfa18b3c7fdca54271a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-030.jpg": {
+    "mtime": 1781605367.2352235,
+    "ast_hash": "313d9f434720d4ac4bfcaf18bf679a4e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-031.jpg": {
+    "mtime": 1781605367.2402282,
+    "ast_hash": "2072f39a22a2ba628a60f835737b243c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-032.jpg": {
+    "mtime": 1781605367.2455444,
+    "ast_hash": "91660672beeb5f7fd9e36df0c873761f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-033.jpg": {
+    "mtime": 1781605367.2513752,
+    "ast_hash": "1fa794d31ab48adc659398ff729d981a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-034.jpg": {
+    "mtime": 1781605367.2553935,
+    "ast_hash": "61012d2152aa11f91d55f5d9fa55e84a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-035.jpg": {
+    "mtime": 1781605367.2613876,
+    "ast_hash": "8dc73596693bb85c686c5fba30235659",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-036.jpg": {
+    "mtime": 1781605367.2677577,
+    "ast_hash": "0f7beb14e3fa21d9132104d14baa2640",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-037.jpg": {
+    "mtime": 1781605367.2727723,
+    "ast_hash": "28cbdf98d68fe8623bfa65817220d2d1",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-038.jpg": {
+    "mtime": 1781605367.277773,
+    "ast_hash": "965e6c5add1268efc85cbd1acb01b0e9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-039.jpg": {
+    "mtime": 1781605367.283226,
+    "ast_hash": "b6d365d8a34ff9a9491d0fafe3375771",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-040.jpg": {
+    "mtime": 1781605367.2892234,
+    "ast_hash": "292efc1138b97b26fca5f7ef804c9b18",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-041.jpg": {
+    "mtime": 1781605367.2942185,
+    "ast_hash": "bd60b8c4524227c2d73b607360a60e5e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-042.jpg": {
+    "mtime": 1781605367.3004434,
+    "ast_hash": "9e89f4bf0079e627c4ba06cedf99c42b",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-043.jpg": {
+    "mtime": 1781605367.3044617,
+    "ast_hash": "0e4fd0a037decf042613d01576063341",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-044.jpg": {
+    "mtime": 1781605367.3094914,
+    "ast_hash": "1d826290040accb1b0afb64402219999",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-045.jpg": {
+    "mtime": 1781605367.3155127,
+    "ast_hash": "8d74501bab7d5dd5ebffe8bccdedfa4a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-046.jpg": {
+    "mtime": 1781605367.3215122,
+    "ast_hash": "9c4e5f29340dd5e7c50b0fc4fbd7ed46",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-047.jpg": {
+    "mtime": 1781605367.3275073,
+    "ast_hash": "42ae9fc8aab7fefb4c68ff07acb75f0d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-048.jpg": {
+    "mtime": 1781605367.334853,
+    "ast_hash": "9090623657b4ad1aad247d7307927520",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-049.jpg": {
+    "mtime": 1781605367.3408477,
+    "ast_hash": "5966995e9d2839a15e6abcfd3172ab68",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-050.jpg": {
+    "mtime": 1781605367.34733,
+    "ast_hash": "a5331643aa86a28d3483064840751a76",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-051.jpg": {
+    "mtime": 1781605367.3546896,
+    "ast_hash": "fa0d7c87d040e06e0201f98b0f9bd74e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-052.jpg": {
+    "mtime": 1781605367.3612769,
+    "ast_hash": "39591b22ee4db4479fb6f3cb30605bb8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-053.jpg": {
+    "mtime": 1781605367.368291,
+    "ast_hash": "4f411d92f28bfdf3b2a02d48ef3da6a8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-054.jpg": {
+    "mtime": 1781605367.3752742,
+    "ast_hash": "377a3609057ad3533d6e0d52a0046ad8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-055.jpg": {
+    "mtime": 1781605367.3842773,
+    "ast_hash": "d4cc51e818b694fc1a33dedf7cb86960",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-056.jpg": {
+    "mtime": 1781605367.3912778,
+    "ast_hash": "7dd142aec577ce6a5ed5b17cf632b6aa",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-057.jpg": {
+    "mtime": 1781605367.3992727,
+    "ast_hash": "4b15ad5f32f92dc90994d04cb7b38fb4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-058.jpg": {
+    "mtime": 1781605367.407277,
+    "ast_hash": "fd58fc3f69667b1b5b84e64f40ee98e7",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-059.jpg": {
+    "mtime": 1781605367.4157774,
+    "ast_hash": "790af516eb21c7dd11b7ed5f74667f46",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-060.jpg": {
+    "mtime": 1781605367.4238398,
+    "ast_hash": "7301e5a57a510e069961826f2c15bebc",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-061.jpg": {
+    "mtime": 1781605367.431103,
+    "ast_hash": "1f7b94bce71fd37b19e1b8ac91a4c957",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-062.jpg": {
+    "mtime": 1781605367.437112,
+    "ast_hash": "9524a5e35a943105dc58042bc12bfc58",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-063.jpg": {
+    "mtime": 1781605367.4451108,
+    "ast_hash": "c2e6e9dbcc40cb6d2e99f6a26fab6cec",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Sarawathi Maa\\ezgif-frame-064.jpg": {
+    "mtime": 1781605367.452479,
+    "ast_hash": "5d75f3590af320a3f046c125be62f9b2",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Saraswathi Devi .mp3": {
+    "mtime": 1781605583.978037,
+    "ast_hash": "f965f33bb1be4a718dc2a3b1cb724b42",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\chat_gpt-Desamk9T.png": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "74157ca7548bdb4dbe1069cf4fe0e91a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\claude-CJ74Ead0.png": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "e703c9869622e6c4888d3b97a62fd8ce",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\DeepSeek-DCy8RnPD.png": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "31357a9ec9212a6827ab5fd95d07a9c4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-001-BHAyUdKF.jpg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "08a7c89b99c6ea0079ab2e3514d82c2f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-002-LU_HjIsx.jpg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "e8d36c13adcdb7378303abd87471d59c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-003-CenIBw7A.jpg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "79d8948b4b7845cd7ed9a17773b77347",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-004-yBQ6maLC.jpg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "a76eb7fd26c2eba39d192e528532c90d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-005-DB3_0Kzc.jpg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "ca279c8c9eaa890fd76bb60b392a28e0",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-006-EH-_P7mL.jpg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "bba0eace554092b587ff4a1378301610",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-007-IPAT_rb_.jpg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "4552a3e95acff82014f02b35f3901ec4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-008-Bu3H4OEO.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "e9886bf54cc022cec21527cb288ab451",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-009-DPC6xy3q.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "c52928717844746edb845716dc3334c5",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-010-PkIrmIbO.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "9af6dc41e9abfcd3cdcae3e1aee62ecc",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-011-DpznWSov.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "842b77ab357036f7d2a669c4caf11276",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-012-NqSBP4ey.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "f1f13619c535557b088fe371a50c89b8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-013-DNPYYB_u.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "2f2da0713ca339086948f4defa55fa9a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-014-CYVj_R5J.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "3d807e31a894d127f9674a16e08f788e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-015-CT829Wji.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "31298bf4597afcc661e97ed635c6f5cd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-016-DnHtqS0w.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "b3c4e8a9c9501def2d149b499ab5793f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-017-DqmUJ9az.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "d92a6c61e7eed1e4552e09ef8c53468a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-018-D2WUslO3.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "55a275e664608fa4b43fe779c27d85d2",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-019-DmpJBW6c.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "cd5f2e43c56c8bc4cf657bd4956fcec9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-020-BrIGfghO.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "95bbf1d8a36a68035cccb5cd69f94315",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-021-ByVZD5f5.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "857da477f2ab1faefef67678d6051f70",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-022-BCaoYsU2.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "50de48d17f49ca287a68428bea1eda8c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-023-Bh5wxQJB.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "52db98b1a348ac8fc6b2c5181784811e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-024-BmNBGfnj.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "f998b8de4a0612a55b217634118802cd",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-025-Cd_PQcu9.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "480ce2dcaff778930ab35994a421f6e9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-026-Cm_06IE-.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "a36c62b45a37cf28249e9b5b1f4425ee",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-027-Be2ggkp7.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "eee01fc2c6dfe43dda1ef08f0a341d6c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-028-BlMGjMsn.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "332b70207212556f4bb85d673183cfda",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-029-Bwr00g_e.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "c21df2f0dcdd6cfa18b3c7fdca54271a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-030-DsLRBlsi.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "313d9f434720d4ac4bfcaf18bf679a4e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-031-BSP5yMGI.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "2072f39a22a2ba628a60f835737b243c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-032-DXp_x2y0.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "91660672beeb5f7fd9e36df0c873761f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-033-D5a267PV.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "1fa794d31ab48adc659398ff729d981a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-034-B-3McByi.jpg": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "61012d2152aa11f91d55f5d9fa55e84a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-035-Bz7OS9c0.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "8dc73596693bb85c686c5fba30235659",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-036-vd9BbiZ6.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "0f7beb14e3fa21d9132104d14baa2640",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-037-BmwkKANA.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "28cbdf98d68fe8623bfa65817220d2d1",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-038-iajlIc2L.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "965e6c5add1268efc85cbd1acb01b0e9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-039-CkVkmkJp.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "b6d365d8a34ff9a9491d0fafe3375771",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-040-mIydaKzy.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "292efc1138b97b26fca5f7ef804c9b18",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-041-AkBGgZDw.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "bd60b8c4524227c2d73b607360a60e5e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-042-Ckvs3Wd5.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "9e89f4bf0079e627c4ba06cedf99c42b",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-043-BkJts1eR.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "0e4fd0a037decf042613d01576063341",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-044-U7Kt0LPc.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "1d826290040accb1b0afb64402219999",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-045-Bren7nBk.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "8d74501bab7d5dd5ebffe8bccdedfa4a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-046-A1Njc_2K.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "9c4e5f29340dd5e7c50b0fc4fbd7ed46",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-047-BINNR7Le.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "42ae9fc8aab7fefb4c68ff07acb75f0d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-048-C7ZSm_2j.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "9090623657b4ad1aad247d7307927520",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-049-r1O-DllQ.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "5966995e9d2839a15e6abcfd3172ab68",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-050-CS_l3UgQ.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "a5331643aa86a28d3483064840751a76",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-051-Cuy3sSbT.jpg": {
+    "mtime": 1782184105.4438465,
+    "ast_hash": "fa0d7c87d040e06e0201f98b0f9bd74e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-052-DAAUMSDf.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "39591b22ee4db4479fb6f3cb30605bb8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-053-B1vmt6SS.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "4f411d92f28bfdf3b2a02d48ef3da6a8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-054-CUVluQNe.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "377a3609057ad3533d6e0d52a0046ad8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-055-BXl-opMq.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "d4cc51e818b694fc1a33dedf7cb86960",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-056-vAtwCdRg.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "7dd142aec577ce6a5ed5b17cf632b6aa",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-057-DcANlB8o.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "4b15ad5f32f92dc90994d04cb7b38fb4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-058-D0yp83WR.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "fd58fc3f69667b1b5b84e64f40ee98e7",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-059-BQXVRSJ4.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "790af516eb21c7dd11b7ed5f74667f46",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-060-Dd7K1Fip.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "7301e5a57a510e069961826f2c15bebc",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-061-hR96SXoW.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "1f7b94bce71fd37b19e1b8ac91a4c957",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-062-D7kwEXA7.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "9524a5e35a943105dc58042bc12bfc58",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-063-qRR-aWRb.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "c2e6e9dbcc40cb6d2e99f6a26fab6cec",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\ezgif-frame-064-C7XhoMTz.jpg": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "5d75f3590af320a3f046c125be62f9b2",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\gemini-BHONOCPB.png": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "0a2ed9e107970ca1a1dfad424ef8060c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\Grok-WjeAAW5S.png": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "55385eabac8542c8233dd6a5d207c0f6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\KIMI-CH8E3Tcx.png": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "dd31bcfb5b3738b3372a43a0dbd015d1",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\qwen-DMRDKkXL.png": {
+    "mtime": 1782184105.4428484,
+    "ast_hash": "50e0e7b770c3889bb8d4642b83ec2614",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\Saraswathi Devi -DiRhPldP.mp3": {
+    "mtime": 1782184105.4489162,
+    "ast_hash": "f965f33bb1be4a718dc2a3b1cb724b42",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\components\\ApiKeyInput.tsx": {
+    "mtime": 1782028341.274543,
+    "ast_hash": "777ebddae5bebb016c10a7be73d8fac4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\components\\ProviderSelector.tsx": {
+    "mtime": 1782028674.7590363,
+    "ast_hash": "b978c777da823e5d6235f757652c24ba",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\aiSettingsApi.ts": {
+    "mtime": 1782028641.4535828,
+    "ast_hash": "da4f597df4f487acc5583b9bdfdaefe8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\settingsStore.ts": {
+    "mtime": 1782028628.523667,
+    "ast_hash": "7d95e488b25da890cc2b7e8c7a5890d3",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\pages\\Settings.tsx": {
+    "mtime": 1782028668.2906945,
+    "ast_hash": "82d8c629fe7e450d316a1d4442357ac8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\lib\\offlineStore.ts": {
+    "mtime": 1782045426.2722654,
+    "ast_hash": "0895ddd98b808165c6c7db87cd704e9d",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\README.md": {
+    "mtime": 1782030520.6001897,
+    "ast_hash": "61b28631d23af27f13b010daeb790166",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\config.py": {
+    "mtime": 1782059370.520089,
+    "ast_hash": "6e4eca7250b79c63cbe2847e4f0ec998",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\database.py": {
+    "mtime": 1782060795.278023,
+    "ast_hash": "b9bc965762774d6ab40494426706f9e6",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\main.py": {
+    "mtime": 1782059395.9981568,
+    "ast_hash": "07e9c6774e160bdd252896e263d83baa",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\__init__.py": {
+    "mtime": 1769435220.4893458,
+    "ast_hash": "df77654bb1989fdfdb5172b97169c707",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\models\\cdap.py": {
+    "mtime": 1769852500.804045,
+    "ast_hash": "12d4582ee38601059ac6c6e5a4b21e60",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\models\\help_request.py": {
+    "mtime": 1780817353.2523928,
+    "ast_hash": "9bf1f74b054d4b9ed3a620de207699f2",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\models\\question_bank.py": {
+    "mtime": 1780817341.4722931,
+    "ast_hash": "de5e558fc69519b3114295b109a1f971",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\models\\staff_assignment.py": {
+    "mtime": 1769433699.0465791,
+    "ast_hash": "3c2afa6bc0a8c80c6bac90fb7590ab23",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\models\\subject.py": {
+    "mtime": 1769852523.8508868,
+    "ast_hash": "d3071332049423ae02582a9c3196aab4",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\models\\syllabus.py": {
+    "mtime": 1769433699.0465791,
+    "ast_hash": "70ed58c53a5a73b01019a76fa1d3ea75",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\models\\user.py": {
+    "mtime": 1781355862.0749893,
+    "ast_hash": "496009fbca5a94397f298204af67e3cb",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\models\\__init__.py": {
+    "mtime": 1769852521.756713,
+    "ast_hash": "33fececd5758400d8a7d69ffc94f8727",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\routers\\auth.py": {
+    "mtime": 1782060405.4670322,
+    "ast_hash": "151321cdc91f9edc1fa452bea9ef92e1",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\routers\\question_bank.py": {
+    "mtime": 1782060405.506502,
+    "ast_hash": "6420145ac904450d81494b9a85d64447",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\routers\\staff.py": {
+    "mtime": 1782060405.5397735,
+    "ast_hash": "26ecb535587e597ec4aefafc879bddb8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\routers\\subjects.py": {
+    "mtime": 1782060405.5437746,
+    "ast_hash": "bac9c2cd05b57775db6ee6d437567cf5",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\routers\\syllabus.py": {
+    "mtime": 1782060405.5809,
+    "ast_hash": "877818a9f4d4911e427548114e0916ba",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\routers\\__init__.py": {
+    "mtime": 1782060405.5929022,
+    "ast_hash": "27618dcf31539ea32d0cffac55dc0a38",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\schemas\\cdap.py": {
+    "mtime": 1782060405.6186638,
+    "ast_hash": "fa5d0767a4a5b39372344c350163a01e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\schemas\\question_bank.py": {
+    "mtime": 1782060405.648094,
+    "ast_hash": "7ddfcc730ebdfef42cda84069cf25490",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\schemas\\staff.py": {
+    "mtime": 1782060405.6520953,
+    "ast_hash": "256a8422d616c8e3ab5903188a277519",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\schemas\\subject.py": {
+    "mtime": 1782060405.679444,
+    "ast_hash": "dc67e9b21ce53e8ba6b5ecd324738222",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\schemas\\syllabus.py": {
+    "mtime": 1782060405.7055862,
+    "ast_hash": "4a54a7c5a0e321e7774f8413a022267e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\schemas\\user.py": {
+    "mtime": 1782060405.7322023,
+    "ast_hash": "b32d7ff04fcd2c84f213f1c7fb0040cf",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\schemas\\__init__.py": {
+    "mtime": 1782060405.7362022,
+    "ast_hash": "cb6e35720d1be777d3ddde45703f170b",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\ai_service.py": {
+    "mtime": 1781754833.0602872,
+    "ast_hash": "4c48f4ab6992d84ab9d54731dcec8b31",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\auth.py": {
+    "mtime": 1781588150.548985,
+    "ast_hash": "f68be4d01a2ae66570a21b47862767f5",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\cdap_parser.py": {
+    "mtime": 1769938016.5384674,
+    "ast_hash": "f5bb55e9ebe345d232310643ba6a430e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\drive_service.py": {
+    "mtime": 1781065067.3871188,
+    "ast_hash": "04c1d0de8952f4bdb1cecfdd1046f50c",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\email_service.py": {
+    "mtime": 1782021246.5359688,
+    "ast_hash": "461d4b2bc74363c33075df98d46242a0",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\enhanced_ai_service.py": {
+    "mtime": 1781586651.2984886,
+    "ast_hash": "d2d0db19fa75112ed0116ba8d2866c5f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\excel_service.py": {
+    "mtime": 1782059411.1458175,
+    "ast_hash": "5158f99fde2ee4fbbe69cb32a2443e1f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\google_drive_service.py": {
+    "mtime": 1781068066.5545347,
+    "ast_hash": "5410772f17c105a14905e7bff89dbbaa",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\local_model_service.py": {
+    "mtime": 1780210157.279698,
+    "ast_hash": "2e444fc8c34ac643aea44251b3f29c4e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\syllabus_parser.py": {
+    "mtime": 1769841080.0736806,
+    "ast_hash": "1d6edc7f4cef2bc127f3756baf6cfe0b",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\services\\__init__.py": {
+    "mtime": 1769434033.7866015,
+    "ast_hash": "5795d91cdae8c4c484b94b7e87860f91",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\python\\app\\assets\\email_logo.png": {
+    "mtime": 1782017657.4244883,
+    "ast_hash": "c366f22d5b9198d487f7abe8f962406a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\1.jpeg": {
+    "mtime": 1782182304.2316377,
+    "ast_hash": "8191f183289f9ffba990ca6536e5f708",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\10.jpeg": {
+    "mtime": 1782183146.7858644,
+    "ast_hash": "9b5945f14385862c9c701fc19d7225e9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\2.jpeg": {
+    "mtime": 1782182304.2381432,
+    "ast_hash": "dc868136efceab5d88a1238ea1f02d6a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\3.jpeg": {
+    "mtime": 1782182304.234637,
+    "ast_hash": "2b1ea243a05c7f677c36aae72e1be095",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\4.jpeg": {
+    "mtime": 1782182304.2444477,
+    "ast_hash": "24f685b09827245fbd3082de54c07177",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\5.jpeg": {
+    "mtime": 1782182304.241159,
+    "ast_hash": "c30b52039028931f89cc59419c3ef6ad",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\6.jpeg": {
+    "mtime": 1782182304.2534716,
+    "ast_hash": "84463b9019a34d836530e62cc2507456",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\7.jpeg": {
+    "mtime": 1782182304.2484636,
+    "ast_hash": "aeba7e9dd7f2f83e74ca6a390bb9eb30",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\8.jpeg": {
+    "mtime": 1782183146.7685647,
+    "ast_hash": "a51995f43290a3a909b8670240100f79",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\frontend\\src\\assets\\Profile Logos\\9.jpeg": {
+    "mtime": 1782183146.7834344,
+    "ast_hash": "6e131ef309ef8b8d01b81f671632cbb8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\1-B70nBIqW.jpeg": {
+    "mtime": 1782184105.440832,
+    "ast_hash": "8191f183289f9ffba990ca6536e5f708",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\10-BkPD-UoD.jpeg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "9b5945f14385862c9c701fc19d7225e9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\2-B62jQIPT.jpeg": {
+    "mtime": 1782184105.440832,
+    "ast_hash": "dc868136efceab5d88a1238ea1f02d6a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\3-Cqvz2qlN.jpeg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "2b1ea243a05c7f677c36aae72e1be095",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\4-BJSia9_l.jpeg": {
+    "mtime": 1782184105.440832,
+    "ast_hash": "24f685b09827245fbd3082de54c07177",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\5-B0rb6y1f.jpeg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "c30b52039028931f89cc59419c3ef6ad",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\6-BRdU8ZZF.jpeg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "84463b9019a34d836530e62cc2507456",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\7-Bvax9tYQ.jpeg": {
+    "mtime": 1782184105.4418447,
+    "ast_hash": "aeba7e9dd7f2f83e74ca6a390bb9eb30",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\8-CDGlJlTT.jpeg": {
+    "mtime": 1782184105.440832,
+    "ast_hash": "a51995f43290a3a909b8670240100f79",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\9-D70Y1D9g.jpeg": {
+    "mtime": 1782184105.440832,
+    "ast_hash": "6e131ef309ef8b8d01b81f671632cbb8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\1.jpeg": {
+    "mtime": 1782182304.2316377,
+    "ast_hash": "8191f183289f9ffba990ca6536e5f708",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\10.jpeg": {
+    "mtime": 1782183146.7858644,
+    "ast_hash": "9b5945f14385862c9c701fc19d7225e9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\2.jpeg": {
+    "mtime": 1782182304.2381432,
+    "ast_hash": "dc868136efceab5d88a1238ea1f02d6a",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\3.jpeg": {
+    "mtime": 1782182304.234637,
+    "ast_hash": "2b1ea243a05c7f677c36aae72e1be095",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\4.jpeg": {
+    "mtime": 1782182304.2444477,
+    "ast_hash": "24f685b09827245fbd3082de54c07177",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\5.jpeg": {
+    "mtime": 1782182304.241159,
+    "ast_hash": "c30b52039028931f89cc59419c3ef6ad",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\6.jpeg": {
+    "mtime": 1782182304.2534716,
+    "ast_hash": "84463b9019a34d836530e62cc2507456",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\7.jpeg": {
+    "mtime": 1782182304.2484636,
+    "ast_hash": "aeba7e9dd7f2f83e74ca6a390bb9eb30",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\8.jpeg": {
+    "mtime": 1782183146.7685647,
+    "ast_hash": "a51995f43290a3a909b8670240100f79",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\src\\assets\\Profile Logos\\9.jpeg": {
+    "mtime": 1782183146.7834344,
+    "ast_hash": "6e131ef309ef8b8d01b81f671632cbb8",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\index-BVseKiBx.js": {
+    "mtime": 1782184105.4489162,
+    "ast_hash": "294c04f9ba5ff24d6e8311867f510526",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web--Kr4y9y1.js": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "0a67946db1d7afae250e481f833d937e",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-69he7l9F.js": {
+    "mtime": 1782184105.446362,
+    "ast_hash": "be495479b6a9d21e35bc8ff08ed0d2a9",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-D9JWtp2-.js": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "c57852f293390ffd2c1671708ad0ae9f",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-DG7n2L0X.js": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "5f491dcf439e85bb4ffe30cd1c64b658",
+    "semantic_hash": ""
+  },
+  "D:\\QUESTION MIND\\mobile-app\\android\\app\\src\\main\\assets\\public\\assets\\web-KD0ocNnn.js": {
+    "mtime": 1782184105.444845,
+    "ast_hash": "d75b695844639e124319ebe1f126a66e",
     "semantic_hash": ""
   }
 }

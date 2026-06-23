@@ -119,11 +119,11 @@ export const ProviderSelector: React.FC = () => {
             className="mt-1 w-4 h-4 text-pink-600 focus:ring-pink-500 border-pink-300 bg-white dark:bg-slate-800"
           />
           <div className="flex-1">
-            <p className="font-semibold text-slate-900 dark:text-white">Use Local Model</p>
+            <p className="font-semibold text-slate-900 dark:text-white">Gemma (Local Offline)</p>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
               {deviceCapabilities?.supportsLocalModels
-                ? 'Run Gemma 2B offline on your device'
-                : 'Local models not supported on this device'}
+                ? 'Run Gemma 2B offline on your device (Requires download)'
+                : 'Gemma (Local Offline) is not supported on this device'}
             </p>
             <p className="text-xs text-pink-600 dark:text-pink-400 font-medium mt-2">
               {deviceCapabilities?.supportsLocalModels

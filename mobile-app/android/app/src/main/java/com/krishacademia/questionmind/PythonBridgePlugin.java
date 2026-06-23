@@ -100,17 +100,31 @@ public class PythonBridgePlugin extends Plugin {
     public void dispatchApiRequest(PluginCall call) {
         String method = call.getString("method");
         String path = call.getString("path");
-        JSObject bodyObj = call.getObject("body", null);
-
+        
+        // The frontend may send body as a JSON string or as an object
+        org.json.JSONObject body = null;
         try {
-            org.json.JSONObject body = bodyObj != null ? new org.json.JSONObject(bodyObj.toString()) : null;
-            pythonBridge.dispatchApiRequest(method, path, body, resultJson -> {
-                JSObject ret = new JSObject();
-                ret.put("value", resultJson);
-                call.resolve(ret);
-            });
-        } catch (JSONException e) {
-            call.reject("Invalid JSON body provided", e);
+            String bodyStr = call.getString("body", null);
+            if (bodyStr != null && !bodyStr.isEmpty()) {
+                body = new org.json.JSONObject(bodyStr);
+            }
+        } catch (JSONException e1) {
+            // Try as JSObject
+            try {
+                JSObject bodyObj = call.getObject("body", null);
+                if (bodyObj != null) {
+                    body = new org.json.JSONObject(bodyObj.toString());
+                }
+            } catch (JSONException e2) {
+                // body stays null
+            }
         }
+
+        final org.json.JSONObject finalBody = body;
+        pythonBridge.dispatchApiRequest(method, path, finalBody, resultJson -> {
+            JSObject ret = new JSObject();
+            ret.put("value", resultJson);
+            call.resolve(ret);
+        });
     }
 }

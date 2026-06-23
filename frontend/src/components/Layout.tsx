@@ -17,8 +17,32 @@ import {
   BarChart3,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import logo from '../assets/logo.png';
+
+import profile1 from '../assets/Profile Logos/1.jpeg';
+import profile2 from '../assets/Profile Logos/2.jpeg';
+import profile3 from '../assets/Profile Logos/3.jpeg';
+import profile4 from '../assets/Profile Logos/4.jpeg';
+import profile5 from '../assets/Profile Logos/5.jpeg';
+import profile6 from '../assets/Profile Logos/6.jpeg';
+import profile7 from '../assets/Profile Logos/7.jpeg';
+import profile8 from '../assets/Profile Logos/8.jpeg';
+import profile9 from '../assets/Profile Logos/9.jpeg';
+import profile10 from '../assets/Profile Logos/10.jpeg';
+
+const profileLogos = [
+  profile1,
+  profile2,
+  profile3,
+  profile4,
+  profile5,
+  profile6,
+  profile7,
+  profile8,
+  profile9,
+  profile10
+];
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,6 +54,14 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [logoIndex, setLogoIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLogoIndex((prev) => (prev + 1) % 10);
+    }, 30000); // 30 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const isHOD = user?.role === 'HOD';
 
@@ -130,8 +162,16 @@ export default function Layout({ children }: LayoutProps) {
         {/* User */}
         <div className="p-4 border-t-2 border-pink-300 dark:border-pink-600 bg-gradient-to-r from-pink-100/90 via-purple-100/90 to-orange-100/90 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 backdrop-blur flex-shrink-0">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-slate-900 text-white dark:bg-slate-800 flex items-center justify-center font-bold text-lg shadow-sm">
-              {user?.name?.charAt(0).toUpperCase()}
+            <div className="relative w-12 h-12 rounded-full overflow-hidden shadow-md flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-tr from-pink-500 via-purple-500 to-orange-500 rounded-full animate-[spin_4s_linear_infinite] z-0" />
+              <div className="absolute inset-[2.5px] rounded-full bg-white dark:bg-slate-900 z-10 flex items-center justify-center overflow-hidden">
+                <img 
+                  key={logoIndex}
+                  src={profileLogos[logoIndex]} 
+                  alt="User Profile" 
+                  className="w-full h-full object-cover rounded-full animate-profile-flip"
+                />
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-50 truncate">{user?.name}</p>

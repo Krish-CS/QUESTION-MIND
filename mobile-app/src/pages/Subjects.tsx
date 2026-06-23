@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useBackButton } from '../lib/useBackButton';
-import { subjectsApi, staffApi, questionBankApi, downloadExcel } from '../lib/api';
-import { useAuthStore, useUiStore } from '../lib/store';
+import { subjectsApi, staffApi, questionBankApi } from '../lib/api';
+import { useAuthStore } from '../lib/store';
+import { Combobox } from '../components/Combobox';
+import ConfirmationModal from '../components/ui/ConfirmationModal';
 import {
   Plus,
   Edit2,
@@ -19,9 +20,7 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   UserPlus,
-  Download,
 } from 'lucide-react';
-import ConfirmationModal from '../components/ui/ConfirmationModal';
 import {
   Subject,
   PartConfiguration,
@@ -45,12 +44,22 @@ export default function Subjects() {
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; subjectId: string | null }>({
-    isOpen: false,
-    subjectId: null,
-  });
   const [showImportModal, setShowImportModal] = useState(false);
 
+  // Confirmation state for deleting subjects
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isDangerous?: boolean;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
 
   useEffect(() => {
     loadSubjects();
@@ -75,20 +84,21 @@ export default function Subjects() {
   };
 
   const handleDelete = (id: string) => {
-    setConfirmDelete({ isOpen: true, subjectId: id });
-  };
-
-  const executeDelete = async () => {
-    const id = confirmDelete.subjectId;
-    if (!id) return;
-    setConfirmDelete({ isOpen: false, subjectId: null });
-
-    try {
-      await subjectsApi.delete(id);
-      setSubjects(subjects.filter((s) => s.id !== id));
-    } catch (err) {
-      setError('Failed to delete subject');
-    }
+    setConfirmState({
+      isOpen: true,
+      title: 'Delete Subject',
+      message: 'Are you sure you want to delete this subject? associated Syllabus and Question Banks will also be permanently deleted. This action cannot be undone.',
+      isDangerous: true,
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        try {
+          await subjectsApi.delete(id);
+          setSubjects(prev => prev.filter((s) => s.id !== id));
+        } catch (err) {
+          setError('Failed to delete subject');
+        }
+      },
+    });
   };
 
   const filteredSubjects = subjects.filter(
@@ -112,28 +122,18 @@ export default function Subjects() {
           <h1 className="text-3xl font-bold text-pink-600 dark:text-pink-400">📚 Subjects</h1>
           <p className="text-purple-700 dark:text-purple-300 mt-1 font-medium">Manage subjects and their exam configurations</p>
         </div>
-        {isHOD && (
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={() => setShowImportModal(true)}
-              className="btn btn-secondary"
-            >
-              <Upload className="w-4 h-4" />
-              Import Staff
-            </button>
-            <button
-              onClick={() => {
-                setEditingSubject(null);
-                setShowModal(true);
-              }}
-              className="btn btn-primary"
-            >
-              <Plus className="w-5 h-5" />
-              Add Subject
-            </button>
-          </div>
-        )}
-
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={() => {
+              setEditingSubject(null);
+              setShowModal(true);
+            }}
+            className="btn btn-primary"
+          >
+            <Plus className="w-5 h-5" />
+            Add Subject
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -148,10 +148,29 @@ export default function Subjects() {
         />
       </div>
 
-      {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 dark:bg-rose-900 dark:border-rose-800 dark:text-rose-200">
-          {error}
-        </div>
+      {error && createPortal(
+        <div
+          className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setError('')}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center border-2 border-rose-300 dark:border-rose-700 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-2">Error Occurred</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed whitespace-pre-wrap">
+              {error}
+            </p>
+            <button
+              onClick={() => setError('')}
+              className="btn bg-rose-600 hover:bg-rose-700 text-white px-6 py-2.5 rounded-xl transition-all font-semibold shadow-lg shadow-rose-500/25 active:scale-95"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Content */}
@@ -164,12 +183,10 @@ export default function Subjects() {
           <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No Subjects</h3>
           <p className="text-slate-600 dark:text-slate-400 mb-6">Get started by adding your first subject</p>
-          {isHOD && (
-            <button onClick={() => setShowModal(true)} className="btn btn-primary mx-auto">
-              <Plus className="w-5 h-5" />
-              Add Subject
-            </button>
-          )}
+          <button onClick={() => setShowModal(true)} className="btn btn-primary mx-auto">
+            <Plus className="w-5 h-5" />
+            Add Subject
+          </button>
         </div>
       ) : (
         <div className="space-y-8">
@@ -218,20 +235,19 @@ export default function Subjects() {
         />
       )}
 
-      <ConfirmationModal
-        isOpen={confirmDelete.isOpen}
-        onClose={() => setConfirmDelete({ isOpen: false, subjectId: null })}
-        onConfirm={executeDelete}
-        title="Delete Subject"
-        message="Are you sure you want to delete this subject? This action cannot be undone."
-        confirmText="Delete"
-        isDangerous={true}
-      />
-
-      {/* Staff Import Modal */}
       {showImportModal && (
-        <MobileStaffImportModal onClose={() => setShowImportModal(false)} />
+        <StaffImportModal onClose={() => setShowImportModal(false)} />
       )}
+
+      <ConfirmationModal
+        isOpen={confirmState.isOpen}
+        onClose={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmState.onConfirm}
+        title={confirmState.title}
+        message={confirmState.message}
+        isDangerous={confirmState.isDangerous}
+        confirmText={confirmState.confirmText}
+      />
     </div>
   );
 }
@@ -282,17 +298,15 @@ function SubjectCard({
         )}
       </div>
 
-      {isHOD && (
-        <div className="flex gap-2 mt-4 pt-4 border-t border-pink-200 dark:border-pink-700">
-          <button onClick={onEdit} className="btn btn-secondary flex-1 justify-center">
-            <Edit2 className="w-4 h-4" />
-            Edit
-          </button>
-          <button onClick={onDelete} className="btn btn-danger">
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <div className="flex gap-2 mt-4 pt-4 border-t border-pink-200 dark:border-pink-700">
+        <button onClick={onEdit} className="btn btn-secondary flex-1 justify-center">
+          <Edit2 className="w-4 h-4" />
+          Edit
+        </button>
+        <button onClick={onDelete} className="btn btn-danger">
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -306,10 +320,9 @@ function SubjectModal({
   onClose: () => void;
   onSave: () => void;
 }) {
-  useBackButton(onClose);
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
-  const stepNames = ['Subject Details', 'Question Pattern', 'Assign Staff'];
+  const totalSteps = 2;
+  const stepNames = ['Subject Details', 'Question Pattern'];
   const [formData, setFormData] = useState({
     code: subject?.code || '',
     name: subject?.name || '',
@@ -485,21 +498,6 @@ function SubjectModal({
         subjectId = response.data.id;
       }
 
-      // Save staff assignments
-      if (subjectId && assignedStaff.length > 0) {
-        for (const staffData of assignedStaff) {
-          await staffApi.assign(subjectId, {
-            staff_email: staffData.email,
-            staff_name: staffData.name,
-            permissions: {
-              canEditPattern: staffData.canEditPattern,
-              canGenerateQuestions: staffData.canGenerateQuestions,
-              canApprove: staffData.canApprove,
-            },
-          });
-        }
-      }
-
       // Sync the QuestionPattern table so Patterns page stays up-to-date
       if (subjectId && formData.hasExam && formData.parts.length > 0) {
         try {
@@ -577,14 +575,14 @@ function SubjectModal({
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
             {subject ? 'Edit Subject' : 'Create Subject'}
           </h2>
-          <button onClick={onClose} className="p-2 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0">
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Step Indicators */}
-        <div className="px-6 py-4 border-b border-pink-200 dark:border-pink-700 bg-pink-50 dark:bg-slate-900">
-          <div className="flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-pink-200 dark:border-pink-700 bg-pink-50 dark:bg-slate-900 flex justify-center">
+          <div className="flex items-center justify-between w-full max-w-md">
             {stepNames.map((name, idx) => {
               const stepNum = idx + 1;
               const isActive = currentStep === stepNum;
@@ -617,7 +615,7 @@ function SubjectModal({
                       {isCompleted ? '✓' : stepNum}
                     </div>
                     <span
-                      className={`ml-2 text-sm font-medium hidden sm:inline ${isActive
+                      className={`ml-2 text-sm font-medium ${isActive
                         ? 'text-pink-700 dark:text-pink-300'
                         : isCompleted
                           ? 'text-pink-700 dark:text-pink-300'
@@ -629,16 +627,13 @@ function SubjectModal({
                   </div>
                   {idx < totalSteps - 1 && (
                     <div
-                      className={`flex-1 h-0.5 mx-2 sm:mx-4 ${isCompleted ? 'bg-gradient-to-r from-pink-500 to-purple-500' : 'bg-slate-200 dark:bg-slate-700'
+                      className={`flex-1 h-0.5 mx-4 ${isCompleted ? 'bg-gradient-to-r from-pink-500 to-purple-500' : 'bg-slate-200 dark:bg-slate-700'
                         }`}
                     />
                   )}
                 </button>
               );
             })}
-          </div>
-          <div className="text-center sm:hidden mt-2 text-xs font-bold text-pink-600 dark:text-pink-400">
-            Step {currentStep}: {stepNames[currentStep - 1]}
           </div>
         </div>
 
@@ -947,7 +942,7 @@ function SubjectModal({
                 onClick={() => setCurrentStep(currentStep - 1)}
                 className="btn btn-secondary"
               >
-                &larr; Previous
+                ← Previous
               </button>
             )}
 
@@ -967,7 +962,7 @@ function SubjectModal({
                 }}
                 className="btn btn-primary"
               >
-                Next &rarr;
+                Next →
               </button>
             ) : (
               <button
@@ -1110,91 +1105,12 @@ function PartEditor({
   );
 }
 
-function Combobox({
-  options,
-  value,
-  onChange,
-  placeholder,
-}: {
-  options: string[];
-  value: string;
-  onChange: (val: string) => void;
-  placeholder: string;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
-  const filteredOptions = query === ''
-    ? options
-    : options.filter((option) =>
-      option.toLowerCase().includes(query.toLowerCase())
-    );
 
-  return (
-    <div className="relative" ref={wrapperRef}>
-      <div className="relative">
-        <input
-          type="text"
-          className="input pr-10"
-          value={value || query} // Show value if set, else show query
-          onChange={(event) => {
-            setQuery(event.target.value);
-            onChange(event.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
-          placeholder={placeholder}
-        />
-        <button
-          className="absolute inset-y-0 right-0 flex items-center pr-3 group pointer-events-none"
-        >
-          <ChevronDown className="h-5 w-5 text-gray-400 group-hover:text-pink-500 transition-colors" aria-hidden="true" />
-        </button>
-      </div>
 
-      {isOpen && (
-        <ul className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-slate-900 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm border border-pink-100 dark:border-pink-900">
-          {filteredOptions.length === 0 && query !== '' ? (
-            <div className="relative cursor-default select-none py-2 px-4 text-gray-700 dark:text-gray-400">
-              Create "{query}"
-            </div>
-          ) : (
-            filteredOptions.map((option, idx) => (
-              <li
-                key={idx}
-                className="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 dark:text-gray-100 hover:bg-pink-50 dark:hover:bg-pink-900/20"
-                onClick={() => {
-                  onChange(option);
-                  setQuery('');
-                  setIsOpen(false);
-                }}
-              >
-                <span className={`block truncate ${value === option ? 'font-semibold text-pink-600 dark:text-pink-400' : ''}`}>
-                  {option}
-                </span>
-              </li>
-            ))
-          )}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-// ── Mobile HOD Staff Import Modal ──────────────────────────────────────────
-function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
-  useBackButton(onClose);
+// ── HOD Staff Import Modal ────────────────────────────────────────────────────
+function StaffImportModal({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ created: number; updated: number; assignments_added: number; errors: string[] } | null>(null);
@@ -1211,47 +1127,22 @@ function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
     setImporting(true);
     setError('');
     try {
-      const res = await staffApi.importFromExcelLocally(file);
+      const res = await staffApi.importExcel(file);
       setResult(res.data);
     } catch (err: any) {
-      setError(err.message || 'Import failed. Please check your file and try again.');
+      setError(err.response?.data?.detail || 'Import failed. Please check your file and try again.');
     } finally {
       setImporting(false);
     }
   };
 
-  const { setGlobalLoading } = useUiStore();
-
-  const handleDownloadTemplate = async () => {
-    setGlobalLoading(true, 'Generating Template');
-    try {
-      const XLSX = await import('xlsx');
-      const wb = XLSX.utils.book_new();
-      const wsData = [
-        ['name', 'email', 'subjects'],
-        ['John Doe', 'john.doe@example.com', 'DBMS, CN'],
-        ['Jane Smith', 'jane.smith@example.com', 'OS']
-      ];
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      ws['!cols'] = [{ wch: 20 }, { wch: 30 }, { wch: 20 }];
-      XLSX.utils.book_append_sheet(wb, ws, 'Staff Template');
-      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      
-      await downloadExcel(blob, 'Staff_Import_Template.xlsx');
-    } catch (err: any) {
-      setError(err.message || 'Failed to download template');
-    } finally {
-      setGlobalLoading(false);
-    }
-  };
-
   return createPortal(
-    <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div
-        className="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg shadow-2xl border border-pink-200 dark:border-pink-700 overflow-hidden"
+        className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl border border-pink-200 dark:border-pink-700 overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-pink-100 dark:border-pink-800 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
@@ -1259,7 +1150,7 @@ function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <h3 className="font-bold text-slate-900 dark:text-white">Import Staff from Excel</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bulk-add faculty via Excel upload</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Bulk-add faculty members via Excel upload</p>
             </div>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -1267,40 +1158,38 @@ function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto pb-safe">
+        <div className="p-6 space-y-5">
           {!result ? (
             <>
+              {/* File upload */}
               <div>
                 <div
                   onClick={() => inputRef.current?.click()}
                   className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
                     file
                       ? 'border-pink-400 bg-pink-50 dark:bg-pink-900/20 dark:border-pink-600'
-                      : 'border-slate-300 dark:border-slate-600 hover:border-pink-300 dark:hover:border-pink-700'
+                      : 'border-slate-300 dark:border-slate-600 hover:border-pink-300 dark:hover:border-pink-700 hover:bg-pink-50/50 dark:hover:bg-pink-900/10'
                   }`}
                 >
                   <Upload className={`w-8 h-8 mx-auto mb-3 ${file ? 'text-pink-500' : 'text-slate-400'}`} />
                   {file ? (
                     <>
                       <p className="font-semibold text-pink-700 dark:text-pink-300">{file.name}</p>
-                      <p className="text-xs text-slate-400 mt-1">{(file.size / 1024).toFixed(1)} KB &bull; Tap to change</p>
+                      <p className="text-xs text-slate-400 mt-1">{(file.size / 1024).toFixed(1)} KB • Click to change</p>
                     </>
                   ) : (
                     <>
-                      <p className="font-medium text-slate-600 dark:text-slate-300">Tap to select Excel file</p>
+                      <p className="font-medium text-slate-600 dark:text-slate-300">Click to upload Excel file</p>
                       <p className="text-xs text-slate-400 mt-1">.xlsx or .xls format</p>
                     </>
                   )}
-                  <input ref={inputRef} type="file" accept=".xlsx,.xls" onChange={handleFileChange} className="hidden" />
-                </div>
-                
-                <div className="mt-3 flex justify-end">
-                  <button 
-                    onClick={handleDownloadTemplate}
-                    className="text-sm font-medium text-pink-600 dark:text-pink-400 flex items-center gap-1 hover:text-pink-700 transition-colors"
-                  >
-                    <Download className="w-4 h-4"/> Download Sample Template
-                  </button>
+                  <input
+                    ref={inputRef}
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
                 </div>
               </div>
 
@@ -1311,49 +1200,61 @@ function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
               )}
 
               <div className="flex gap-3">
-                <button onClick={onClose} className="btn btn-secondary flex-1 flex items-center justify-center">Cancel</button>
-                <button onClick={handleImport} disabled={!file || importing} className="btn btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50">
-                  {importing ? <><Loader2 className="w-4 h-4 animate-spin" /> Importing...</> : <><Upload className="w-4 h-4 text-white" /> Import Staff</>}
+                <button onClick={onClose} className="btn btn-secondary flex-1">Cancel</button>
+                <button
+                  onClick={handleImport}
+                  disabled={!file || importing}
+                  className="btn btn-primary flex-1 disabled:opacity-50"
+                >
+                  {importing ? <><Loader2 className="w-4 h-4 animate-spin" /> Importing...</> : <><Upload className="w-4 h-4" /> Import Staff</>}
                 </button>
               </div>
             </>
           ) : (
+            /* Result view */
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-2">
-                <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-                  <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{result.created}</p>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wide">Created</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                  <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{result.created}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">New Staff Created</p>
                 </div>
-                <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
-                  <p className="text-xl font-bold text-blue-700 dark:text-blue-300">{result.updated}</p>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wide">Updated</p>
+                <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{result.updated}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Existing Updated</p>
                 </div>
-                <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl">
-                  <p className="text-xl font-bold text-purple-700 dark:text-purple-300">{result.assignments_added}</p>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wide">Assigned</p>
+                <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl">
+                  <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{result.assignments_added}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Subjects Assigned</p>
                 </div>
               </div>
 
               {result.errors.length > 0 && (
                 <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                  <p className="font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-2 mb-2 text-sm">
+                  <p className="font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-2 mb-2">
                     <AlertCircle className="w-4 h-4" /> {result.errors.length} row(s) had issues:
                   </p>
                   <ul className="space-y-1">
-                    {result.errors.slice(0, 5).map((e, i) => <li key={i} className="text-xs text-amber-600 dark:text-amber-400">&bull; {e}</li>)}
-                    {result.errors.length > 5 && <li className="text-xs text-amber-600 font-medium italic mt-1">...and {result.errors.length - 5} more</li>}
+                    {result.errors.map((e, i) => (
+                      <li key={i} className="text-xs text-amber-600 dark:text-amber-400">• {e}</li>
+                    ))}
                   </ul>
                 </div>
               )}
 
               {result.errors.length === 0 && (
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-3">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                  <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">Import completed successfully!</p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">
+                    Import completed successfully with no errors!
+                  </p>
                 </div>
               )}
 
-              <button onClick={onClose} className="btn btn-primary w-full mt-2">Done</button>
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                Default password for new staff: <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono">Welcome@123</code> (they should change it on first login)
+              </p>
+
+              <button onClick={onClose} className="btn btn-primary w-full">Done</button>
             </div>
           )}
         </div>
@@ -1362,4 +1263,3 @@ function MobileStaffImportModal({ onClose }: { onClose: () => void }) {
     document.body
   );
 }
-

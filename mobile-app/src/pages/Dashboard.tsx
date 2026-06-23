@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useUiStore } from '../lib/store';
-import { subjectsApi, questionBankApi, staffApi, downloadExcel } from '../lib/api';
+import { subjectsApi, questionBankApi, staffApi } from '../lib/api';
 import {
   BookOpen,
   FileQuestion,
@@ -16,20 +17,17 @@ export default function Dashboard() {
   const { user } = useAuthStore();
   const { setGlobalLoading } = useUiStore();
   const navigate = useNavigate();
-  const isHOD = user?.role === 'HOD';
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalSubjects: 0,
     totalQuestionBanks: 0,
-    pendingApprovals: 0,
-    approvedBanks: 0,
   });
+  const [error, setError] = useState<string | null>(null);
   const [recentBanks, setRecentBanks] = useState<QuestionBank[]>([]);
   const [myAssignments, setMyAssignments] = useState<MySubjectAssignment[]>([]);
   const [viewingBank, setViewingBank] = useState<QuestionBank | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboard();
@@ -39,7 +37,7 @@ export default function Dashboard() {
     try {
       const [subjectsRes, banksRes] = await Promise.all([
         subjectsApi.getAll(),
-        questionBankApi.getAll({ own_only: !isHOD }),
+        questionBankApi.getAll({ own_only: true }),
       ]);
 
       const subjectsList: Subject[] = subjectsRes.data;
@@ -49,15 +47,15 @@ export default function Dashboard() {
       setStats({
         totalSubjects: subjectsList.length,
         totalQuestionBanks: banks.length,
-        pendingApprovals: banks.filter((b) => b.status === 'PENDING_APPROVAL').length,
-        approvedBanks: banks.filter((b) => b.status === 'APPROVED').length,
       });
 
       setRecentBanks(banks.slice(0, 5));
 
-      if (!isHOD) {
+      try {
         const assignmentsRes = await staffApi.getMySubjects();
         setMyAssignments(assignmentsRes.data);
+      } catch (err) {
+        // Ignored
       }
     } catch (err: any) {
       console.error('Failed to load dashboard', err);
@@ -81,9 +79,17 @@ export default function Dashboard() {
     setGlobalLoading(true, 'Downloading');
     try {
       const response = await questionBankApi.download(bank.id);
-      await downloadExcel(response.data, `${bank.title || 'question_bank'}.xlsx`);
-    } catch (err: any) {
-      console.error('Failed to download', err);
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${bank.title || 'question_bank'}.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download');
     } finally {
       setGlobalLoading(false);
     }
@@ -105,21 +111,15 @@ export default function Dashboard() {
       {/* Header */}
       <div className="card dark:!bg-slate-900 p-8">
         <h1 className="text-3xl font-bold text-pink-600 dark:text-pink-400 mb-2">
-          Welcome back, {user?.name}! ✨
+          {user?.role === 'HOD' ? `${user?.name} (Academic HOD)` : `Welcome back, ${user?.name}! ✨`}
         </h1>
         <p className="text-purple-700 dark:text-purple-300 font-medium">
-          {isHOD ? 'Manage your department\'s question banks with clear oversight.' : 'Generate and manage question banks with streamlined AI support.'}
+          Generate and manage question banks with streamlined AI support.
         </p>
       </div>
 
-      {error && (
-        <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border-2 border-rose-200 dark:border-rose-900/40 rounded-xl text-rose-800 dark:text-rose-200 text-sm font-semibold flex items-center gap-2">
-          <span>⚠️</span> {error}
-        </div>
-      )}
-
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard
           icon={BookOpen}
           label="Total Subjects"
@@ -134,24 +134,10 @@ export default function Dashboard() {
           color="purple"
           onClick={() => navigate('/question-banks')}
         />
-        <StatCard
-          icon={Clock}
-          label="Pending Approval"
-          value={stats.pendingApprovals}
-          color="orange"
-          onClick={() => navigate('/approvals')}
-        />
-        <StatCard
-          icon={CheckCircle}
-          label="Approved"
-          value={stats.approvedBanks}
-          color="green"
-          onClick={() => navigate('/question-banks?status=APPROVED')}
-        />
       </div>
 
       {/* Staff assignments */}
-      {!isHOD && myAssignments.length > 0 && (
+      {myAssignments.length > 0 && (
         <div className="card dark:!bg-slate-900 p-6">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-2xl">📚</span> My Assigned Subjects
@@ -162,27 +148,10 @@ export default function Dashboard() {
                 key={a.subjectId}
                 className="group rounded-xl border-2 border-pink-200 dark:border-pink-700 bg-white dark:bg-slate-900 p-5 transition hover:border-pink-300 hover:shadow-md dark:hover:border-pink-600"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900 dark:text-white text-lg truncate">{a.subjectName}</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-slate-900 dark:text-white text-lg">{a.subjectName}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-300 font-mono">{a.subjectCode}</p>
-                  </div>
-                  <div className="flex gap-2 flex-wrap flex-shrink-0">
-                    {a.canEditPattern && (
-                      <span className="pill bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-100 border border-blue-100 dark:border-blue-800 flex-shrink-0">
-                        ✍️ Edit Pattern
-                      </span>
-                    )}
-                    {a.canGenerateQuestions && (
-                      <span className="pill bg-emerald-50 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-100 border border-emerald-100 dark:border-emerald-800 flex-shrink-0">
-                        ⚡ Generate
-                      </span>
-                    )}
-                    {a.canApprove && (
-                      <span className="pill bg-violet-50 text-violet-800 dark:bg-violet-900 dark:text-violet-100 border border-violet-100 dark:border-violet-800 flex-shrink-0">
-                        ✅ Approve
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
@@ -212,9 +181,9 @@ export default function Dashboard() {
                 onClick={() => setViewingBank(bank)}
                 className="group rounded-xl border-2 border-pink-200 dark:border-pink-700 bg-white dark:bg-slate-900 p-5 transition hover:border-pink-300 hover:shadow-md dark:hover:border-pink-600 cursor-pointer"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-slate-900 dark:text-white text-lg truncate">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-slate-900 dark:text-white text-lg">
                       {bank.title || 'Untitled Question Bank'}
                     </p>
                     <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
@@ -224,9 +193,6 @@ export default function Dashboard() {
                         day: 'numeric'
                       })}
                     </p>
-                  </div>
-                  <div className="flex-shrink-0 self-start sm:self-auto">
-                    <StatusBadge status={bank.status} />
                   </div>
                 </div>
               </div>
@@ -246,6 +212,31 @@ export default function Dashboard() {
             setRecentBanks(prev => prev.map(b => b.id === updatedBank.id ? updatedBank : b));
           }}
         />
+      )}
+
+      {error && createPortal(
+        <div
+          className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setError(null)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center border-2 border-rose-300 dark:border-rose-700 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-2">Error Occurred</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed whitespace-pre-wrap">
+              {error}
+            </p>
+            <button
+              onClick={() => setError(null)}
+              className="btn bg-rose-600 hover:bg-rose-700 text-white px-6 py-2.5 rounded-xl transition-all font-semibold shadow-lg shadow-rose-500/25 active:scale-95"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -312,9 +303,16 @@ function StatusBadge({ status }: { status: string }) {
   };
 
   return (
-    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${styles[status] || styles.DRAFT} flex items-center gap-2 flex-shrink-0 w-fit`}>
+    <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${styles[status] || styles.DRAFT} flex items-center gap-2`}>
       <span>{icons[status]}</span>
       {status.replace('_', ' ')}
     </span>
   );
 }
+
+
+
+
+
+
+

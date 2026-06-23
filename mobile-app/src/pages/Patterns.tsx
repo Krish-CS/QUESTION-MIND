@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { subjectsApi, questionBankApi, staffApi, syllabusApi } from '../lib/api';
 import { useAuthStore } from '../lib/store';
-import { useBackButton } from '../lib/useBackButton';
 import {
   Save,
   Loader2,
@@ -11,6 +10,7 @@ import {
   Trash2,
   CheckCircle2,
   X,
+  BookOpen,
 } from 'lucide-react';
 import {
   Subject,
@@ -32,15 +32,6 @@ export default function Patterns() {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [_pattern, setPattern] = useState<QuestionPattern | null>(null);
   const [editedParts, setEditedParts] = useState<PartConfiguration[]>([]);
-
-  // Back button handler for pattern editor modal
-  useBackButton(() => {
-    setSelectedSubject(null);
-    setSyllabusForSubject(null);
-    setUnitConfigs({});
-    setShowUnitDistributions({});
-    setPatternTab('combined');
-  }, !!selectedSubject);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -72,23 +63,17 @@ export default function Patterns() {
   const loadData = async () => {
     try {
       const subjectsRes = await subjectsApi.getAll();
-      let examSubjects = subjectsRes.data.filter(
+      const examSubjects = subjectsRes.data.filter(
         (s: Subject) => s.configuration?.hasExam !== false
       );
 
-      // For non-HOD, get staff assignments and filter subjects
-      if (!isHOD) {
-        const assignmentsRes = await staffApi.getMySubjects();
-        setStaffAssignments(assignmentsRes.data);
-
-        const editableIds = assignmentsRes.data
-          .filter((a: MySubjectAssignment) => a.canEditPattern)
-          .map((a: MySubjectAssignment) => a.subjectId);
-
-        examSubjects = examSubjects.filter((s: Subject) => editableIds.includes(s.id));
-      }
-
       setSubjects(examSubjects);
+      try {
+        const assignmentsRes = await staffApi.getMySubjects();
+        setStaffAssignments(assignmentsRes.data || []);
+      } catch (err) {
+        // Ignored
+      }
     } catch (err: any) {
       console.error(err);
       if (!err.response) {
@@ -481,12 +466,12 @@ export default function Patterns() {
     );
   }
 
-  if (!hasAccess) {
+  if (subjects.length === 0) {
     return (
       <div className="card dark:!bg-slate-900 text-center py-12">
-        <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-300 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Access Restricted</h3>
-        <p className="text-slate-600 dark:text-slate-300">You don't have permission to manage question patterns</p>
+        <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No Subjects Found</h3>
+        <p className="text-slate-600 dark:text-slate-300">You haven't created any subjects yet. Head over to the Subjects page to create one.</p>
       </div>
     );
   }
@@ -495,7 +480,7 @@ export default function Patterns() {
     <div className="space-y-6">
       {/* MCQ overflow warning toast — rendered via portal so it appears above the pattern editor modal */}
       {mcqWarning && createPortal(
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[2147483647] flex items-start gap-3 px-5 py-4 bg-rose-600 text-white rounded-xl shadow-2xl shadow-rose-500/40 max-w-[95vw] sm:max-w-md w-full animate-in fade-in slide-in-from-top-3 duration-300">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[2147483647] flex items-start gap-3 px-5 py-4 bg-rose-600 text-white rounded-xl shadow-2xl shadow-rose-500/40 max-w-md w-full animate-in fade-in slide-in-from-top-3 duration-300">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <p className="text-sm font-medium leading-snug">{mcqWarning}</p>
           <button onClick={() => setMcqWarning('')} className="ml-auto text-white/70 hover:text-white transition-colors flex-shrink-0">
@@ -506,7 +491,7 @@ export default function Patterns() {
       )}
       {/* BTL overflow warning toast — rendered via portal so it appears above the pattern editor modal */}
       {btlWarning && createPortal(
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[2147483647] flex items-start gap-3 px-5 py-4 bg-rose-600 text-white rounded-xl shadow-2xl shadow-rose-500/40 max-w-[95vw] sm:max-w-md w-full animate-in fade-in slide-in-from-top-3 duration-300">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[2147483647] flex items-start gap-3 px-5 py-4 bg-rose-600 text-white rounded-xl shadow-2xl shadow-rose-500/40 max-w-md w-full animate-in fade-in slide-in-from-top-3 duration-300">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <p className="text-sm font-medium leading-snug">{btlWarning}</p>
           <button onClick={() => setBtlWarning('')} className="ml-auto text-white/70 hover:text-white transition-colors flex-shrink-0">
@@ -524,16 +509,35 @@ export default function Patterns() {
         </p>
       </div>
 
-      {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 dark:bg-rose-900 dark:border-rose-800 dark:text-rose-200">
-          {error}
-        </div>
+      {error && createPortal(
+        <div
+          className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setError('')}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center border-2 border-rose-300 dark:border-rose-700 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-2">Error Occurred</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed whitespace-pre-wrap">
+              {error}
+            </p>
+            <button
+              onClick={() => setError('')}
+              className="btn bg-rose-600 hover:bg-rose-700 text-white px-6 py-2.5 rounded-xl transition-all font-semibold shadow-lg shadow-rose-500/25 active:scale-95"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Success Modal */}
       {showSuccessModal && createPortal(
         <div className="fixed inset-0 z-[2147483647] flex items-center justify-center p-4 bg-black/60">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 sm:p-8 max-w-[95vw] sm:max-w-md w-full text-center border-2 border-emerald-100 dark:border-emerald-900 transform scale-100 transition-all">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-2 border-emerald-100 dark:border-emerald-900 transform scale-100 transition-all">
             <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
             </div>
@@ -557,36 +561,48 @@ export default function Patterns() {
       {/* Subject Selection - Always visible so modal pops over it */}
       <div className="card dark:!bg-slate-900 p-6">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Select Subject</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {subjects.map((subject) => (
-            <button
-              key={subject.id}
-              onClick={() => handleSubjectSelect(subject)} // This sets selectedSubject, triggering the modal
-              className="p-4 rounded-xl text-left transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg bg-white border-2 border-pink-200 hover:border-pink-400 dark:bg-slate-900 dark:border-slate-700 dark:hover:border-pink-500"
-            >
-              <p className="font-semibold text-slate-900 dark:text-white">{subject.name}</p>
-              <p className="text-sm text-slate-600 dark:text-slate-300 font-mono">{subject.code}</p>
-              {subject.configuration?.parts && (
-                <p className="text-xs text-slate-500 dark:text-slate-300 mt-2">
-                  <span className="pill bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                    {subject.configuration.parts.length} parts
-                  </span>
-                </p>
-              )}
-            </button>
-          ))}
-        </div>
+        {subjects.length === 0 ? (
+          <div className="flex items-start gap-4 p-4 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-900 dark:border-amber-800">
+            <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-300 flex-shrink-0" />
+            <div>
+              <h3 className="text-amber-700 dark:text-amber-200 font-medium">No Subjects Found</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                You haven't created any subjects yet. Head over to the Subjects page to create one.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {subjects.map((subject) => (
+              <button
+                key={subject.id}
+                onClick={() => handleSubjectSelect(subject)} // This sets selectedSubject, triggering the modal
+                className="p-4 rounded-xl text-left transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg bg-white border-2 border-pink-200 hover:border-pink-400 dark:bg-slate-900 dark:border-slate-700 dark:hover:border-pink-500"
+              >
+                <p className="font-semibold text-slate-900 dark:text-white">{subject.name}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300 font-mono">{subject.code}</p>
+                {subject.configuration?.parts && (
+                  <p className="text-xs text-slate-500 dark:text-slate-300 mt-2">
+                    <span className="pill bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                      {subject.configuration.parts.length} parts
+                    </span>
+                  </p>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Pattern Editor Modal - Full Screen Popup */}
       {selectedSubject && createPortal(
         <div className="fixed inset-0 z-[2147483647] flex items-center justify-center p-4 bg-black/60">
           {/* Modal Container */}
-          <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-3xl h-[95vh] sm:h-auto max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl border border-pink-200 dark:border-pink-700 overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-3xl max-h-[85vh] lg:max-h-[90vh] flex flex-col shadow-2xl border border-pink-200 dark:border-pink-700 overflow-hidden">
 
             {/* Modal Header */}
             <div className="flex-none bg-white dark:bg-slate-900 rounded-t-xl border-b border-pink-200 dark:border-pink-500">
-              <div className="flex justify-between items-start px-4 sm:px-6 pt-5 pb-4 gap-2">
+              <div className="flex justify-between items-start px-6 pt-5 pb-4">
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl font-semibold text-slate-900 dark:text-white flex flex-wrap items-center gap-2 sm:gap-3">
                     Pattern for {selectedSubject.name}
@@ -610,10 +626,10 @@ export default function Patterns() {
                   </button>
                   <button
                     onClick={() => { setSelectedSubject(null); setSyllabusForSubject(null); setUnitConfigs({}); setShowUnitDistributions({}); setPatternTab('combined'); }}
-                    className="p-2 rounded-full text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
+                    className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors p-1"
                     title="Close"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-6 h-6" />
                   </button>
                 </div>
               </div>
@@ -663,7 +679,7 @@ export default function Patterns() {
                         value={part.description || ''}
                         onChange={(e) => updatePart(index, 'description', e.target.value)}
                         placeholder="e.g. Short Answer Questions"
-                        className="bg-transparent border-none focus:ring-0 text-slate-600 dark:text-slate-400 p-0 text-sm w-32 sm:w-64 placeholder:text-slate-400"
+                        className="bg-transparent border-none focus:ring-0 text-slate-600 dark:text-slate-400 p-0 text-sm w-64 placeholder:text-slate-400"
                       />
                     </div>
 
@@ -820,7 +836,7 @@ export default function Patterns() {
                                     onChange={(e) =>
                                       updateBTLDistribution(index, btl, e.target.value === '' ? 0 : Number(e.target.value))
                                     }
-                                    className="!w-20 input text-sm py-1 px-2 text-center"
+                                    className="!w-24 input text-sm py-1 px-2 text-center"
                                     min="0"
                                     max={part.questionCount}
                                     placeholder="auto"
@@ -1041,7 +1057,7 @@ export default function Patterns() {
                                                   value={part.btlDistribution?.[btl] || ''}
                                                   onClick={e => e.stopPropagation()}
                                                   onChange={e => updateUnitBTLDistribution(unitNum, pIdx, btl, e.target.value === '' ? 0 : Number(e.target.value))}
-                                                  className="w-12 text-center text-sm font-bold border border-purple-300 dark:border-purple-700 rounded bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400 py-0.5"
+                                                  className="w-16 text-center text-sm font-bold border border-purple-300 dark:border-purple-700 rounded bg-white dark:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-purple-400 py-0.5"
                                                   min="0" max={part.questionCount} placeholder="auto"
                                                 />
                                               ) : (

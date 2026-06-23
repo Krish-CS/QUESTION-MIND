@@ -1,17 +1,83 @@
 /**
  * Native Python API Layer — Mobile App (Chaquopy)
  * Data is fetched by calling the native Python backend bundled on the device via Capacitor Bridge.
+ * Mirrors the website's Axios-based interface exactly so that pages compile without modification.
  */
 
 import { chaquopyBridge } from './chaquopyBridge';
-import { useAuthStore } from './store';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { Share } from '@capacitor/share';
-import { User, UserRole, QuestionBankStatus } from '../types';
 
-// Helper to simulate Axios-like responses
+// Helper to convert Blob to Base64 (for file uploads)
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const base64 = dataUrl.split(',')[1];
+      resolve(base64);
+    };
+    reader.readAsDataURL(blob);
+  });
+};
+
+// Helper to convert Base64 back to Blob (for file downloads)
+const base64ToBlob = (base64: string, contentType: string): Blob => {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: contentType });
+};
+
+// Global helper to trigger native download
+export const downloadExcel = async (blob: Blob, filename: string) => {
+  try {
+    if (!Capacitor.isNativePlatform()) {
+      // Browser fallback
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      return;
+    }
+
+    // Native Platform: Save via Capacitor Filesystem in Documents
+    const base64Data = await blobToBase64(blob);
+    const writeResult = await Filesystem.writeFile({
+      path: filename,
+      data: base64Data,
+      directory: Directory.Documents,
+    });
+
+    const filePath = writeResult.uri;
+
+    // Trigger local notification to allow clicking and opening
+    await LocalNotifications.requestPermissions();
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          title: 'Question Bank Exported',
+          body: `Successfully exported to Documents: ${filename}. Tap to open.`,
+          id: Math.floor(Math.random() * 100000),
+          extra: { filePath },
+        }
+      ]
+    });
+  } catch (err) {
+    console.error('Error downloading/exporting excel:', err);
+  }
+};
+
+// Dispatch API requests to Python TestClient
 const callPython = async (method: string, path: string, body?: any) => {
   try {
     const token = localStorage.getItem('token');
@@ -20,7 +86,6 @@ const callPython = async (method: string, path: string, body?: any) => {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    // We wrap the body and headers in a single object to pass to the Java bridge
     const payload = {
       __bridge_headers: headers,
       data: body
@@ -29,143 +94,183 @@ const callPython = async (method: string, path: string, body?: any) => {
     const res = await chaquopyBridge.dispatchApiRequest(method, path, payload);
     if (!res.success) {
       console.error(`Python backend error on ${method} ${path}:`, res.error);
-      throw new Error(res.error || 'Native Python Execution Error');
+      
+      let errorDetail = res.error;
+      if (Array.isArray(errorDetail)) {
+        errorDetail = errorDetail.map((e: any) => {
+          const loc = e.loc ? e.loc.join('.') : '';
+          return `${loc}: ${e.msg}`.replace(/^: /, '').trim();
+        }).join(', ');
+      } else if (typeof errorDetail === 'object' && errorDetail !== null) {
+        errorDetail = JSON.stringify(errorDetail);
+      }
+      
+      throw {
+        response: {
+          status: 400,
+          data: { detail: errorDetail || 'Native Python Execution Error' }
+        },
+        message: errorDetail || 'Native Python Execution Error'
+      };
     }
-    return { data: res.data };
-  } catch (err) {
-    throw err;
+
+    let resData = res.data;
+    if (resData && resData.__is_binary) {
+      resData = base64ToBlob(resData.content, resData.content_type);
+    }
+    return { data: resData };
+  } catch (err: any) {
+    if (err.response) throw err;
+    throw {
+      response: {
+        status: 500,
+        data: { detail: err.message || 'Bridge Call Failed' }
+      },
+      message: err.message || 'Bridge Call Failed'
+    };
   }
 };
 
-// ==================== AUTH API ====================
-export const authApi = {
-  login: async (email: string, password: string) => {
-    const response = await callPython('POST', '/auth/login', { email, password });
-    if (response.data?.access_token) {
-      localStorage.setItem('token', response.data.access_token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
-    return response;
-  },
-  register: async (data: any) => {
-    const response = await callPython('POST', '/auth/register', data);
-    if (response.data?.access_token) {
-      localStorage.setItem('token', response.data.access_token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
-    return response;
-  },
-  getMe: async () => callPython('GET', '/auth/me')
+// Helper for file uploads (Syllabus, CDAP, Excel templates)
+const uploadFilePython = async (path: string, file: File) => {
+  const base64 = await blobToBase64(file);
+  const body = {
+    __is_file_upload: true,
+    filename: file.name,
+    content: base64
+  };
+  return callPython('POST', path, body);
 };
 
-// ==================== SUBJECTS API ====================
-export const subjectsApi = {
-  getAll: async () => callPython('GET', '/subjects'),
-  get: async (id: string) => callPython('GET', `/subjects/${id}`),
-  create: async (data: any) => callPython('POST', '/subjects', data),
-  update: async (id: string, data: any) => callPython('PUT', `/subjects/${id}`, data),
-  delete: async (id: string) => callPython('DELETE', `/subjects/${id}`)
-};
-
-// ==================== SYLLABUS API ====================
-export const syllabusApi = {
-  getAll: async () => callPython('GET', '/syllabus'),
-  getBySubject: async (subjectId: string) => callPython('GET', `/syllabus/subject/${subjectId}`),
-  upload: async (subjectId: string, file: File) => {
-    // Cannot send native File object over bridge easily, normally would use chaquopyBridge.parseSyllabusDocument
-    return { data: { message: 'File upload to Python not fully implemented in bridge' } as any };
-  },
-  update: async (id: string, data: any) => callPython('PUT', `/syllabus/${id}`, data),
-  delete: async (id: string) => callPython('DELETE', `/syllabus/${id}`),
-  preview: async (file: any) => {
-    return { data: { message: 'Preview not implemented in bridge' } as any };
-  }
-};
-
-// ==================== CDAP API ====================
-export const cdapApi = {
-  getBySubject: async (subjectId: string) => callPython('GET', `/syllabus/cdap/${subjectId}`),
-  upload: async (subjectId: string, file: File) => {
-    return { data: { message: 'Upload not implemented' } as any };
-  },
-  update: async (subjectId: string, data: any) => callPython('PUT', `/syllabus/cdap/${subjectId}`, data),
-  delete: async (subjectId: string) => callPython('DELETE', `/syllabus/cdap/${subjectId}`),
-  preview: async (file: any) => {
-    return { data: { message: 'Preview not implemented' } as any };
-  }
-};
-
-// ==================== QUESTION BANK API ====================
-export const questionBankApi = {
-  getAll: async (filters?: any) => callPython('GET', '/question-bank', filters),
-  getBySubject: async (subjectId: string) => callPython('GET', '/question-bank', { subject_id: subjectId }),
-  get: async (id: string) => callPython('GET', `/question-bank/${id}`),
-  create: async (data: any) => callPython('POST', '/question-bank', data),
-  update: async (id: string, data: any) => callPython('PUT', `/question-bank/${id}`, data),
-  delete: async (id: string) => callPython('DELETE', `/question-bank/${id}`),
-  getPending: async () => callPython('GET', '/question-bank/pending'),
-  uploadImage: async (bankId: string, file: File) => {
-    return { data: { url: '' } };
-  },
-  updateQuestions: async (bankId: string, questionData: any) => {
-    const qParts = questionData?.parts || questionData;
-    return callPython('PUT', `/question-bank/${bankId}/questions`, { questions: { parts: qParts } });
-  },
-  updateStatus: async (bankId: string, statusOrData: string | any) => {
-    const data = typeof statusOrData === 'string' ? { status: statusOrData } : statusOrData;
-    return callPython('PUT', `/question-bank/${bankId}/status`, data);
-  },
-  download: async (bankId: string) => {
-    // Should trigger exportToExcel python call and return Blob or file path
-    return { data: new Blob() };
-  },
-  getPattern: async (subjectId: string) => callPython('GET', `/question-bank/pattern/${subjectId}`),
-  updatePattern: async (subjectId: string, pattern: any) => callPython('PUT', `/question-bank/pattern/${subjectId}`, pattern),
-  
-  // Directly maps to generate_questions python call
-  generate: async (config: any) => {
-    const coverage = config.selected_unit_ids?.map((id: any) => ({ unitNumber: id, topics: [] })) || [];
-    const configs = [];
-    if (config.unit_configs) {
-      for (const [unit, parts] of Object.entries(config.unit_configs)) {
-         for (const p of (parts as any[])) {
-             configs.push(p);
-         }
+// Axios-like interface mock
+const api = {
+  get: (path: string, config?: any) => callPython('GET', path, config?.params),
+  post: (path: string, body?: any, config?: any) => {
+    if (body instanceof FormData) {
+      const file = body.get('file') as File;
+      if (file) {
+        return uploadFilePython(path, file);
       }
     }
-    const res = await chaquopyBridge.generateQuestions(config.subject_id, coverage, configs);
-    if (!res.success) throw new Error(res.error || 'Generation Failed');
-    return { data: res.data };
+    return callPython('POST', path, body);
   },
-  
-  share: async (bankId: string, data: { recipient_emails: string[] }) => {
-    return callPython('POST', `/question-bank/${bankId}/share`, data);
-  }
-};
-
-// ==================== STAFF API ====================
-export const staffApi = {
-  getAll: async () => callPython('GET', '/staff/all'),
-  create: async (data: any) => callPython('POST', '/staff', data),
-  getStats: async () => callPython('GET', '/staff/stats'),
-  getMySubjects: async () => callPython('GET', '/staff/my-subjects'),
-  getFacultyList: async () => callPython('GET', '/staff/faculty-list'),
-  getSubjectStaff: async (subjectId: string) => callPython('GET', `/staff/subject/${subjectId}`),
-  assign: async (subjectId: string, data: any) => callPython('POST', `/staff/assign/${subjectId}`, data),
-  importFromExcelLocally: async (file: File) => {
-    return { data: { created: 0, updated: 0, assignments_added: 0, errors: [] } };
-  },
-  deleteStaff: async (staffId: string) => callPython('DELETE', `/staff/${staffId}`)
-};
-
-export const downloadExcel = async (blob: Blob, filename: string) => {
-  // same implementation as before since it is standard capacitor
-};
-
-const mockAxiosInstance: any = {
+  put: (path: string, body?: any, config?: any) => callPython('PUT', path, body),
+  delete: (path: string, config?: any) => callPython('DELETE', path, config?.params),
   interceptors: {
     request: { use: () => {} },
     response: { use: () => {} }
   }
 };
-export default mockAxiosInstance;
+
+// Auth API
+export const authApi = {
+  login: (email: string, password: string) =>
+    api.post('/auth/login', { email, password }),
+
+  resetPasswordDirect: (email: string, newPassword: string) =>
+    api.post('/auth/reset-password-direct', { email, new_password: newPassword }),
+  getMe: () => api.get('/auth/me'),
+  bulkUploadUsers: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/auth/users/bulk-upload', form);
+  },
+  createUser: (data: { email: string; password: string; name: string; role: string; department?: string }) =>
+    api.post('/auth/users', data),
+  deleteUser: (userId: string) =>
+    api.delete(`/auth/users/${userId}`),
+};
+
+// Subjects API
+export const subjectsApi = {
+  getAll: () => api.get('/subjects'),
+  get: (id: string) => api.get(`/subjects/${id}`),
+  create: (data: any) => api.post('/subjects', data),
+  update: (id: string, data: any) => api.put(`/subjects/${id}`, data),
+  delete: (id: string) => api.delete(`/subjects/${id}`),
+};
+
+// Syllabus API
+export const syllabusApi = {
+  getAll: () => api.get('/syllabus'),
+  getBySubject: (subjectId: string) => api.get(`/syllabus/subject/${subjectId}`),
+  get: (id: string) => api.get(`/syllabus/${id}`),
+  upload: (subjectId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/syllabus/upload/${subjectId}`, formData);
+  },
+  update: (id: string, data: any) => api.put(`/syllabus/${id}`, data),
+  delete: (id: string) => api.delete(`/syllabus/${id}`),
+};
+
+// CDAP API (Course Delivery and Assessment Plan)
+export const cdapApi = {
+  getBySubject: (subjectId: string) => api.get(`/syllabus/cdap/${subjectId}`),
+  upload: (subjectId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/syllabus/cdap/upload/${subjectId}`, formData);
+  },
+  preview: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/syllabus/cdap/preview', formData);
+  },
+  delete: (subjectId: string) => api.delete(`/syllabus/cdap/${subjectId}`),
+  update: (subjectId: string, data: any) => api.put(`/syllabus/cdap/${subjectId}`, data),
+};
+
+// Question Bank API
+export const questionBankApi = {
+  getAll: (params?: { status?: string; subject_id?: string; own_only?: boolean }) =>
+    api.get('/question-bank', { params }),
+  get: (id: string) => api.get(`/question-bank/${id}`),
+  getPattern: (subjectId: string) => api.get(`/question-bank/pattern/${subjectId}`),
+  updatePattern: (subjectId: string, data: any) =>
+    api.put(`/question-bank/pattern/${subjectId}`, data),
+  generate: (data: any) =>
+    api.post('/question-bank/generate', data),
+  generateOffline: (data: any) =>
+    api.post('/question-bank/generate-offline', data),
+  syncOffline: (data: any) =>
+    api.post('/question-bank/sync-offline', data),
+  exportBytes: (data: any) =>
+    api.post('/question-bank/export-bytes', data),
+  generatePrompt: (data: any) =>
+    api.post('/question-bank/generate-prompt', data),
+  generateFromResponse: (data: any) =>
+    api.post('/question-bank/generate-from-response', data),
+  updateQuestions: (id: string, data: { questions: { parts: Record<string, any[]> } }) =>
+    api.put(`/question-bank/${id}/questions`, data),
+  uploadImage: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/question-bank/upload-image', form);
+  },
+  download: (id: string) =>
+    api.get(`/question-bank/${id}/download`, { responseType: 'blob' }),
+  delete: (id: string) => api.delete(`/question-bank/${id}`),
+  share: (id: string, data: { recipient_emails: string[] }) =>
+    api.post(`/question-bank/${id}/share`, data),
+};
+
+// Staff API
+export const staffApi = {
+  getFacultyList: () => api.get('/staff/faculty-list'),
+  getMySubjects: () => api.get('/staff/my-subjects'),
+  getSubjectStaff: (subjectId: string) => api.get(`/staff/subject/${subjectId}`),
+  assign: (subjectId: string, data: any) => api.post(`/staff/assign/${subjectId}`, data),
+  updatePermissions: (assignmentId: string, data: any) =>
+    api.put(`/staff/assignment/${assignmentId}`, data),
+  remove: (assignmentId: string) => api.delete(`/staff/assignment/${assignmentId}`),
+  getAll: () => api.get('/staff/all'),
+  deleteStaff: (staffId: string) => api.delete(`/staff/${staffId}`),
+  importExcel: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/staff/import-excel', form);
+  },
+};
+
+export default api;

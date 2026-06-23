@@ -11,6 +11,32 @@ import { useAISettingsStore } from '../lib/settingsStore';
 import { aiSettingsApi } from '../lib/aiSettingsApi';
 import type { ProviderStatus } from '../lib/settingsStore';
 
+const DEFAULT_PROVIDER_MODELS: Record<string, string[]> = {
+  groq: [
+    'llama-3.3-70b-versatile',
+    'llama-3.1-8b-instant',
+    'mixtral-8x7b-32768',
+    'gemma2-9b-it'
+  ],
+  cerebras: [
+    'gpt-oss-120b',
+    'llama3.1-8b',
+    'llama3.1-70b'
+  ],
+  nvidia: [
+    'openai/gpt-oss-20b',
+    'meta/llama3-70b-instruct',
+    'meta/llama-3.1-8b-instruct'
+  ],
+  openrouter: [
+    'openai/gpt-oss-20b',
+    'meta-llama/llama-3.3-70b-instruct',
+    'meta-llama/llama-3.1-8b-instruct',
+    'google/gemini-2.5-flash',
+    'google/gemini-2.5-pro'
+  ]
+};
+
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -21,12 +47,15 @@ export const Settings: React.FC = () => {
     setProviderKey,
     customKeys,
     setCustomKey,
+    customModels,
+    setCustomModel,
   } = useAISettingsStore();
 
   const [inputKeyMap, setInputKeyMap] = useState<Record<string, string>>({});
   const [showKeyMap, setShowKeyMap] = useState<Record<string, boolean>>({});
   const [testingMap, setTestingMap] = useState<Record<string, boolean>>({});
   const [testResultMap, setTestResultMap] = useState<Record<string, { success: boolean; message: string }>>({});
+  const [fetchedModels, setFetchedModels] = useState<Record<string, string[]>>(DEFAULT_PROVIDER_MODELS);
 
   useEffect(() => {
     setInputKeyMap(customKeys || {});
@@ -60,6 +89,18 @@ export const Settings: React.FC = () => {
     });
 
     const result = await aiSettingsApi.testAPIKey(providerId, keyVal);
+    
+    if (result.success && result.data?.models && result.data.models.length > 0) {
+      setFetchedModels((prev) => ({
+        ...prev,
+        [providerId]: result.data.models
+      }));
+      // Auto-set the first model if none is chosen yet
+      if (!customModels[providerId] || !result.data.models.includes(customModels[providerId])) {
+        setCustomModel(providerId, result.data.models[0]);
+      }
+    }
+
     setTestResultMap((prev) => ({
       ...prev,
       [providerId]: {
@@ -269,6 +310,24 @@ export const Settings: React.FC = () => {
                                 {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
                               </button>
                             </div>
+                          </div>
+
+                          {/* Model Selection Dropdown */}
+                          <div className="space-y-1.5 animate-in fade-in duration-200">
+                            <label className="block text-xs font-semibold text-purple-700 dark:text-purple-300">
+                              Select Model for {p.name}:
+                            </label>
+                            <select
+                              value={customModels[p.id] || ''}
+                              onChange={(e) => setCustomModel(p.id, e.target.value)}
+                              className="w-full text-xs px-3 py-2 border border-pink-200 dark:border-pink-850 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                            >
+                              {(fetchedModels[p.id] || []).map((m) => (
+                                <option key={m} value={m}>
+                                  {m}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           {/* Test Result Display */}

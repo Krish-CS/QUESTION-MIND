@@ -1,5 +1,5 @@
 // User Types
-export type UserRole = 'HOD' | 'FACULTY';
+export type UserRole = 'HOD' | 'FACULTY' | 'ADMIN';
 
 export interface User {
   id: string;
@@ -132,16 +132,11 @@ export interface Syllabus {
 }
 
 // CDAP (Course Delivery and Assessment Plan)
-export interface CDAPTopicEntry {
-  topic: string;
-  subtopics: string[];
-}
-
 export interface CDAPUnit {
   unit_number: number;
   unit_name: string;
-  part1_topics: (string | CDAPTopicEntry)[];
-  part2_topics: (string | CDAPTopicEntry)[];
+  part1_topics: string[];
+  part2_topics: string[];
 }
 
 export interface CDAP {

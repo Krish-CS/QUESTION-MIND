@@ -29,14 +29,19 @@ android {
                 install "PyPDF2==3.0.1"
                 install "sqlalchemy==2.0.25"
                 install "pg8000==1.30.5"
-                install "pydantic==1.10.13"
+                install "pydantic<2"
                 install "json-repair>=0.30.0"
                 install "rsa==4.9"
                 install "fastapi==0.109.2"
-                install "pydantic-settings==2.1.0"
                 install "python-jose==3.3.0"
                 install "passlib==1.7.4"
+                install "bcrypt"
+                install "email-validator"
                 install "python-multipart==0.0.6"
+                install "pdfplumber==0.10.3"
+                install "python-docx==1.1.0"
+                install "cryptography==42.0.8"
+                install "lxml==5.3.0"
             }
         }
     }

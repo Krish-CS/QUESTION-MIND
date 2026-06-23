@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { Subject, Syllabus, SyllabusUnit, MySubjectAssignment, CDAP } from '../types';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
-import { useBackButton } from '../lib/useBackButton';
 
 // Helper to clean text artifacts
 function cleanText(text?: string): string {
@@ -38,7 +37,6 @@ function cleanText(text?: string): string {
 
 export default function SyllabusPage(): JSX.Element {
   const { user } = useAuthStore();
-  const isHOD = user?.role === 'HOD';
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [myAssignments, setMyAssignments] = useState<MySubjectAssignment[]>([]);
@@ -78,38 +76,26 @@ export default function SyllabusPage(): JSX.Element {
   const loadData = async () => {
     setLoading(true);
     try {
-      const promises: Promise<any>[] = [syllabusApi.getAll()];
-
-      if (isHOD) {
-        promises.push(subjectsApi.getAll());
-      } else {
-        promises.push(staffApi.getMySubjects());
-      }
+      const promises: Promise<any>[] = [
+        syllabusApi.getAll(),
+        subjectsApi.getAll()
+      ];
 
       const results = await Promise.all(promises);
-      const [syllabusRes, subjectOrAssignmentRes] = results;
+      const [syllabusRes, subjectsRes] = results;
 
       const syllabusMap: Record<string, Syllabus> = {};
       (syllabusRes.data || []).forEach((s: Syllabus) => {
         if (s && s.subject_id) syllabusMap[s.subject_id] = s;
       });
       setSyllabi(syllabusMap);
+      setSubjects(subjectsRes.data || []);
 
-      if (isHOD) {
-        setSubjects(subjectOrAssignmentRes.data || []);
-      } else {
-        const assignments: MySubjectAssignment[] = subjectOrAssignmentRes.data || [];
-        setMyAssignments(assignments);
-
-        const subjectsFromAssignments = assignments.map((a: MySubjectAssignment) => ({
-          id: (a as any).subjectId,
-          name: (a as any).subjectName,
-          code: (a as any).subjectCode,
-          nature: (a as any).subjectNature,
-          configuration: (a as any).subjectConfiguration,
-        })) as Subject[];
-
-        setSubjects(subjectsFromAssignments);
+      try {
+        const assignmentsRes = await staffApi.getMySubjects();
+        setMyAssignments(assignmentsRes.data || []);
+      } catch (err) {
+        // Ignored
       }
     } catch (err: any) {
       console.error(err);
@@ -126,9 +112,7 @@ export default function SyllabusPage(): JSX.Element {
   };
 
   const canUploadSyllabus = (subjectId: string): boolean => {
-    if (isHOD) return true;
-    const assignment = myAssignments.find((a) => (a as any).subjectId === subjectId);
-    return Boolean((assignment as any)?.canGenerateQuestions);
+    return true;
   };
 
   // Fetch CDAPs for subjects
@@ -251,26 +235,45 @@ export default function SyllabusPage(): JSX.Element {
       <div>
         <h1 className="text-3xl font-bold text-pink-600 dark:text-pink-400">📄 Syllabus Management</h1>
         <p className="text-purple-700 dark:text-purple-300 mt-1 font-medium">Upload and manage subject syllabi</p>
-        {!isHOD && myAssignments.length > 0 && (
+        {myAssignments.length > 0 && (
           <p className="text-sm text-blue-700 dark:text-blue-300 mt-2">You have access to {myAssignments.length} subject(s)</p>
         )}
       </div>
 
-      {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 dark:bg-rose-900 dark:border-rose-800 dark:text-rose-200">
-          {error}
-        </div>
+      {error && createPortal(
+        <div
+          className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={() => setError('')}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center border-2 border-rose-300 dark:border-rose-700 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mb-2">Error Occurred</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed whitespace-pre-wrap">
+              {error}
+            </p>
+            <button
+              onClick={() => setError('')}
+              className="btn bg-rose-600 hover:bg-rose-700 text-white px-6 py-2.5 rounded-xl transition-all font-semibold shadow-lg shadow-rose-500/25 active:scale-95"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* No subjects warning for staff */}
-      {subjects.length === 0 && !isHOD && (
+      {subjects.length === 0 && (
         <div className="card dark:!bg-slate-900 p-6">
           <div className="flex items-start gap-4 p-4 bg-amber-50 border border-amber-200 rounded-lg dark:bg-amber-900 dark:border-amber-800">
             <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-300 flex-shrink-0" />
             <div>
-              <h3 className="text-amber-700 dark:text-amber-200 font-medium">No Subjects Assigned</h3>
+              <h3 className="text-amber-700 dark:text-amber-200 font-medium">No Subjects Found</h3>
               <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                You don't have any subjects assigned. Contact your HOD to get subjects assigned.
+                You haven't created any subjects yet. Head over to the Subjects page to create one.
               </p>
             </div>
           </div>
@@ -305,9 +308,9 @@ export default function SyllabusPage(): JSX.Element {
                     onClick={() => setViewingDetails({ syllabus, cdap: cdaps[subject.id], initialTab: 'syllabus', showTabs: true })}
                     className="w-full btn btn-primary bg-gradient-to-r from-pink-500 to-purple-600 border-none text-white shadow-md shadow-purple-500/20 group flex flex-col items-center py-2 h-auto"
                   >
-                    <div className="flex flex-wrap items-center justify-center gap-2 group-hover:scale-105 transition-transform font-semibold">
-                      <BookOpen className="w-4 h-4 flex-shrink-0" />
-                      <span className="whitespace-normal text-center break-words">View Syllabus & CDAP</span>
+                    <div className="flex items-center justify-center gap-2 group-hover:scale-105 transition-transform font-semibold">
+                      <BookOpen className="w-4 h-4" />
+                      <span>View Syllabus & CDAP</span>
                     </div>
                   </button>
                 </div>
@@ -334,36 +337,34 @@ export default function SyllabusPage(): JSX.Element {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setViewingDetails({ syllabus, cdap: cdaps[subject.id], initialTab: 'syllabus', showTabs: false })}
-                        className="btn btn-secondary flex-1 justify-center text-sm py-2 h-auto"
+                        className="btn btn-secondary flex-1 justify-center text-sm"
                       >
-                        <Eye className="w-4 h-4 mr-1 flex-shrink-0" />
-                        <span className="inline whitespace-normal break-words">View</span>
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Syllabus
                       </button>
-                      {isHOD && (
-                        <button
-                          onClick={() => handleDeleteResource(syllabus.id, subject.id, 'syllabus')}
-                          className="btn bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 px-3 py-2 h-auto rounded-lg transition-colors border-none flex items-center justify-center"
-                          title="Delete Syllabus"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleDeleteResource(syllabus.id, subject.id, 'syllabus')}
+                        className="btn bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 p-2 rounded-lg transition-colors border-none"
+                        title="Delete Syllabus"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
 
                     {canUpload && (
-                      <label className="btn btn-secondary w-full justify-center cursor-pointer text-sm py-2 h-auto">
+                      <label className="btn btn-secondary w-full justify-center cursor-pointer text-sm">
                         {isUploading ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <>
-                            <Upload className="w-4 h-4 mr-1 flex-shrink-0" />
-                            <span className="whitespace-normal break-words">Re-upload</span>
+                            <Upload className="w-4 h-4" />
+                            Re-upload Syllabus
                           </>
                         )}
                         <input
                           type="file"
                           name={`reupload-syllabus-${subject.id}`}
-                          accept=".pdf,.doc,.docx,.xlsx,.xls"
+                          accept=".pdf,.doc,.docx"
                           className="hidden"
                           disabled={isUploading}
                           onChange={(e) => {
@@ -379,19 +380,19 @@ export default function SyllabusPage(): JSX.Element {
                     <p className="text-sm text-slate-600 dark:text-slate-300">No syllabus uploaded</p>
 
                     {canUpload ? (
-                      <label className="btn w-full justify-center cursor-pointer bg-pink-50 text-pink-700 hover:bg-pink-100 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 dark:hover:bg-pink-900/50 shadow-sm transition-all text-sm py-2 h-auto">
+                      <label className="btn w-full justify-center cursor-pointer bg-pink-50 text-pink-700 hover:bg-pink-100 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 dark:hover:bg-pink-900/50 shadow-sm transition-all md:text-sm">
                         {isUploading ? (
                           <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
                           <>
-                            <Upload className="w-4 h-4 mr-1 flex-shrink-0" />
-                            <span className="whitespace-normal break-words">Upload Syllabus</span>
+                            <Upload className="w-4 h-4" />
+                            Upload Syllabus (PDF/DOCX)
                           </>
                         )}
                         <input
                           type="file"
                           name={`upload-syllabus-${subject.id}`}
-                          accept=".pdf,.doc,.docx,.xlsx,.xls"
+                          accept=".pdf,.doc,.docx"
                           className="hidden"
                           disabled={isUploading}
                           onChange={(e) => {
@@ -420,36 +421,34 @@ export default function SyllabusPage(): JSX.Element {
                 </div>
 
                 {cdaps[subject.id] ? (
-                  <div className="space-y-3">
-                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                  <div className="space-y-2">
+                    <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">
                       Uploaded: {cdaps[subject.id].parsed_at ? new Date(cdaps[subject.id].parsed_at!).toLocaleDateString() : 'Unknown'}
                     </p>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setViewingDetails({ syllabus: syllabi[subject.id], cdap: cdaps[subject.id], initialTab: 'cdap', showTabs: false })}
-                        className="btn btn-secondary flex-1 justify-center text-sm py-2 h-auto"
+                        className="btn btn-secondary flex-1 justify-center text-sm"
                       >
-                        <Eye className="w-4 h-4 mr-1" />
-                        <span className="inline">View</span>
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        View CDAP
                       </button>
-                      {isHOD && (
-                        <button
-                          onClick={() => handleDeleteResource(cdaps[subject.id].id, subject.id, 'cdap')}
-                          className="btn bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 px-3 py-2 h-auto rounded-lg transition-colors border-none flex items-center justify-center"
-                          title="Delete CDAP"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => handleDeleteResource(cdaps[subject.id].id, subject.id, 'cdap')}
+                        className="btn bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 p-2 rounded-lg transition-colors border-none"
+                        title="Delete CDAP"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                     {canUpload && (
-                      <label className="btn btn-secondary w-full justify-center cursor-pointer text-sm py-2 h-auto">
+                      <label className="btn btn-secondary w-full justify-center cursor-pointer text-sm">
                         {uploadingCdap === subject.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <>
-                            <Upload className="w-4 h-4 mr-1" />
-                            Re-upload
+                            <Upload className="w-4 h-4" />
+                            Re-upload CDAP
                           </>
                         )}
                         <input
@@ -467,13 +466,13 @@ export default function SyllabusPage(): JSX.Element {
                     )}
                   </div>
                 ) : canUpload ? (
-                  <label className="btn btn-secondary w-full justify-center cursor-pointer text-sm py-2 h-auto">
+                  <label className="btn btn-secondary w-full justify-center cursor-pointer text-sm">
                     {uploadingCdap === subject.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <>
-                        <Upload className="w-4 h-4 mr-1" />
-                        Upload CDAP
+                        <Upload className="w-4 h-4" />
+                        Upload CDAP (PDF/EXCEL)
                       </>
                     )}
                     <input
@@ -566,13 +565,13 @@ function SubjectDetailsModal({
   onUploadCdapFile,
   onUpdateCdap,
 }: SubjectDetailsModalProps): JSX.Element | null {
-  useBackButton(onClose);
   const [activeTab, setActiveTab] = useState<'syllabus' | 'cdap'>(initialTab);
 
   // Syllabus
   const [editing, setEditing] = useState(false);
   const [units, setUnits] = useState<SyllabusUnit[]>(syllabus?.units || []);
   const [saving, setSaving] = useState(false);
+  const [syllabusTexts, setSyllabusTexts] = useState<Record<number, string>>({});
 
   // CDAP
   const [cdapUnitIdx, setCdapUnitIdx] = useState(0);
@@ -601,7 +600,29 @@ function SubjectDetailsModal({
 
   useEffect(() => {
     setUnits(syllabus?.units || []);
+    if (syllabus?.units) {
+      const texts: Record<number, string> = {};
+      syllabus.units.forEach((unit, idx) => {
+        texts[idx] = Array.isArray(unit.topics)
+          ? unit.topics.map((t: any) => typeof t === 'string' ? t : t.topicName).join('\n')
+          : '';
+      });
+      setSyllabusTexts(texts);
+    }
   }, [syllabus]);
+
+  // Sync / reset texts on edit-toggle
+  useEffect(() => {
+    if (syllabus?.units) {
+      const texts: Record<number, string> = {};
+      syllabus.units.forEach((unit, idx) => {
+        texts[idx] = Array.isArray(unit.topics)
+          ? unit.topics.map((t: any) => typeof t === 'string' ? t : t.topicName).join('\n')
+          : '';
+      });
+      setSyllabusTexts(texts);
+    }
+  }, [editing, syllabus]);
 
   useEffect(() => {
     setLocalCdapUnits(cdap?.units || []);
@@ -621,7 +642,18 @@ function SubjectDetailsModal({
     if (!syllabus) return;
     setSaving(true);
     try {
-      const response = await syllabusApi.update(syllabus.id, { units });
+      // Clean up the units topics: filter out any empty lines or whitespace-only lines before sending to the server
+      const cleanedUnits = units.map((u) => ({
+        ...u,
+        topics: (u.topics || [])
+          .map((t: any) => {
+            const name = typeof t === 'string' ? t : t.topicName;
+            return { topicName: name?.trim() || '' };
+          })
+          .filter((t) => t.topicName !== '')
+      }));
+
+      const response = await syllabusApi.update(syllabus.id, { units: cleanedUnits });
       onUpdateSyllabus(response.data);
       setEditing(false);
     } catch (err) {
@@ -669,7 +701,7 @@ function SubjectDetailsModal({
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 lg:left-72 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-900 rounded-xl w-[95%] md:w-full max-w-4xl max-h-[85vh] lg:max-h-[90vh] flex flex-col shadow-2xl border border-pink-200 dark:border-pink-700 overflow-hidden transform transition-all">
         {/* Header */}
         <div className="flex-none flex flex-col sm:flex-row justify-between items-center p-4 border-b border-pink-200 dark:border-pink-500 bg-white dark:bg-slate-900 gap-4">
@@ -680,10 +712,10 @@ function SubjectDetailsModal({
                   Subject Details
                 </h2>
 
-                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-full">
+                <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
                   <button
                     onClick={() => setActiveTab('syllabus')}
-                    className={`flex-1 text-center py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'syllabus'
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'syllabus'
                       ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}
@@ -692,7 +724,7 @@ function SubjectDetailsModal({
                   </button>
                   <button
                     onClick={() => setActiveTab('cdap')}
-                    className={`flex-1 text-center py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'cdap'
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'cdap'
                       ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                       }`}
@@ -785,7 +817,7 @@ function SubjectDetailsModal({
               </>
             )}
 
-            <button onClick={onClose} className="rounded-full p-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors flex-shrink-0">
+            <button onClick={onClose} className="rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -902,39 +934,36 @@ function SubjectDetailsModal({
                         )}
                       </div>
 
-                      <div className="space-y-4">
                         <div>
                           {editing ? (
                             <textarea
-                              value={
-                                Array.isArray(unit.topics)
-                                  ? unit.topics.map((t: any) => cleanText(typeof t === 'string' ? t : t.topicName)).join('\n')
-                                  : ''
-                              }
+                              value={syllabusTexts[index] !== undefined ? syllabusTexts[index] : ''}
                               onChange={(e) => {
+                                const newText = e.target.value;
+                                setSyllabusTexts((prev) => ({ ...prev, [index]: newText }));
+                                
                                 const newUnits = [...units];
                                 newUnits[index] = {
                                   ...newUnits[index],
-                                  topics: e.target.value.split('\n').filter(Boolean).map((t) => ({ topicName: t })),
+                                  topics: newText.split('\n').map((line) => ({ topicName: line })),
                                 };
                                 setUnits(newUnits);
                               }}
-                              className="input h-32 resize-none text-sm leading-relaxed w-full"
-                              placeholder="One topic per line"
+                              className="input h-32 resize-none text-sm leading-relaxed w-full font-sans border-slate-200 focus:border-pink-500"
+                              placeholder="One topic per line. Press Enter to start a new topic."
                             />
                           ) : (
-                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 w-full overflow-hidden">
+                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
                               {(unit.topics || []).map((topic: any, i: number) => (
-                                <li key={i} className="text-slate-700 dark:text-slate-300 text-sm flex items-start gap-2.5 p-1 rounded hover:bg-pink-50 dark:hover:bg-slate-700/50 transition-colors min-w-0 w-full">
+                                <li key={i} className="text-slate-700 dark:text-slate-300 text-sm flex items-start gap-2.5 p-1 rounded hover:bg-pink-50 dark:hover:bg-slate-700/50 transition-colors break-words">
                                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-pink-400 mt-1.5 flex-shrink-0" />
-                                  <span className="break-words min-w-0 flex-1 leading-relaxed">{cleanText(typeof topic === 'string' ? topic : topic.topicName)}</span>
+                                  <span>{cleanText(typeof topic === 'string' ? topic : topic.topicName)}</span>
                                 </li>
                               ))}
                             </ul>
                           )}
                         </div>
                       </div>
-                    </div>
                   ))}
 
                   {editing && (
@@ -1083,6 +1112,7 @@ function SubjectDetailsModal({
                                     <div>
                                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Topic {idx + 1}</label>
                                       <input
+                                        id={`cdap-topic-input-${idx}`}
                                         type="text"
                                         value={topicText}
                                         onChange={(e) => {
@@ -1097,6 +1127,44 @@ function SubjectDetailsModal({
                                           if (cdapPartTab === 'part1') newUnits[cdapUnitIdx].part1_topics = currentTopics;
                                           else newUnits[cdapUnitIdx].part2_topics = currentTopics;
                                           setLocalCdapUnits(newUnits);
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            const newUnits = [...localCdapUnits];
+                                            const currentTopics = [...(cdapPartTab === 'part1' ? newUnits[cdapUnitIdx].part1_topics : newUnits[cdapUnitIdx].part2_topics)];
+                                            const newTopic = { topic: '', subtopics: [] };
+                                            currentTopics.splice(idx + 1, 0, newTopic);
+                                            if (cdapPartTab === 'part1') newUnits[cdapUnitIdx].part1_topics = currentTopics;
+                                            else newUnits[cdapUnitIdx].part2_topics = currentTopics;
+                                            setLocalCdapUnits(newUnits);
+                                            
+                                            // Auto-focus the new input
+                                            setTimeout(() => {
+                                              const nextInput = document.getElementById(`cdap-topic-input-${idx + 1}`);
+                                              if (nextInput) {
+                                                (nextInput as HTMLInputElement).focus();
+                                              }
+                                            }, 50);
+                                          } else if (e.key === 'Backspace' && topicText === '') {
+                                            const newUnits = [...localCdapUnits];
+                                            const currentTopics = [...(cdapPartTab === 'part1' ? newUnits[cdapUnitIdx].part1_topics : newUnits[cdapUnitIdx].part2_topics)];
+                                            if (currentTopics.length > 1) {
+                                              e.preventDefault();
+                                              currentTopics.splice(idx, 1);
+                                              if (cdapPartTab === 'part1') newUnits[cdapUnitIdx].part1_topics = currentTopics;
+                                              else newUnits[cdapUnitIdx].part2_topics = currentTopics;
+                                              setLocalCdapUnits(newUnits);
+                                              
+                                              // Focus previous input
+                                              setTimeout(() => {
+                                                const prevInput = document.getElementById(`cdap-topic-input-${idx - 1}`);
+                                                if (prevInput) {
+                                                  (prevInput as HTMLInputElement).focus();
+                                                }
+                                              }, 50);
+                                            }
+                                          }
                                         }}
                                         className="input w-full font-medium text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-600 focus:border-purple-500"
                                         placeholder="Topic Name"
@@ -1155,31 +1223,31 @@ function SubjectDetailsModal({
                                   const topicParts = topicText.split(',').map((p: string) => p.trim()).filter((p: string) => p);
 
                                   return (
-                                    <li key={idx} className="flex items-start gap-3 p-3 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors min-w-0 w-full overflow-hidden">
+                                    <li key={idx} className="flex items-start gap-3 p-3 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors">
                                       {/* Main Gradient Dot */}
                                       <div className="mt-2.5 w-2.5 h-2.5 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shadow-md shadow-purple-500/30 flex-shrink-0" />
 
-                                      <div className="flex-1 min-w-0 space-y-3">
+                                      <div className="flex-1 space-y-3">
                                         {/* Main Topic Content */}
                                         {topicParts.length > 0 ? (
                                           <div className="space-y-2">
                                             {topicParts.map((part: string, pIdx: number) => (
-                                              <p key={pIdx} className="text-base md:text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed break-words min-w-0">
+                                              <p key={pIdx} className="text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed">
                                                 {cleanText(part)}
                                               </p>
                                             ))}
                                           </div>
                                         ) : (
-                                          <p className="text-base md:text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed break-words min-w-0">{cleanText(topicText)}</p>
+                                          <p className="text-lg font-medium text-slate-800 dark:text-slate-200 leading-relaxed">{cleanText(topicText)}</p>
                                         )}
 
                                         {/* Sub-topics */}
                                         {subtopics.length > 0 && (
-                                          <ul className="space-y-2 mt-2 w-full">
+                                          <ul className="space-y-2 mt-2">
                                             {subtopics.flatMap((sub: string) => sub.split(',').map(s => s.trim()).filter(Boolean)).map((sub: string, subIdx: number) => (
-                                              <li key={subIdx} className="text-sm md:text-base text-slate-600 dark:text-slate-400 flex items-start gap-3 pl-1 min-w-0 w-full">
+                                              <li key={subIdx} className="text-base text-slate-600 dark:text-slate-400 flex items-start gap-3 pl-1">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-purple-400 dark:bg-purple-500 mt-2.5 flex-shrink-0" />
-                                                <span className="leading-relaxed break-words min-w-0 flex-1">{cleanText(sub)}</span>
+                                                <span className="leading-relaxed">{cleanText(sub)}</span>
                                               </li>
                                             ))}
                                           </ul>

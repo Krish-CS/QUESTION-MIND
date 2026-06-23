@@ -45,6 +45,8 @@ export interface AISettingsState {
   providerKeys: Record<string, string>;
   // Custom API Keys per provider
   customKeys: Record<string, string>;
+  // Custom Models per provider
+  customModels: Record<string, string>;
   
   // Preferences
   preferredProvider: 'backend' | 'custom' | 'local';
@@ -72,6 +74,7 @@ export interface AISettingsState {
   setProviderKey: (provider: string, keySource: string) => void;
   setCustomKey: (provider: string, apiKey: string) => void;
   removeCustomKey: (provider: string) => void;
+  setCustomModel: (provider: string, model: string) => void;
   setPreferredProvider: (provider: 'backend' | 'custom' | 'local') => void;
   setUseLocalModels: (enabled: boolean) => void;
   setFallbackStrategy: (strategy: 'next_available' | 'manual_select') => void;
@@ -126,6 +129,7 @@ export const useAISettingsStore = create<AISettingsState>()(
       customKeySettings: getInitialKeySettings(getInitialAPIKey()),
       providerKeys: { groq: 'system-1', cerebras: 'system-1', nvidia: 'system-1', openrouter: 'system-1' },
       customKeys: { groq: '', cerebras: '', nvidia: '', openrouter: '' },
+      customModels: { groq: 'llama-3.3-70b-versatile', cerebras: 'gpt-oss-120b', nvidia: 'openai/gpt-oss-20b', openrouter: 'openai/gpt-oss-20b' },
       preferredProvider: 'backend',
       useLocalModels: false,
       fallbackStrategy: 'next_available',
@@ -169,6 +173,8 @@ export const useAISettingsStore = create<AISettingsState>()(
         set((state) => ({ customKeys: { ...state.customKeys, [provider]: apiKey } })),
       removeCustomKey: (provider: string) =>
         set((state) => ({ customKeys: { ...state.customKeys, [provider]: '' } })),
+      setCustomModel: (provider: string, model: string) =>
+        set((state) => ({ customModels: { ...state.customModels, [provider]: model } })),
       setPreferredProvider: (provider: 'backend' | 'custom' | 'local') =>
         set({ preferredProvider: provider }),
       setUseLocalModels: (enabled: boolean) => set({ useLocalModels: enabled }),
@@ -195,6 +201,7 @@ export const useAISettingsStore = create<AISettingsState>()(
         customKeySettings: state.customKeySettings, // Safely persist masked key details
         providerKeys: state.providerKeys,
         customKeys: state.customKeys,
+        customModels: state.customModels,
         backendUrl: state.backendUrl,
       }),
     }

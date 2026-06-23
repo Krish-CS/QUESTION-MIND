@@ -153,23 +153,6 @@ export default function Dashboard() {
                     <p className="font-semibold text-slate-900 dark:text-white text-lg">{a.subjectName}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-300 font-mono">{a.subjectCode}</p>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
-                    {a.canEditPattern && (
-                      <span className="pill bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-100 border border-blue-100 dark:border-blue-800">
-                        ✏️ Edit Pattern
-                      </span>
-                    )}
-                    {a.canGenerateQuestions && (
-                      <span className="pill bg-emerald-50 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-100 border border-emerald-100 dark:border-emerald-800">
-                        ⚡ Generate
-                      </span>
-                    )}
-                    {a.canApprove && (
-                      <span className="pill bg-violet-50 text-violet-800 dark:bg-violet-900 dark:text-violet-100 border border-violet-100 dark:border-violet-800">
-                        ✅ Approve
-                      </span>
-                    )}
-                  </div>
                 </div>
               </div>
             ))}
@@ -211,7 +194,6 @@ export default function Dashboard() {
                       })}
                     </p>
                   </div>
-                  <StatusBadge status={bank.status} />
                 </div>
               </div>
             ))}

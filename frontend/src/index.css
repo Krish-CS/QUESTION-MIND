@@ -230,3 +230,16 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+@keyframes profileFlip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+.animate-profile-flip {
+  animation: profileFlip 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+

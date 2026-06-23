@@ -1,6 +1,5 @@
 import { X, AlertTriangle } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { useBackButton } from '../../lib/useBackButton';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
@@ -11,6 +10,7 @@ interface ConfirmationModalProps {
     confirmText?: string;
     cancelText?: string;
     isDangerous?: boolean;
+    alertOnly?: boolean;
 }
 
 export default function ConfirmationModal({
@@ -19,14 +19,14 @@ export default function ConfirmationModal({
     onConfirm,
     title,
     message,
-    confirmText = 'Confirm',
+    confirmText,
     cancelText = 'Cancel',
     isDangerous = false,
+    alertOnly = false,
 }: ConfirmationModalProps) {
-    // If the modal is open, intercept the back button to close it
-    useBackButton(onClose, isOpen);
-
     if (!isOpen) return null;
+
+    const resolvedConfirmText = confirmText || (alertOnly ? 'OK' : 'Confirm');
 
     return createPortal(
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -48,12 +48,14 @@ export default function ConfirmationModal({
                     </p>
 
                     <div className="flex gap-3 justify-center">
-                        <button
-                            onClick={onClose}
-                            className="px-5 py-2.5 rounded-xl text-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 font-semibold transition-colors flex-1"
-                        >
-                            {cancelText}
-                        </button>
+                        {!alertOnly && (
+                            <button
+                                onClick={onClose}
+                                className="px-5 py-2.5 rounded-xl text-slate-800 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600 font-semibold transition-colors flex-1"
+                            >
+                                {cancelText}
+                            </button>
+                        )}
                         <button
                             onClick={() => {
                                 onConfirm();
@@ -64,7 +66,7 @@ export default function ConfirmationModal({
                                 : 'bg-gradient-to-r from-pink-600 via-pink-500 to-purple-600 shadow-pink-500/30 hover:from-pink-700 hover:via-pink-600 hover:to-purple-700'
                                 }`}
                         >
-                            {confirmText}
+                            {resolvedConfirmText}
                         </button>
                     </div>
                 </div>

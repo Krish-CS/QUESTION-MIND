@@ -18,12 +18,14 @@ export function initializeAIService(): void {
   if (nvidiaKey) localStorage.setItem('NVIDIA_API_KEY', nvidiaKey);
   if (openrouterKey) localStorage.setItem('OPENROUTER_API_KEY', openrouterKey);
 
-  // Log available providers
-  const providers = [];
-  if (cerebrasKey) providers.push('Cerebras');
-  if (groqKey) providers.push('Groq');
-  if (nvidiaKey) providers.push('NVIDIA');
-  if (openrouterKey) providers.push('OpenRouter');
+  // Mobile backend (Chaquopy) has embedded system keys for Groq, Cerebras, and NVIDIA
+  const providers = ['System-Groq', 'System-Cerebras', 'System-NVIDIA'];
+  
+  if (cerebrasKey) providers.push('Cerebras (Custom)');
+  if (cerebrasKey2) providers.push('Cerebras-2 (Custom)');
+  if (groqKey) providers.push('Groq (Custom)');
+  if (nvidiaKey) providers.push('NVIDIA (Custom)');
+  if (openrouterKey) providers.push('OpenRouter (Custom)');
 
   if (providers.length > 0) {
     console.log('[Init] LLM Providers configured:', providers.join(' → '));
@@ -37,20 +39,14 @@ export function initializeAIService(): void {
  * Check if at least one LLM provider is available
  */
 export function hasLLMProvider(): boolean {
-  return !!(
-    localStorage.getItem('CEREBRAS_API_KEY') ||
-    localStorage.getItem('CEREBRAS_API_KEY_2') ||
-    localStorage.getItem('GROQ_API_KEY') ||
-    localStorage.getItem('NVIDIA_API_KEY') ||
-    localStorage.getItem('OPENROUTER_API_KEY')
-  );
+  return true; // We always have embedded system keys!
 }
 
 /**
  * Get configured provider names
  */
 export function getConfiguredProviders(): string[] {
-  const providers = [];
+  const providers = ['System-Groq', 'System-Cerebras', 'System-NVIDIA'];
   if (localStorage.getItem('CEREBRAS_API_KEY')) providers.push('Cerebras');
   if (localStorage.getItem('CEREBRAS_API_KEY_2')) providers.push('Cerebras-2');
   if (localStorage.getItem('GROQ_API_KEY')) providers.push('Groq');

@@ -27,10 +27,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 errors
+// Handle 401 and formatting errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Stringify validation error arrays
+    if (error.response?.data?.detail && Array.isArray(error.response.data.detail)) {
+      error.response.data.detail = error.response.data.detail.map((e: any) => {
+        const loc = e.loc ? e.loc.join('.') : '';
+        return `${loc}: ${e.msg}`.replace(/^: /, '').trim();
+      }).join(', ');
+    }
+
     const isLoginRequest = error.config?.url?.includes('/auth/login');
     const isLoginPage = 
       window.location.pathname === '/login' || 

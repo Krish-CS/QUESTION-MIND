@@ -1,14 +1,14 @@
 import os
 import json
 import traceback
-from database import SessionLocal
-from services.ai_service import ai_service
-from services.excel_service import excel_service
-from services.cdap_parser import cdap_parser
-from services.syllabus_parser import syllabus_parser
+from app.database import SessionLocal
+from app.services.ai_service import ai_service
+from app.services.excel_service import excel_service
+from app.services.cdap_parser import cdap_parser
+from app.services.syllabus_parser import syllabus_parser
 
 # Mocking the dependency injection for routers if we want to call them
-from routers import subjects, syllabus, question_bank, auth, staff
+from app.routers import subjects, syllabus, question_bank, auth, staff
 
 def generate_questions(subject_id, coverage, configs):
     try:
@@ -19,7 +19,7 @@ def generate_questions(subject_id, coverage, configs):
         # For simplicity, we just return ai_service.generate_questions(...)
         # Wait, ai_service generates questions per part. Let's do generate_full_question_bank
         db = SessionLocal()
-        from models import Subject, CDAP
+        from app.models import Subject, CDAP
         subject = db.query(Subject).filter(Subject.id == subject_id).first()
         subj_name = subject.name if subject else "Subject"
         
@@ -62,7 +62,7 @@ def export_questions_excel(questions_list, output_path):
 
 def parse_cdap_file(file_path):
     try:
-        from services.google_drive_service import drive_service
+        from app.services.google_drive_service import drive_service
         import os, tempfile
         
         # Check if it looks like a Drive File ID (alphanumeric, no slashes)
@@ -86,7 +86,7 @@ def parse_cdap_file(file_path):
 
 def parse_syllabus_file(file_path):
     try:
-        from services.google_drive_service import drive_service
+        from app.services.google_drive_service import drive_service
         import os, tempfile
         
         if len(file_path) > 20 and '/' not in file_path and '\\' not in file_path:
@@ -110,26 +110,63 @@ def parse_syllabus_file(file_path):
 def dispatch_request(method, path, body):
     try:
         from fastapi.testclient import TestClient
-        from main import app
+        from app.main import app
         import json
         import traceback
+        import base64
         
         client = TestClient(app)
         headers = {}
         data = None
         
-        if body and isinstance(body, dict):
-            if "__bridge_headers" in body:
-                headers = body.get("__bridge_headers", {})
-                data = body.get("data")
+        # In Chaquopy, body might be a java.util.HashMap proxy, so isinstance(body, dict) is False.
+        if body and hasattr(body, "get"):
+            # Convert Java Map to a pure Python dictionary by passing it through JSON (if possible)
+            # or just by shallow casting. Actually, since the Java side parses a JSON string into 
+            # nested Maps/Lists, we can convert it recursively or rely on duck typing.
+            # A simple recursive converter for Chaquopy Java objects:
+            def to_python(obj):
+                if hasattr(obj, "keySet"): # Java Map (HashMap, LinkedHashMap, etc.)
+                    # keySet() returns a Java Set proxy in Chaquopy, not directly iterable.
+                    # Convert via entrySet() and iterator() for maximum Chaquopy compatibility.
+                    items = []
+                    entry_iter = obj.entrySet().iterator()
+                    while entry_iter.hasNext():
+                        entry = entry_iter.next()
+                        items.append((str(entry.getKey()), to_python(entry.getValue())))
+                    return dict(items)
+                elif hasattr(obj, "size") and hasattr(obj, "get") and not hasattr(obj, "keySet"): # Java List (ArrayList, etc.)
+                    size = obj.size() if callable(obj.size) else obj.size
+                    return [to_python(obj.get(i)) for i in range(int(size))]
+                elif isinstance(obj, dict):
+                    return {str(k): to_python(v) for k, v in obj.items()}
+                elif isinstance(obj, (list, tuple)):
+                    return [to_python(i) for i in obj]
+                else:
+                    return obj
+                    
+            py_body = to_python(body)
+            
+            if "__bridge_headers" in py_body:
+                headers = py_body.get("__bridge_headers", {})
+                data = py_body.get("data")
             else:
-                data = body
+                data = py_body
 
         req_kwargs = {"headers": headers}
         
-        # Determine how to pass body/params
-        # TestClient treats `json` as body, `params` as query string.
-        if method.upper() in ["GET", "DELETE"]:
+        # Check if this is a file upload
+        files = None
+        if data and isinstance(data, dict) and data.get("__is_file_upload"):
+            filename = data.get("filename")
+            base64_content = data.get("content")
+            file_bytes = base64.b64decode(base64_content)
+            files = {"file": (filename, file_bytes)}
+            data = None
+
+        if files:
+            req_kwargs["files"] = files
+        elif method.upper() in ["GET", "DELETE"]:
             req_kwargs["params"] = data
         else:
             req_kwargs["json"] = data
@@ -157,7 +194,21 @@ def dispatch_request(method, path, body):
                 pass
             return json.dumps({"success": False, "error": err_msg})
             
+        content_type = response.headers.get("content-type", "")
+        if "application/json" not in content_type:
+            # Binary response (e.g. excel, image, pdf)
+            b64_content = base64.b64encode(response.content).decode("utf-8")
+            return json.dumps({
+                "success": True,
+                "data": {
+                    "__is_binary": True,
+                    "content": b64_content,
+                    "content_type": content_type
+                }
+            })
+            
         return json.dumps({"success": True, "data": response.json()})
     except Exception as e:
         import traceback
         return json.dumps({"success": False, "error": str(e) + "\n" + traceback.format_exc()})
+

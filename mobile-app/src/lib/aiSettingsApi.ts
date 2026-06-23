@@ -6,6 +6,8 @@
 import { useAISettingsStore } from './settingsStore';
 import type { DeviceCapabilities, ProviderStatus } from './settingsStore';
 
+import api from './api';
+
 export const aiSettingsApi = {
   /**
    * Save user's custom API key
@@ -90,50 +92,18 @@ export const aiSettingsApi = {
   },
 
   /**
-   * Test if an API key is valid client-side
+   * Test if an API key is valid client-side via backend router
    */
   async testAPIKey(provider: string, apiKey: string) {
-    let baseUrl = '';
-    let model = '';
-    if (provider === 'groq') {
-      baseUrl = 'https://api.groq.com/openai/v1';
-      model = 'llama-3.3-70b-versatile';
-    } else if (provider === 'cerebras') {
-      baseUrl = 'https://api.cerebras.ai/v1';
-      model = 'gpt-oss-120b';
-    } else if (provider === 'openrouter') {
-      baseUrl = 'https://openrouter.ai/api/v1';
-      model = 'meta-llama/llama-3.3-70b-instruct';
-    } else {
-      return { success: true, data: { success: true, message: 'Custom key saved locally.' } };
-    }
-
     try {
-      const response = await fetch(`${baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model,
-          messages: [{ role: 'user', content: 'test' }],
-          max_tokens: 1
-        })
-      });
-      if (response.ok) {
-        return { success: true, data: { success: true, message: 'API key is valid and working!' } };
-      } else {
-        return { success: false, data: { success: false, message: `Key test failed: HTTP ${response.status}.` } };
-      }
+      const response = await api.post('/ai-settings/test-key', { provider, api_key: apiKey });
+      return { success: response.data.success, data: response.data };
     } catch (error: any) {
       console.warn('API key test error:', error);
       return {
-        success: true,
-        data: {
-          success: true,
-          message: 'Key saved locally. Note: Full validation could not be completed client-side due to browser CORS policies, but it is ready for use.'
-        }
+        success: false,
+        error: error.response?.data?.detail || error.message || 'Connection failed',
+        data: { success: false, message: error.response?.data?.detail || error.message || 'Connection failed' }
       };
     }
   },
@@ -142,54 +112,45 @@ export const aiSettingsApi = {
    * Get provider status
    */
   async getProviderStatus(): Promise<ProviderStatus[]> {
-    const groqKey = localStorage.getItem('GROQ_API_KEY');
-    const cerebrasKey = localStorage.getItem('CEREBRAS_API_KEY');
-    const openrouterKey = localStorage.getItem('OPENROUTER_API_KEY');
-
-    return [
-      {
-        name: 'Cerebras',
-        status: cerebrasKey ? 'available' : 'unavailable',
-        configured: !!cerebrasKey,
-        canUseCustom: true,
-        error: cerebrasKey ? undefined : 'No API key configured'
-      },
-      {
-        name: 'Groq',
-        status: groqKey ? 'available' : 'unavailable',
-        configured: !!groqKey,
-        canUseCustom: true,
-        error: groqKey ? undefined : 'No API key configured'
-      },
-      {
-        name: 'OpenRouter',
-        status: openrouterKey ? 'available' : 'unavailable',
-        configured: !!openrouterKey,
-        canUseCustom: true,
-        error: openrouterKey ? undefined : 'No API key configured'
-      }
-    ];
+    try {
+      const response = await api.get('/ai-settings/status');
+      return response.data.map((p: any) => ({
+        name: p.name,
+        status: p.status,
+        configured: p.configured,
+        canUseCustom: p.can_use_custom,
+        error: p.error || undefined
+      }));
+    } catch (error) {
+      console.warn('Failed to load provider statuses from backend:', error);
+      return [];
+    }
   },
 
   /**
    * Get device capabilities for local models
    */
   async getDeviceCapabilities(): Promise<DeviceCapabilities | null> {
-    return {
-      platform: 'Capacitor Android',
-      supportsLocalModels: true,
-      availableMemoryMB: 4096,
-      availableStorageMB: 8192,
-      availableModels: [
-        {
-          name: 'gemma-2b',
-          label: 'Gemma 2B (Google)',
-          description: 'Optimized for mobile question generation',
-          memoryMB: 1800,
-          storageMB: 2200
-        }
-      ]
-    };
+    try {
+      const response = await api.get('/ai-settings/device-capabilities');
+      const data = response.data;
+      return {
+        platform: data.platform,
+        supportsLocalModels: data.supports_local_models,
+        availableMemoryMB: data.available_memory_mb,
+        availableStorageMB: data.available_storage_mb,
+        availableModels: data.available_models.map((m: any) => ({
+          name: m.name,
+          label: m.label,
+          description: m.description,
+          memoryMB: m.memory_mb,
+          storageMB: m.storage_mb
+        }))
+      };
+    } catch (error) {
+      console.warn('Failed to load device capabilities from backend:', error);
+      return null;
+    }
   },
 
   /**

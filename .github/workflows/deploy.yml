@@ -36,6 +36,10 @@ jobs:
       - name: Deploy to Target Repository
         run: |
           cd frontend/dist
+          # Prevent Jekyll processing — ensures all static assets (favicon, etc.) are served
+          touch .nojekyll
+          # SPA routing: copy index.html as 404.html so all routes work on GitHub Pages
+          cp index.html 404.html
           git init
           git config user.name "Krish-CS"
           git config user.email "Krish-CS@users.noreply.github.com"

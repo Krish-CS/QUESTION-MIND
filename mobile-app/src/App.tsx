@@ -1,17 +1,18 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './lib/store';
 import Layout from './components/Layout';
 import Login from './pages/Login';
-import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Overview from './pages/Overview';
 import Subjects from './pages/Subjects';
 import Syllabus from './pages/Syllabus';
 import Patterns from './pages/Patterns';
 import QuestionBanks from './pages/QuestionBanks';
-import Approvals from './pages/Approvals';
+import QuickChecks from './pages/QuickChecks';
 import Settings from './pages/Settings';
+import AdminDashboard from './pages/AdminDashboard';
 import GlobalLoader from './components/GlobalLoader';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
@@ -19,6 +20,7 @@ import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { Network } from '@capacitor/network';
 import { RefreshCw, WifiOff } from 'lucide-react';
+import { downloadExcel } from './lib/api';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loadFromStorage } = useAuthStore();
@@ -35,7 +37,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const { loadFromStorage } = useAuthStore();
+  const { loadFromStorage, user } = useAuthStore();
   const [isOnline, setIsOnline] = useState(true); // Default true until first check
   const [isRetrying, setIsRetrying] = useState(false);
   const [showSplash, setShowSplash] = useState(() => {
@@ -105,6 +107,26 @@ export default function App() {
           CapApp.exitApp();
         }
       });
+
+      // Monkey-patch anchor click to intercept and trigger native downloads
+      const originalClick = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function(this: HTMLAnchorElement) {
+        if (this.href && this.href.startsWith('blob:')) {
+          const filename = this.download || 'download.xlsx';
+          const url = this.href;
+          (async () => {
+            try {
+              const res = await fetch(url);
+              const blob = await res.blob();
+              await downloadExcel(blob, filename);
+            } catch (e) {
+              console.error('Failed native download intercept:', e);
+            }
+          })();
+          return;
+        }
+        originalClick.call(this);
+      };
     }
 
     return () => {
@@ -131,30 +153,7 @@ export default function App() {
     }
   }, [showSplash]);
 
-  if (!isOnline) {
-    return (
-      <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-pink-50 px-6 dark:bg-slate-950">
-        <div className="modal-content w-full max-w-sm rounded-lg border-2 border-pink-200 bg-white p-7 text-center shadow-2xl shadow-pink-200/60 dark:border-purple-800 dark:bg-slate-900 dark:shadow-black/50">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-100 to-purple-100 text-pink-600 dark:from-pink-950 dark:to-purple-950 dark:text-pink-300">
-            <WifiOff size={32} aria-hidden="true" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">No internet connection</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Question Mind needs an active internet connection. Connect to Wi-Fi or mobile data, then try again.
-          </p>
-          <button
-            type="button"
-            onClick={retryConnection}
-            disabled={isRetrying}
-            className="btn btn-primary mt-6 w-full justify-center"
-          >
-            <RefreshCw size={18} className={isRetrying ? 'animate-spin' : ''} aria-hidden="true" />
-            {isRetrying ? 'Checking connection' : 'Try again'}
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
     <>
@@ -176,25 +175,60 @@ export default function App() {
         </div>
       )}
       
+      <Toaster 
+        position="top-center" 
+        toastOptions={{ 
+          duration: 4000, 
+          style: { 
+            background: 'linear-gradient(to right, #4c1d95, #701a75)', // Deep purple to dark pink gradient
+            color: '#fff',
+            border: '1px solid #d946ef', // Fuchsia border
+            boxShadow: '0 4px 14px 0 rgba(217, 70, 239, 0.39)',
+            fontWeight: '600'
+          },
+          success: {
+            iconTheme: {
+              primary: '#fdf4ff', // Light fuchsia
+              secondary: '#d946ef', // Fuchsia
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#fff1f2', // Light rose
+              secondary: '#f43f5e', // Rose
+            },
+          }
+        }} 
+      />
+      
       <GlobalLoader />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
           <Route
             path="/*"
             element={
               <ProtectedRoute>
                 <Layout>
                   <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/overview" element={<Overview />} />
-                    <Route path="/subjects" element={<Subjects />} />
-                    <Route path="/syllabus" element={<Syllabus />} />
-                    <Route path="/patterns" element={<Patterns />} />
-                    <Route path="/question-banks" element={<QuestionBanks />} />
-                    <Route path="/approvals" element={<Approvals />} />
-                    <Route path="/settings" element={<Settings />} />
+                    {isAdmin ? (
+                      <>
+                        <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="*" element={<Navigate to="/admin" replace />} />
+                      </>
+                    ) : (
+                      <>
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/overview" element={<Overview />} />
+                        <Route path="/subjects" element={<Subjects />} />
+                        <Route path="/syllabus" element={<Syllabus />} />
+                        <Route path="/patterns" element={<Patterns />} />
+                        <Route path="/question-banks" element={<QuestionBanks />} />
+                        <Route path="/quick-checks" element={<QuickChecks />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                      </>
+                    )}
                   </Routes>
                 </Layout>
               </ProtectedRoute>
@@ -205,3 +239,4 @@ export default function App() {
     </>
   );
 }
+
